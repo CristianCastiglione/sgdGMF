@@ -1,0 +1,32 @@
+Package: sgdGMF
+Type: Package
+Date: 2023-04-11
+Title: Generalized Matrix Factorization via Stochastic Gradient Descent
+Version: 0.0.1
+Authors: Cristian Castiglione, Davide Risso
+Maintainer: Cristian Castiglione <cristian.castiglione@unipd.it>
+Description: Factorization of matrices under the assumptions of the GLLVM model. 
+    This is an extension of classical tools such as PCA and SVD when data is not Gaussian. 
+    The package contains an implementation of two algorithms, that are Alternating 
+    Reweighted Iterative Least Squares (ARILS) and quasi-Newton approach, where 
+    derivatives and Hessians are approximated directly (Kidzinski et al. 2020).
+License: GPL-3
+LazyData: TRUE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends:
+    R (>= 2.15.0)
+Imports:
+    whitening,
+    vegan,    
+    MASS,
+    svd (>= 0.5.4)
+Suggests:
+    tidyr,
+    dplyr,
+    raster,
+    ggplot2,
+    reshape2,
+    gllvm,
+    glmpca
