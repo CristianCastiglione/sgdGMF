@@ -23,3 +23,13 @@ template<class F> arma::mat deviance (const arma::mat & mu, const amra::mat & y,
     return dev;
 }
 
+// Penalty matrix
+void penalty (double & pen, const arma::mat & u, const arma::vec & p) {
+    pen = arma::sum(p % arma::sum(u % u));
+};
+
+double penalty (const arma::mat & u, const arma::vec & p) {
+    double pen;
+    penalty(pen, u, p);
+    return pen;
+};
