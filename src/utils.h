@@ -23,7 +23,8 @@ double absmax (const double & u, const double & v);
 double absmax (const arma::vec & u, const arma::vec & v);
 
 // Truncated representation of a vertor x, such that a <= x[i] <= b
-arma::mat trim (const arma::mat & x, double a, double b);
+void trim (arma::mat & x, double a, double b);
+// arma::mat trim (const arma::mat & x, double a, double b);
 
 // Stable calculation of log(1 + exp(x))
 arma::mat log1pexp (const arma::mat & x);
