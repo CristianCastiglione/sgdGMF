@@ -20,6 +20,7 @@ class Family {
         arma::mat linkinv (const arma::mat & eta) const {return linkclass->linkinv(eta);}
         arma::mat mueta (const arma::mat & eta) const {return linkclass->mueta(eta);}
         virtual arma::mat variance (const arma::mat & mu) const = 0;
+        virtual arma::mat devresid (const arma::mat & y, const arma::mat & mu) const = 0;
         virtual arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const = 0;
         virtual arma::mat initialize (const arma::mat & y) const = 0;
         virtual bool validmu (const arma::mat & mu) const = 0;
@@ -34,6 +35,7 @@ class Gaussian : public Family {
     public:
         const std::string family = "Gaussian";
         arma::mat variance (const arma::mat & mu) const;
+        arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
@@ -45,6 +47,7 @@ class Binomial : public Family {
     public:
         const std::string family = "Binomial";
         arma::mat variance (const arma::mat & mu) const;
+        arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
@@ -56,6 +59,7 @@ class Poisson : public Family {
     public:
         const std::string family = "Poisson";
         arma::mat variance (const arma::mat & mu) const;
+        arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
@@ -67,6 +71,7 @@ class Gamma : public Family {
     public:
         const std::string family = "Gamma";
         arma::mat variance (const arma::mat & mu) const;
+        arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
