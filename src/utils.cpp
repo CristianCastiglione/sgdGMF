@@ -19,11 +19,18 @@ double absmax (const arma::vec & u, const arma::vec & v) {
   return a / b;
 }
 
-arma::mat trim (const arma::mat & x, double a, double b) {
-  arma::mat xa = arma::conv_to<arma::mat>::from(x <= a);
-  arma::mat xb = arma::conv_to<arma::mat>::from(x >= b);
-  return a * xa + b * xb + x % (1 - xa - xb);
+arma::mat trim (arma::mat & x, double a, double b) {
+  arma::uvec above = arma::find(x > b);
+  arma::uvec below = arma::find(x < a);
+  x.elem(above) = b;
+  x.elem(below) = a;
 }
+
+// arma::mat trim (const arma::mat & x, double a, double b) {
+//   arma::mat xa = arma::conv_to<arma::mat>::from(x <= a);
+//   arma::mat xb = arma::conv_to<arma::mat>::from(x >= b);
+//   return a * xa + b * xb + x % (1 - xa - xb);
+// }
 
 arma::mat log1pexp (const arma::mat & x) {
   bool stable = false;
