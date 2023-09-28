@@ -9,11 +9,11 @@
 #include <RcppArmadillo.h>
 
 // Pointwise deviance
-template<class F> void deviance (const arma::mat & mu, const amra::mat & y, F family);
+template<class F> void deviance (arma::mat & dev, const arma::mat & mu, const amra::mat & y, F family);
 template<class F> arma::mat deviance (const arma::mat & mu, const amra::mat & y, F family);
 
 // Penalty function
-void penalty (const arma::mat & u, const arma::vec & p);
+void penalty (double & pen, const arma::mat & u, const arma::vec & p);
 double penalty (const arma::mat & u, const arma::vec & p);
 
 #endif
