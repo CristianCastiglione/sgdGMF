@@ -6,7 +6,7 @@
 #include "deviance.h"
 
 // Pointwise deviance
-template<class F> void deviance (arma::mat & dev, const arma::mat & mu, const amra::mat & y, F family) {
+template<class F> void deviance (arma::mat & dev, const arma::mat & y, const arma::mat & mu, F family) {
     bool anyna = !y.is_finite();
     if (anyna) {
         arma::uvec notna = arma::find_finite(y);
@@ -14,10 +14,9 @@ template<class F> void deviance (arma::mat & dev, const arma::mat & mu, const am
     } else {
         dev = family->devresid(y, mu);
     }
-    return dev;
 };
 
-template<class F> arma::mat deviance (const arma::mat & mu, const amra::mat & y, F family) {
+template<class F> arma::mat deviance (const arma::mat & y, const arma::mat & mu, F family) {
     arma::mat dev(arma::size(y));
     deviance(dev, mu, y, family);
     return dev;
