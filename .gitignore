@@ -22,6 +22,7 @@
 .Rproj.user
 .Rproj.user/
 .Rproj.user/**
+.Rproj.user/221B49B7/**
 
 # produced vignettes
 vignettes/*.html
