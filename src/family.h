@@ -12,71 +12,76 @@
 
 namespace Family {
 
+template<class L>
 class Family {
     public:
-        const std::string family;
-        const std::string link = linkclass->link;
-        arma::mat linkfun (const arma::mat & mu) const {return linkclass->linkfun(mu);}
-        arma::mat linkinv (const arma::mat & eta) const {return linkclass->linkinv(eta);}
-        arma::mat mueta (const arma::mat & eta) const {return linkclass->mueta(eta);}
+        std::string family;
+        // std::string link = linkobj->link;
+        arma::mat linkfun (const arma::mat & mu) const {return linkobj.linkfun(mu);}
+        arma::mat linkinv (const arma::mat & eta) const {return linkobj.linkinv(eta);}
+        arma::mat mueta (const arma::mat & eta) const {return linkobj.mueta(eta);}
         virtual arma::mat variance (const arma::mat & mu) const = 0;
         virtual arma::mat devresid (const arma::mat & y, const arma::mat & mu) const = 0;
         virtual arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const = 0;
         virtual arma::mat initialize (const arma::mat & y) const = 0;
         virtual bool validmu (const arma::mat & mu) const = 0;
         virtual bool valideta (const arma::mat & eta) const = 0;
-        Family (std::unique_ptr<Link::Link> & linkobj) : linkclass(std::move(linkobj)) {}
+        Family (const L & link) : linkobj(link) {}
         virtual ~Family () {}
     private:
-        std::unique_ptr<Link::Link> linkclass;
+        L linkobj;
 };
 
-class Gaussian : public Family {
+template<class L>
+class Gaussian : public Family<L> {
     public:
-        const std::string family = "Gaussian";
+        std::string family = "Gaussian";
         arma::mat variance (const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
-        Gaussian (std::unique_ptr<Link::Link> & linkobj) : Family(linkobj) {}
+        Gaussian (const L & link) : Family<L>(link) {}
 };
 
-class Binomial : public Family {
+template<class L>
+class Binomial : public Family<L> {
     public:
-        const std::string family = "Binomial";
+        std::string family = "Binomial";
         arma::mat variance (const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
-        Binomial (std::unique_ptr<Link::Link> & linkobj) : Family(linkobj) {}
+        Binomial (const L & link) : Family<L>(link) {}
 };
 
-class Poisson : public Family {
+template<class L>
+class Poisson : public Family<L> {
     public:
-        const std::string family = "Poisson";
+        std::string family = "Poisson";
         arma::mat variance (const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
-        Poisson (std::unique_ptr<Link::Link> & linkobj) : Family(linkobj) {}
+        Poisson (const L & link) : Family<L>(link) {}
 };
 
-class Gamma : public Family {
+template<class L>
+class Gamma : public Family<L> {
     public:
-        const std::string family = "Gamma";
+        std::string family = "Gamma";
         arma::mat variance (const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
         arma::mat devresid (const arma::mat & y, const arma::mat & mu, const arma::mat & wt) const;
         arma::mat initialize (const arma::mat & y) const;
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
-        Gamma (std::unique_ptr<Link::Link> & linkobj) : Family(linkobj) {}
+        Gamma (const L & link) : Family<L>(link) {}
 };
 
 // Yet to implement: InverseGaussian, Quasi, QuasiBinomial, QuasiPoisson, NegativeBinomial, ...
