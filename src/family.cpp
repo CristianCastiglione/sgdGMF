@@ -107,10 +107,12 @@ arma::mat Family::Gamma<L>::devresid (const arma::mat & y, const arma::mat & mu,
 
 // [[Rcpp::export]]
 arma::vec c_gaussian_variance (const arma::vec & mu) {
-    Link::Identity l; Family::Gaussian f(l); return f.variance(mu);}
+    Link::Identity l; Family::Gaussian f(l); return f.variance(mu);
+}
 // [[Rcpp::export]]
 arma::vec c_gaussian_initialize (const arma::vec & y) {
-    Link::Identity l; Family::Gaussian f(l); return f.initialize(y);}
+    Link::Identity l; Family::Gaussian f(l); return f.initialize(y);
+}
 // [[Rcpp::export]]
 arma::vec c_gaussian_devresid (const arma::vec & y, const arma::vec & mu) {
     Link::Identity l; Family::Gaussian f(l); return f.devresid(y, mu);
@@ -118,10 +120,12 @@ arma::vec c_gaussian_devresid (const arma::vec & y, const arma::vec & mu) {
 
 // [[Rcpp::export]]
 arma::vec c_binomial_variance (const arma::vec & mu) {
-    Link::Logit l; Family::Binomial f(l); return f.variance(mu);}
+    Link::Logit l; Family::Binomial f(l); return f.variance(mu);
+}
 // [[Rcpp::export]]
 arma::vec c_binomial_initialize (const arma::vec & y) {
-    Link::Logit l; Family::Binomial f(l); return f.initialize(y);}
+    Link::Logit l; Family::Binomial f(l); return f.initialize(y);
+}
 // [[Rcpp::export]]
 arma::vec c_binomial_devresid (const arma::vec & y, const arma::vec & mu) {
     Link::Logit l; Family::Binomial f(l); return f.devresid(y, mu);
@@ -129,10 +133,12 @@ arma::vec c_binomial_devresid (const arma::vec & y, const arma::vec & mu) {
 
 // [[Rcpp::export]]
 arma::vec c_poisson_variance (const arma::vec & mu) {
-    Link::Log l; Family::Poisson f(l); return f.variance(mu);}
+    Link::Log l; Family::Poisson f(l); return f.variance(mu);
+}
 // [[Rcpp::export]]
 arma::vec c_poisson_initialize (const arma::vec & y) {
-    Link::Log l; Family::Poisson f(l); return f.initialize(y);}
+    Link::Log l; Family::Poisson f(l); return f.initialize(y);
+}
 // [[Rcpp::export]]
 arma::vec c_poisson_devresid (const arma::vec & y, const arma::vec & mu) {
     Link::Log l; Family::Poisson f(l); return f.devresid(y, mu);
