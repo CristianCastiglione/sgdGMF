@@ -19,11 +19,11 @@ double absmax (const arma::vec & u, const arma::vec & v) {
   return a / b;
 }
 
-arma::mat trim (arma::mat & x, double a, double b) {
+void trim (arma::mat & x, double a, double b) {
   arma::uvec above = arma::find(x > b);
   arma::uvec below = arma::find(x < a);
-  x.elem(above) = b;
-  x.elem(below) = a;
+  x.elem(above).fill(b);
+  x.elem(below).fill(a);
 }
 
 // arma::mat trim (const arma::mat & x, double a, double b) {
