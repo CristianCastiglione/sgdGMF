@@ -49,10 +49,6 @@ c_gamma_devresid <- function(y, mu) {
     .Call(`_sgdGMF_c_gamma_devresid`, y, mu)
 }
 
-c_binomial_logit_loglik <- function(y, eta) {
-    .Call(`_sgdGMF_c_binomial_logit_loglik`, y, eta)
-}
-
 c_link_identity_linkfun <- function(mu) {
     .Call(`_sgdGMF_c_link_identity_linkfun`, mu)
 }
