@@ -411,6 +411,46 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_make_gaussian
+void test_make_gaussian(std::string linkname);
+RcppExport SEXP _sgdGMF_test_make_gaussian(SEXP linknameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
+    test_make_gaussian(linkname);
+    return R_NilValue;
+END_RCPP
+}
+// test_make_binomial
+void test_make_binomial(std::string linkname);
+RcppExport SEXP _sgdGMF_test_make_binomial(SEXP linknameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
+    test_make_binomial(linkname);
+    return R_NilValue;
+END_RCPP
+}
+// test_make_poisson
+void test_make_poisson(std::string linkname);
+RcppExport SEXP _sgdGMF_test_make_poisson(SEXP linknameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
+    test_make_poisson(linkname);
+    return R_NilValue;
+END_RCPP
+}
+// test_make_gamma
+void test_make_gamma(std::string linkname);
+RcppExport SEXP _sgdGMF_test_make_gamma(SEXP linknameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
+    test_make_gamma(linkname);
+    return R_NilValue;
+END_RCPP
+}
 // c_dabsmax
 double c_dabsmax(const double& u, const double& v);
 RcppExport SEXP _sgdGMF_c_dabsmax(SEXP uSEXP, SEXP vSEXP) {
@@ -780,6 +820,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_link_sqrt_linkfun", (DL_FUNC) &_sgdGMF_c_link_sqrt_linkfun, 1},
     {"_sgdGMF_c_link_sqrt_linkinv", (DL_FUNC) &_sgdGMF_c_link_sqrt_linkinv, 1},
     {"_sgdGMF_c_link_sqrt_mueta", (DL_FUNC) &_sgdGMF_c_link_sqrt_mueta, 1},
+    {"_sgdGMF_test_make_gaussian", (DL_FUNC) &_sgdGMF_test_make_gaussian, 1},
+    {"_sgdGMF_test_make_binomial", (DL_FUNC) &_sgdGMF_test_make_binomial, 1},
+    {"_sgdGMF_test_make_poisson", (DL_FUNC) &_sgdGMF_test_make_poisson, 1},
+    {"_sgdGMF_test_make_gamma", (DL_FUNC) &_sgdGMF_test_make_gamma, 1},
     {"_sgdGMF_c_dabsmax", (DL_FUNC) &_sgdGMF_c_dabsmax, 2},
     {"_sgdGMF_c_vabsmax", (DL_FUNC) &_sgdGMF_c_vabsmax, 2},
     {"_sgdGMF_c_trim", (DL_FUNC) &_sgdGMF_c_trim, 3},

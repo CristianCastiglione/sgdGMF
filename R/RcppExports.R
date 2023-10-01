@@ -145,6 +145,22 @@ c_link_sqrt_mueta <- function(eta) {
     .Call(`_sgdGMF_c_link_sqrt_mueta`, eta)
 }
 
+test_make_gaussian <- function(linkname) {
+    invisible(.Call(`_sgdGMF_test_make_gaussian`, linkname))
+}
+
+test_make_binomial <- function(linkname) {
+    invisible(.Call(`_sgdGMF_test_make_binomial`, linkname))
+}
+
+test_make_poisson <- function(linkname) {
+    invisible(.Call(`_sgdGMF_test_make_poisson`, linkname))
+}
+
+test_make_gamma <- function(linkname) {
+    invisible(.Call(`_sgdGMF_test_make_gamma`, linkname))
+}
+
 c_dabsmax <- function(u, v) {
     .Call(`_sgdGMF_c_dabsmax`, u, v)
 }

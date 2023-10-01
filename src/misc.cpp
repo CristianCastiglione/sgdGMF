@@ -1,0 +1,63 @@
+// misc.cpp
+// author: Cristian Castiglione
+// creation: 30/09/2023
+// last change: 30/09/2023
+
+#include "misc.h"
+
+template<class F>
+void set_data_bounds (
+    double & mulo, double & muup, double & etalo, double & etaup, 
+    const double & eps, const double & ymin, const double & ymax, F family
+) {
+    // We compute the lower and upper bounds on a matrices of dim 1x1,
+    // since we need to back-transform them using the family->linkfun()
+    // method, which is defined only for arma::mat objects
+    arma::mat mulot(1,1), muupt(1,1);
+    arma::mat etalot(1,1), etaupt(1,1);
+    
+    // Mean boundas
+    muupt(0,0) = ymax - eps * (ymax - ymin);
+    mulot(0,0) = ymin + eps * (ymax - ymin);
+    
+    // Linear predictor boundas
+    etalot = family.linkfun(mulot);
+    etaupt = family.linkfun(muupt);
+
+    // Inplace sssignment
+    mulo = mulot(0,0); muup = muupt(0,0);
+    etalo = etalot(0,0); etaup = etaupt(0,0);
+}
+
+void set_uv_matrices (
+    arma::mat & u, arma::mat & v,
+    const arma::mat & A, const arma::mat & Z,
+    const arma::mat & X, const arma::mat & B,
+    const arma::mat & U, const arma::mat & V
+) {
+    u = arma::join_rows(X, A, U);
+    v = arma::join_rows(B, Z, V);
+}
+
+
+void set_uv_indices (
+    arma::uvec & idu, arma::uvec & idv, 
+    const int & p, const int & q, const int & d
+) {
+    idu = join_cols(arma::linspace<arma::uvec>(p, p+q-1, q), arma::linspace<arma::uvec>(p+q, p+q+d, d));
+    idv = join_cols(arma::linspace<arma::uvec>(0, p, p), arma::linspace<arma::uvec>(p+q, p+q+d, d));
+}
+
+void set_uv_penalty (
+    arma::vec & penu, arma::vec & penv, const arma::vec & pen,
+    const int & p, const int & q, const int & d
+) {
+    double penA, penB, penU, penV;
+    penA = pen(0); penB = pen(1); penU = pen(2); penV = pen(3);
+    penu = join_cols(arma::zeros(p), penA * arma::ones(q), penU * arma::ones(d));
+    penu = join_cols(penB * arma::zeros(p), arma::ones(q), penV * arma::ones(d));
+}
+
+double exetime (const clock_t & start, const clock_t & end) {
+    return static_cast<double>(end - start) / CLOCKS_PER_SEC;
+}
