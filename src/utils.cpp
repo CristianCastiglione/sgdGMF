@@ -34,11 +34,14 @@ void trim (arma::mat & x, double a, double b) {
   x.elem(below).fill(a);
 }
 
-// arma::mat trim (const arma::mat & x, double a, double b) {
-//   arma::mat xa = arma::conv_to<arma::mat>::from(x <= a);
-//   arma::mat xb = arma::conv_to<arma::mat>::from(x >= b);
-//   return a * xa + b * xb + x % (1 - xa - xb);
-// }
+arma::mat xlogx (const arma::mat & x){
+  arma::mat y = x;
+  arma::uvec above = arma::find(x >  0);
+  arma::uvec below = arma::find(x <= 0);
+  y.elem(above) = x.elem(above) % arma::log(x.elem(above));
+  y.elem(below).fill(0);
+  return y;
+}
 
 arma::mat log1pexp (const arma::mat & x) {
   bool stable = false;

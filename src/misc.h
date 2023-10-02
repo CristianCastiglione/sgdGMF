@@ -41,3 +41,8 @@ void set_uv_penalty (
 
 // Convert the cpu clock-time in the elapsed execution time (seconds)
 double exetime (const clock_t & start, const clock_t & end);
+
+// Print the optimization state
+void print_state (
+    const int & iter, const double & div, 
+    const double & change, const double & time);

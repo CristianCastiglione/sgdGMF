@@ -19,6 +19,9 @@ arma::vec c_trim (const arma::vec & x, double a, double b) {
 }
 
 // [[Rcpp::export]]
+arma::vec c_xlogx (const arma::vec & x) {return utils::xlogx(x);}
+
+// [[Rcpp::export]]
 arma::vec c_log1pexp (const arma::vec & x) {return utils::log1pexp(x);}
 
 // [[Rcpp::export]]

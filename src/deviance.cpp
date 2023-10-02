@@ -24,13 +24,13 @@ arma::mat deviance (
     const std::unique_ptr<Family::Family> & family
 ) {
     arma::mat dev(arma::size(y));
-    deviance(dev, mu, y, family);
+    deviance(dev, y, mu, family);
     return dev;
 }
 
 // Penalty matrix
 void penalty (double & pen, const arma::mat & u, const arma::vec & p) {
-    pen = arma::sum(p % arma::sum(u % u));
+    pen = arma::accu((u % u) * arma::diagmat(p));
 };
 
 double penalty (const arma::mat & u, const arma::vec & p) {

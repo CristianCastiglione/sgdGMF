@@ -11,6 +11,31 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// c_deviance
+arma::mat c_deviance(const arma::mat& y, const arma::mat& mu, const std::string& familyname);
+RcppExport SEXP _sgdGMF_c_deviance(SEXP ySEXP, SEXP muSEXP, SEXP familynameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_deviance(y, mu, familyname));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_penalty
+double c_penalty(const arma::mat& u, const arma::vec& p);
+RcppExport SEXP _sgdGMF_c_penalty(SEXP uSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_penalty(u, p));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_gaussian_variance
 arma::vec c_gaussian_variance(const arma::vec& mu);
 RcppExport SEXP _sgdGMF_c_gaussian_variance(SEXP muSEXP) {
@@ -465,12 +490,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // c_fit_newton
-Rcpp::List c_fit_newton(arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency);
+Rcpp::List c_fit_newton(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency);
 RcppExport SEXP _sgdGMF_c_fit_newton(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
@@ -527,6 +552,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type a(aSEXP);
     Rcpp::traits::input_parameter< double >::type b(bSEXP);
     rcpp_result_gen = Rcpp::wrap(c_trim(x, a, b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_xlogx
+arma::vec c_xlogx(const arma::vec& x);
+RcppExport SEXP _sgdGMF_c_xlogx(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_xlogx(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -826,6 +862,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_sgdGMF_c_deviance", (DL_FUNC) &_sgdGMF_c_deviance, 3},
+    {"_sgdGMF_c_penalty", (DL_FUNC) &_sgdGMF_c_penalty, 2},
     {"_sgdGMF_c_gaussian_variance", (DL_FUNC) &_sgdGMF_c_gaussian_variance, 1},
     {"_sgdGMF_c_gaussian_initialize", (DL_FUNC) &_sgdGMF_c_gaussian_initialize, 1},
     {"_sgdGMF_c_gaussian_devresid", (DL_FUNC) &_sgdGMF_c_gaussian_devresid, 2},
@@ -870,6 +908,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_dabsmax", (DL_FUNC) &_sgdGMF_c_dabsmax, 2},
     {"_sgdGMF_c_vabsmax", (DL_FUNC) &_sgdGMF_c_vabsmax, 2},
     {"_sgdGMF_c_trim", (DL_FUNC) &_sgdGMF_c_trim, 3},
+    {"_sgdGMF_c_xlogx", (DL_FUNC) &_sgdGMF_c_xlogx, 1},
     {"_sgdGMF_c_log1pexp", (DL_FUNC) &_sgdGMF_c_log1pexp, 1},
     {"_sgdGMF_c_log1mexp", (DL_FUNC) &_sgdGMF_c_log1mexp, 1},
     {"_sgdGMF_c_logit", (DL_FUNC) &_sgdGMF_c_logit, 1},

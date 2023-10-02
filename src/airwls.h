@@ -18,15 +18,15 @@
 
 class AIRWLS {
     public:
-        int maxiter = 500;
+        int maxiter = 250;
         int nsteps = 1;
         double stepsize = 0.1;
-        double eps = 0.01;
+        double eps = 1e-08;
         int nafill = 1;
         double tol = 1e-05;
         double damping = 1e-03;
         bool verbose = true;
-        int frequency = 10;
+        int frequency = 25;
 
         // Basic weighted least-squares solver for GLM steps
         void wlsfit (
@@ -58,20 +58,20 @@ class AIRWLS {
         
         // Class constructor
         AIRWLS (
-            const int & maxiter = 500, const int & nsteps = 1, 
-            const int & stepsize = 0.01, const double & eps = 1e-02, 
+            const int & maxiter = 250, const int & nsteps = 1, 
+            const int & stepsize = 0.01, const double & eps = 1e-08, 
             const int & nafill = 1, const double & tol = 1e-05, 
             const double & damping = 1e-03, const bool & verbose = true, 
-            const int & frequency = 10
+            const int & frequency = 25
         ) {
-            if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 500;}
+            if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 250;}
             if (nsteps > 0) {this->nsteps = nsteps;} else {this->nsteps = 1;}
             if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}
-            if (eps >= 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-02;}
+            if (eps >= 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
             if (nafill > 0) {this->nafill = nafill;} else {this->nafill = 1;}
             if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
             if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
-            if (frequency > 1) {this->frequency = frequency;} else {this->frequency = 10;}
+            if (frequency > 1) {this->frequency = frequency;} else {this->frequency = 25;}
             this->verbose = verbose;
         }
 };

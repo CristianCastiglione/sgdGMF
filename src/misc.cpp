@@ -86,3 +86,14 @@ void set_uv_penalty (
 double exetime (const clock_t & start, const clock_t & end) {
     return static_cast<double>(end - start) / CLOCKS_PER_SEC;
 }
+
+void print_state (
+    const int & iter, const double & dev, 
+    const double & change, const double & time
+) {
+    if (time < 60) {
+        std::printf(" %9i %11.2f %8.4f %8.2f s \n", iter, dev, change, time);
+    } else {
+        std::printf(" %9i %11.2f %8.4f %8.2f m \n", iter, dev, change, time/60);
+    }
+}

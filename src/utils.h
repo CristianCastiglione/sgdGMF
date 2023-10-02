@@ -30,6 +30,9 @@ void trim (arma::mat & x, double a, double b);
 double norm (const arma::mat & x);
 double norm (const arma::mat & x, const double & p);
 
+// Stable calculation of x*log(x), with 0*log(0) = 0;
+arma::mat xlogx (const arma::mat & x);
+
 // Stable calculation of log(1 + exp(x))
 arma::mat log1pexp (const arma::mat & x);
 
