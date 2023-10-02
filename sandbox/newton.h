@@ -31,15 +31,16 @@ class Newton {
             const arma::mat & deta, const arma::mat & ddeta, 
             const double & stepsize, const double & damping);
 
-        template<class F>
+        template<class F, class L>
         Rcpp::List fit (
             arma::mat & Y, // to fill NA values we need Y to be non-const
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const F & family, const int & ncomp, const arma::vec & lambda);
+            const F & family, const L & link,
+            const int & ncomp, const arma::vec & lambda);
         
-        Newton ();
+        Newton () {}
         Newton (
             const int & maxiter = 500, const int & stepsize = 0.01, const double & eps = 1e-02,
             const int & nafill = 1, const double & tol = 1e-05, const double & damping = 1e-03,

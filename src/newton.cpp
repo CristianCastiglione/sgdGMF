@@ -5,11 +5,27 @@
 
 #include "newton.h"
 
+void Newton::check (
+    const int & maxiter, const int & stepsize, 
+    const double & eps, const int & nafill, 
+    const double & tol, const double & damping,
+    const bool & verbose, const int & frequency
+) {
+    if (maxiter <= 0) {Rcpp::stop("Invalid parameter value: maxiter");}
+    if (stepsize <= 0) {Rcpp::stop("Invalid parameter value: stepsize");}
+    if (eps < 0 && eps >= 0.5) {Rcpp::stop("Invalid parameter value: eps");}
+    if (nafill <= 0) {Rcpp::stop("Invalid parameter value: nafill");}
+    if (tol <= 0) {Rcpp::stop("Invalid parameter value: tol");}
+    if (damping < 0) {Rcpp::stop("Invalid parameter value: damping");}
+    if (frequency < 1) {Rcpp::stop("Invalid parameter value: frequency");}
+}
+
 void Newton::update (
     arma::mat & u, const arma::mat & v, 
     const arma::vec & pen, const arma::uvec & idx,
     const arma::mat & deta, const arma::mat & ddeta, 
-    const double & stepsize, const double & damping) {
+    const double & stepsize, const double & damping
+) {
 
     unsigned int n = u.n_rows;
     unsigned int m = idx.n_rows;
@@ -26,11 +42,18 @@ Rcpp::List Newton::fit (
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
     const F & family, const L & link, 
-    const int & ncomp, const arma::vec & lambda
+    const int & ncomp, const arma::vec & lambda,
+    const int & maxiter, const int & stepsize, 
+    const double & eps, const int & nafill, 
+    const double & tol, const double & damping,
+    const bool & verbose, const int & frequency
 ) {
 
     // Get the initial CPU time
     clock_t start = clock();
+
+    // Safety check
+    Newton::check(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency);
 
     // Get the data dimensions
     const unsigned int n, m, nm, d, p, q;
@@ -115,8 +138,8 @@ Rcpp::List Newton::fit (
         ddeta = (mueta % mueta) / var;
 
         // Update U and V elementwise via quasi-Newton
-        this->update(ut, v, penu, idu, deta, ddeta, stepsize, damping);
-        this->update(vt, u, penv, idv, deta.t(), ddeta.t(), stepsize, damping);
+        Newton::update(ut, v, penu, idu, deta, ddeta, stepsize, damping);
+        Newton::update(vt, u, penv, idv, deta.t(), ddeta.t(), stepsize, damping);
         u = ut;
         v = vt;
 

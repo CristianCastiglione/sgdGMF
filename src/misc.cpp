@@ -1,14 +1,40 @@
 // misc.cpp
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 30/09/2023
+// last change: 01/10/2023
 
 #include "misc.h"
 
-template<class F>
+
+std::unique_ptr<Link::Link> make_link (const std::string & linkname) {
+    std::unique_ptr<Link::Link> ptr;
+    if (linkname == "identity") { ptr = std::make_unique<Link::Identity>();
+    } else if (linkname == "logit") { ptr = std::make_unique<Link::Logit>();
+    } else if (linkname == "probit") { ptr = std::make_unique<Link::Probit>();
+    } else if (linkname == "cauchit") { ptr = std::make_unique<Link::Cauchy>();
+    } else if (linkname == "cloglog") { ptr = std::make_unique<Link::cLogLog>();
+    } else if (linkname == "log") { ptr = std::make_unique<Link::Log>();
+    } else if (linkname == "inverse") { ptr = std::make_unique<Link::Inverse>();
+    } else if (linkname == "sqrt") { ptr = std::make_unique<Link::Sqrt>();
+    } else { Rcpp::stop("Link function not available."); }
+    return ptr;
+}
+
+std::unique_ptr<Family::Family> make_family (const std::string & familyname) {
+    std::unique_ptr<Family::Family> ptr;
+    if (familyname == "gaussian") { ptr = std::make_unique<Family::Gaussian>();
+    } else if (familyname == "binomial") { ptr = std::make_unique<Family::Binomial>();
+    } else if (familyname == "poisson") { ptr = std::make_unique<Family::Poisson>();
+    } else if (familyname == "gamma") { ptr = std::make_unique<Family::Gamma>();
+    } else { Rcpp::stop("Family not available."); }
+    return ptr;
+}
+
 void set_data_bounds (
     double & mulo, double & muup, double & etalo, double & etaup, 
-    const double & eps, const double & ymin, const double & ymax, F family
+    const double & eps, const double & ymin, const double & ymax, 
+    const std::unique_ptr<Family::Family> & family, 
+    const std::unique_ptr<Link::Link> & link
 ) {
     // We compute the lower and upper bounds on a matrices of dim 1x1,
     // since we need to back-transform them using the family->linkfun()
@@ -21,8 +47,8 @@ void set_data_bounds (
     mulot(0,0) = ymin + eps * (ymax - ymin);
     
     // Linear predictor boundas
-    etalot = family.linkfun(mulot);
-    etaupt = family.linkfun(muupt);
+    etalot = link->linkfun(mulot);
+    etaupt = link->linkfun(muupt);
 
     // Inplace sssignment
     mulo = mulot(0,0); muup = muupt(0,0);
@@ -39,13 +65,12 @@ void set_uv_matrices (
     v = arma::join_rows(B, Z, V);
 }
 
-
 void set_uv_indices (
     arma::uvec & idu, arma::uvec & idv, 
     const int & p, const int & q, const int & d
 ) {
-    idu = join_cols(arma::linspace<arma::uvec>(p, p+q-1, q), arma::linspace<arma::uvec>(p+q, p+q+d, d));
-    idv = join_cols(arma::linspace<arma::uvec>(0, p, p), arma::linspace<arma::uvec>(p+q, p+q+d, d));
+    idu = join_cols(arma::linspace<arma::uvec>(p, p+q-1, q), arma::linspace<arma::uvec>(p+q, p+q+d-1, d));
+    idv = join_cols(arma::linspace<arma::uvec>(0, p-1, p), arma::linspace<arma::uvec>(p+q, p+q+d-1, d));
 }
 
 void set_uv_penalty (
@@ -55,7 +80,7 @@ void set_uv_penalty (
     double penA, penB, penU, penV;
     penA = pen(0); penB = pen(1); penU = pen(2); penV = pen(3);
     penu = join_cols(arma::zeros(p), penA * arma::ones(q), penU * arma::ones(d));
-    penu = join_cols(penB * arma::zeros(p), arma::ones(q), penV * arma::ones(d));
+    penv = join_cols(penB * arma::ones(p), arma::zeros(q), penV * arma::ones(d));
 }
 
 double exetime (const clock_t & start, const clock_t & end) {

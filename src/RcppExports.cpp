@@ -411,44 +411,86 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// test_make_gaussian
-void test_make_gaussian(std::string linkname);
-RcppExport SEXP _sgdGMF_test_make_gaussian(SEXP linknameSEXP) {
+// c_make_link_family
+void c_make_link_family(const std::string& linkname, const std::string& familyname);
+RcppExport SEXP _sgdGMF_c_make_link_family(SEXP linknameSEXP, SEXP familynameSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
-    test_make_gaussian(linkname);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    c_make_link_family(linkname, familyname);
     return R_NilValue;
 END_RCPP
 }
-// test_make_binomial
-void test_make_binomial(std::string linkname);
-RcppExport SEXP _sgdGMF_test_make_binomial(SEXP linknameSEXP) {
+// c_get_data_bounds
+Rcpp::List c_get_data_bounds(const double& eps, const double& ymin, const double& ymax, const std::string& familyname, const std::string& linkname);
+RcppExport SEXP _sgdGMF_c_get_data_bounds(SEXP epsSEXP, SEXP yminSEXP, SEXP ymaxSEXP, SEXP familynameSEXP, SEXP linknameSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
-    test_make_binomial(linkname);
-    return R_NilValue;
+    Rcpp::traits::input_parameter< const double& >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type ymin(yminSEXP);
+    Rcpp::traits::input_parameter< const double& >::type ymax(ymaxSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_get_data_bounds(eps, ymin, ymax, familyname, linkname));
+    return rcpp_result_gen;
 END_RCPP
 }
-// test_make_poisson
-void test_make_poisson(std::string linkname);
-RcppExport SEXP _sgdGMF_test_make_poisson(SEXP linknameSEXP) {
+// c_get_uv_penalty
+Rcpp::List c_get_uv_penalty(const arma::vec& pen, const int& p, const int& q, const int& d);
+RcppExport SEXP _sgdGMF_c_get_uv_penalty(SEXP penSEXP, SEXP pSEXP, SEXP qSEXP, SEXP dSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
-    test_make_poisson(linkname);
-    return R_NilValue;
+    Rcpp::traits::input_parameter< const arma::vec& >::type pen(penSEXP);
+    Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type q(qSEXP);
+    Rcpp::traits::input_parameter< const int& >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_get_uv_penalty(pen, p, q, d));
+    return rcpp_result_gen;
 END_RCPP
 }
-// test_make_gamma
-void test_make_gamma(std::string linkname);
-RcppExport SEXP _sgdGMF_test_make_gamma(SEXP linknameSEXP) {
+// c_get_uv_indices
+Rcpp::List c_get_uv_indices(const int& p, const int& q, const int& d);
+RcppExport SEXP _sgdGMF_c_get_uv_indices(SEXP pSEXP, SEXP qSEXP, SEXP dSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type linkname(linknameSEXP);
-    test_make_gamma(linkname);
-    return R_NilValue;
+    Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type q(qSEXP);
+    Rcpp::traits::input_parameter< const int& >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_get_uv_indices(p, q, d));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_fit_newton
+Rcpp::List c_fit_newton(arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency);
+RcppExport SEXP _sgdGMF_c_fit_newton(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< const double& >::type stepsize(stepsizeSEXP);
+    Rcpp::traits::input_parameter< const double& >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const double& >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit_newton(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency));
+    return rcpp_result_gen;
 END_RCPP
 }
 // c_dabsmax
@@ -820,10 +862,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_link_sqrt_linkfun", (DL_FUNC) &_sgdGMF_c_link_sqrt_linkfun, 1},
     {"_sgdGMF_c_link_sqrt_linkinv", (DL_FUNC) &_sgdGMF_c_link_sqrt_linkinv, 1},
     {"_sgdGMF_c_link_sqrt_mueta", (DL_FUNC) &_sgdGMF_c_link_sqrt_mueta, 1},
-    {"_sgdGMF_test_make_gaussian", (DL_FUNC) &_sgdGMF_test_make_gaussian, 1},
-    {"_sgdGMF_test_make_binomial", (DL_FUNC) &_sgdGMF_test_make_binomial, 1},
-    {"_sgdGMF_test_make_poisson", (DL_FUNC) &_sgdGMF_test_make_poisson, 1},
-    {"_sgdGMF_test_make_gamma", (DL_FUNC) &_sgdGMF_test_make_gamma, 1},
+    {"_sgdGMF_c_make_link_family", (DL_FUNC) &_sgdGMF_c_make_link_family, 2},
+    {"_sgdGMF_c_get_data_bounds", (DL_FUNC) &_sgdGMF_c_get_data_bounds, 5},
+    {"_sgdGMF_c_get_uv_penalty", (DL_FUNC) &_sgdGMF_c_get_uv_penalty, 4},
+    {"_sgdGMF_c_get_uv_indices", (DL_FUNC) &_sgdGMF_c_get_uv_indices, 3},
+    {"_sgdGMF_c_fit_newton", (DL_FUNC) &_sgdGMF_c_fit_newton, 19},
     {"_sgdGMF_c_dabsmax", (DL_FUNC) &_sgdGMF_c_dabsmax, 2},
     {"_sgdGMF_c_vabsmax", (DL_FUNC) &_sgdGMF_c_vabsmax, 2},
     {"_sgdGMF_c_trim", (DL_FUNC) &_sgdGMF_c_trim, 3},

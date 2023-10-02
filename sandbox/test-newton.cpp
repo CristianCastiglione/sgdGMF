@@ -1,10 +1,9 @@
 // test-newton.cpp
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 30/09/2023
+// last change: 01/10/2023
 
 #include "newton.h"
-#include "rcppglm.h"
 
 // [[Rcpp::export]]
 Rcpp::List c_fit_newton (
@@ -25,55 +24,28 @@ Rcpp::List c_fit_newton (
     const bool & verbose = true,
     const int & frequency = 10
 ) {
+    // Instantiate the output object
     Rcpp::List output;
 
-    // Instantiate the Newton object and perform the optimization
+    // Instantiate the Newton object
     Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency);
-    
-    /*
-    // Get the correct Family::Family object matching familyname and linkname
-    if (familyname == "gaussian") {
-        Rcpp::XPtr<Family::Gaussian> family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
-    } else if (familyname == "binomial") {
-        Rcpp::XPtr<Family::Binomial> family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
-    } else if (familyname == "poisson") {
-        Rcpp::XPtr<Family::Poisson> family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
-    } else if (familyname == "gamma") {
-        Rcpp::XPtr<Family::Gamma> family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
-    } else {
-        Rcpp::stop("Model family not available.");
-    }
-    */
 
-    // Get the correct Family::Family object matching familyname and linkname
+    // Instantiate the Family::Gaussian object
     if (familyname == "gaussian") {
-        Family::Gaussian family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
+        Family::Gaussian family; Link::Identity link;
+        output = newton.fit(Y, X, B, A, Z, U, V, family, link, ncomp, lambda);
     } else if (familyname == "binomial") {
-        Family::Binomial family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
+        Family::Binomial family; Link::Logit link;
+        output = newton.fit(Y, X, B, A, Z, U, V, family, link, ncomp, lambda);
     } else if (familyname == "poisson") {
-        Family::Poisson family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
+        Family::Poisson family; Link::Log link;
+        output = newton.fit(Y, X, B, A, Z, U, V, family, link, ncomp, lambda);
     } else if (familyname == "gamma") {
-        Family::Gamma family = make_gaussian(linkname);
-        output = newton.fit(Y, X, B, A, Z, U, V, *family, ncomp, lambda);
+        Family::Gamma family; Link::Log link;
+        output = newton.fit(Y, X, B, A, Z, U, V, family, link, ncomp, lambda);
     } else {
-        Rcpp::stop("Model family not available.");
+        Rcpp::stop("Family-link not available.");
     }
-
-    // F family
-    // switch (familyname) {
-    //     case "gaussian": family = make_gaussian(linkname); break;
-    //     case "binomial": family = make_binomial(linkname); break;
-    //     case "poisson": family = make_poisson(linkname); break;
-    //     case "gamma": family = make_gamma(linkname); break;
-    //     default: break;
-    // }
 
     // Return the estimated model
     return output;

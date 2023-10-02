@@ -145,20 +145,24 @@ c_link_sqrt_mueta <- function(eta) {
     .Call(`_sgdGMF_c_link_sqrt_mueta`, eta)
 }
 
-test_make_gaussian <- function(linkname) {
-    invisible(.Call(`_sgdGMF_test_make_gaussian`, linkname))
+c_make_link_family <- function(linkname, familyname) {
+    invisible(.Call(`_sgdGMF_c_make_link_family`, linkname, familyname))
 }
 
-test_make_binomial <- function(linkname) {
-    invisible(.Call(`_sgdGMF_test_make_binomial`, linkname))
+c_get_data_bounds <- function(eps, ymin, ymax, familyname, linkname) {
+    .Call(`_sgdGMF_c_get_data_bounds`, eps, ymin, ymax, familyname, linkname)
 }
 
-test_make_poisson <- function(linkname) {
-    invisible(.Call(`_sgdGMF_test_make_poisson`, linkname))
+c_get_uv_penalty <- function(pen, p, q, d) {
+    .Call(`_sgdGMF_c_get_uv_penalty`, pen, p, q, d)
 }
 
-test_make_gamma <- function(linkname) {
-    invisible(.Call(`_sgdGMF_test_make_gamma`, linkname))
+c_get_uv_indices <- function(p, q, d) {
+    .Call(`_sgdGMF_c_get_uv_indices`, p, q, d)
+}
+
+c_fit_newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 0.01, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L) {
+    .Call(`_sgdGMF_c_fit_newton`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency)
 }
 
 c_dabsmax <- function(u, v) {

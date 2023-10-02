@@ -49,7 +49,7 @@ class Cauchy : public Link {
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
-        Cauchy () {this->link = "Cauchy";}
+        Cauchy () {this->link = "Cauchit";}
 };
 
 class cLogLog : public Link {
