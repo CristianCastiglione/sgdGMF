@@ -26,6 +26,10 @@ double absmax (const arma::vec & u, const arma::vec & v);
 void trim (arma::mat & x, double a, double b);
 // arma::mat trim (const arma::mat & x, double a, double b);
 
+// Lp norm of a vector/matrix
+double norm (const arma::mat & x);
+double norm (const arma::mat & x, const double & p);
+
 // Stable calculation of log(1 + exp(x))
 arma::mat log1pexp (const arma::mat & x);
 

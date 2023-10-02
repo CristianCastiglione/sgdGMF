@@ -19,6 +19,14 @@ double absmax (const arma::vec & u, const arma::vec & v) {
   return a / b;
 }
 
+double norm (const arma::mat & x) {
+  return std::sqrt(arma::accu(arma::square(x)));
+}
+
+double norm (const arma::mat & x, const double & p) {
+  return std::pow(arma::accu(arma::pow(x, p)), 1/p);
+}
+
 void trim (arma::mat & x, double a, double b) {
   arma::uvec above = arma::find(x > b);
   arma::uvec below = arma::find(x < a);

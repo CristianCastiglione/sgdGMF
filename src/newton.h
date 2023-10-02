@@ -1,7 +1,7 @@
 // newton.h
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 01/10/2023
+// last change: 02/10/2023
 
 #ifndef NEWTON_H
 #define NEWTON_H
