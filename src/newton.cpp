@@ -1,7 +1,7 @@
 // newton.cpp
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 30/09/2023
+// last change: 02/10/2023
 
 #include "newton.h"
 
