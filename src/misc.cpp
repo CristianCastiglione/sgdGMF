@@ -36,21 +36,21 @@ void set_data_bounds (
     const double & eps, const double & ymin, const double & ymax, 
     const std::unique_ptr<Family::Family> & family
 ) {
-    // We compute the lower and upper bounds on a matrices of dim 1x1,
+    // We compute the lower and upper bounds on matrices of dim 1x1,
     // since we need to back-transform them using the family->linkfun()
     // method, which is defined only for arma::mat objects
     arma::mat mulot(1,1), muupt(1,1);
     arma::mat etalot(1,1), etaupt(1,1);
     
-    // Mean boundas
+    // Mean bounds
     muupt(0,0) = ymax - eps * (ymax - ymin);
     mulot(0,0) = ymin + eps * (ymax - ymin);
     
-    // Linear predictor boundas
+    // Linear predictor bounds
     etalot = family->linkfun(mulot);
     etaupt = family->linkfun(muupt);
 
-    // Inplace sssignment
+    // Inplace assignment
     mulo = mulot(0,0); muup = muupt(0,0);
     etalo = etalot(0,0); etaup = etaupt(0,0);
 }
