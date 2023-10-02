@@ -11,10 +11,10 @@
 #include "family.h"
 
 // Pointwise deviance
-template<class F> void deviance (
+void deviance (
     arma::mat & dev, const arma::mat & y, const arma::mat & mu, 
     const std::unique_ptr<Family::Family> & family);
-template<class F> arma::mat deviance (
+arma::mat deviance (
     const arma::mat & y, const arma::mat & mu, 
     const std::unique_ptr<Family::Family> & family);
 

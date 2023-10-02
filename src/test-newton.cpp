@@ -25,11 +25,13 @@ Rcpp::List c_fit_newton (
     const int & frequency = 10
 ) {
     // Instantiate the output object
-    Rcpp::List output;
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
     // std::unique_ptr<Link::Link> link = std::make_unique<Link::Identity>();
     // std::unique_ptr<Family::Family> family = std::make_unique<Family::Gausian>(link); 
     
+    Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency);
+    Rcpp::List output = newton.fit(Y, X, B, A, Z, U, V, family, ncomp, lambda);
+
     // output = Newton::fit(
     //     Y, X, B, A, Z, U, V, family, link, ncomp, 
     //     lambda, maxiter, stepsize, eps, nafill, 
