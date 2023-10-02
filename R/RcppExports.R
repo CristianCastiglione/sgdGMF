@@ -145,8 +145,8 @@ c_link_sqrt_mueta <- function(eta) {
     .Call(`_sgdGMF_c_link_sqrt_mueta`, eta)
 }
 
-c_make_link_family <- function(linkname, familyname) {
-    invisible(.Call(`_sgdGMF_c_make_link_family`, linkname, familyname))
+c_make_link_family <- function(familyname, linkname) {
+    invisible(.Call(`_sgdGMF_c_make_link_family`, familyname, linkname))
 }
 
 c_get_data_bounds <- function(eps, ymin, ymax, familyname, linkname) {

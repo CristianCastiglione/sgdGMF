@@ -26,8 +26,9 @@ Rcpp::List c_fit_newton (
 ) {
     // Instantiate the output object
     Rcpp::List output;
-    Family::Gaussian family; 
-    Link::Identity link;
+    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    // std::unique_ptr<Link::Link> link = std::make_unique<Link::Identity>();
+    // std::unique_ptr<Family::Family> family = std::make_unique<Family::Gausian>(link); 
     
     // output = Newton::fit(
     //     Y, X, B, A, Z, U, V, family, link, ncomp, 

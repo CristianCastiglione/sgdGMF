@@ -20,21 +20,21 @@ std::unique_ptr<Link::Link> make_link (const std::string & linkname) {
     return ptr;
 }
 
-std::unique_ptr<Family::Family> make_family (const std::string & familyname, const std::string & linkname) {
-    std::unique_ptr<Link::Link> link = make_link(linkname);
-    std::unique_ptr<Family::Family> family;
-    if (familyname == "gaussian") { family = std::make_unique<Family::Gaussian>(link);
-    } else if (familyname == "binomial") { family = std::make_unique<Family::Binomial>(link);
-    } else if (familyname == "poisson") { family = std::make_unique<Family::Poisson>(link);
-    } else if (familyname == "gamma") { family = std::make_unique<Family::Gamma>(link);
+std::unique_ptr<Family::Family> make_family (const std::string & familyname) {
+    std::unique_ptr<Family::Family> ptr;
+    if (familyname == "gaussian") { ptr = std::make_unique<Family::Gaussian>();
+    } else if (familyname == "binomial") { ptr = std::make_unique<Family::Binomial>();
+    } else if (familyname == "poisson") { ptr = std::make_unique<Family::Poisson>();
+    } else if (familyname == "gamma") { ptr = std::make_unique<Family::Gamma>();
     } else { Rcpp::stop("Family not available."); }
-    return family;
+    return ptr;
 }
 
 void set_data_bounds (
     double & mulo, double & muup, double & etalo, double & etaup, 
     const double & eps, const double & ymin, const double & ymax, 
-    const std::unique_ptr<Family::Family> & family
+    const std::unique_ptr<Family::Family> & family, 
+    const std::unique_ptr<Link::Link> & link
 ) {
     // We compute the lower and upper bounds on a matrices of dim 1x1,
     // since we need to back-transform them using the family->linkfun()
@@ -47,8 +47,8 @@ void set_data_bounds (
     mulot(0,0) = ymin + eps * (ymax - ymin);
     
     // Linear predictor boundas
-    etalot = family->linkfun(mulot);
-    etaupt = family->linkfun(muupt);
+    etalot = link->linkfun(mulot);
+    etaupt = link->linkfun(muupt);
 
     // Inplace sssignment
     mulo = mulot(0,0); muup = muupt(0,0);

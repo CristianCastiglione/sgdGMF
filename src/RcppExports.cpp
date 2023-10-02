@@ -412,13 +412,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // c_make_link_family
-void c_make_link_family(const std::string& linkname, const std::string& familyname);
-RcppExport SEXP _sgdGMF_c_make_link_family(SEXP linknameSEXP, SEXP familynameSEXP) {
+void c_make_link_family(const std::string& familyname, const std::string& linkname);
+RcppExport SEXP _sgdGMF_c_make_link_family(SEXP familynameSEXP, SEXP linknameSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
-    c_make_link_family(linkname, familyname);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    c_make_link_family(familyname, linkname);
     return R_NilValue;
 END_RCPP
 }
