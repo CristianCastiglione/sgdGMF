@@ -61,7 +61,6 @@ src/*.o
 src/*.so
 src/*.dll
 
-
 # Rcpp
 Rcpp.pro
 Rcpp.pro.user
