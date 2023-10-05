@@ -15,10 +15,10 @@ arma::vec c_airwls_glmstep (
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
 
     // Instantiate the AIRWLS optimizer
-    bool verbose = false;
+    bool verbose = false, parallel = false;
     int maxiter = 100, nsteps = 10, nafill = 10, frequency = 25;
     double stepsize = 0.1, eps = 1e-08, tol = 1e-05, damping = 1e-03;
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
 
     // Update the current parameter estimate via WLS
     arma::vec coef = beta;
@@ -39,10 +39,10 @@ arma::vec c_airwls_glmfit (
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
 
     // Instantiate the AIRWLS optimizer
-    bool verbose = false;
+    bool verbose = false, parallel = false;
     int maxiter = 100, nafill = 10, frequency = 25;
     double eps = 1e-08, tol = 1e-05, damping = 1e-04;
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
     if (print) {airwls.summary();}
 
     // GLM fit via PERLS
@@ -61,7 +61,7 @@ arma::mat c_airwls_update (
     const arma::uvec & idx, const arma::mat & offset, 
     const arma::vec & penalty, const bool & transp = false, 
     const int & nsteps = 100, const double & stepsize = 0.1, 
-    const bool & print = false
+    const bool & print = false, const bool & parallel = false
 ) {
     // Instantiate the parametrized family object
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
@@ -70,7 +70,7 @@ arma::mat c_airwls_update (
     bool verbose = false;
     int maxiter = 100, nafill = 10, frequency = 25;
     double eps = 1e-08, tol = 1e-05, damping = 1e-04;
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
     if (print) {airwls.summary();}
 
     // GLM fit via PERLS

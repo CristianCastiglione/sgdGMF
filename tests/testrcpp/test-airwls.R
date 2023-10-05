@@ -203,12 +203,12 @@ eta = X %*% beta
   c.coef.v = sgdGMF::c_airwls_update(
     beta = V, Y = Y, X = U, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = FALSE,
-    nsteps = 100, stepsize = 0.99, print = FALSE)
+    nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE)
 
   c.coef.u = sgdGMF::c_airwls_update(
     beta = U, Y = Y, X = V, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = TRUE,
-    nsteps = 100, stepsize = 0.99, print = FALSE)
+    nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE)
 
   print(all.equal(r.coef.v, c.coef.v))
   print(all.equal(r.coef.u, c.coef.u))

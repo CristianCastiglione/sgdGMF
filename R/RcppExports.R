@@ -9,8 +9,8 @@ c_airwls_glmfit <- function(beta, y, X, familyname, linkname, offset, penalty, n
     .Call(`_sgdGMF_c_airwls_glmfit`, beta, y, X, familyname, linkname, offset, penalty, nsteps, stepsize, print)
 }
 
-c_airwls_update <- function(beta, Y, X, familyname, linkname, idx, offset, penalty, transp = FALSE, nsteps = 100L, stepsize = 0.1, print = FALSE) {
-    .Call(`_sgdGMF_c_airwls_update`, beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print)
+c_airwls_update <- function(beta, Y, X, familyname, linkname, idx, offset, penalty, transp = FALSE, nsteps = 100L, stepsize = 0.1, print = FALSE, parallel = FALSE) {
+    .Call(`_sgdGMF_c_airwls_update`, beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print, parallel)
 }
 
 c_deviance <- function(y, mu, familyname) {

@@ -16,6 +16,7 @@ void AIRWLS::summary () {
     std::printf(" damping = %.5f \n", this->damping);
     std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
     std::printf(" frequency = %i \n", this->frequency);
+    std::printf(" parallel = %s \n", this->parallel ? "true" : "false");
     std::printf("------------------\n");
 }
 
@@ -24,17 +25,29 @@ void AIRWLS::glmstep (
     const std::unique_ptr<Family::Family> & family, 
     const arma::vec & offset, const arma::vec & penalty
 ) {
-    const double thr = 1e+08;
+    // Set the tollerance threshold for the weight vector
+    const double thr = 1e+06;
+
+    // Compute the approximate suffucient statistics
     arma::vec eta = offset + X * beta;
     arma::vec mu = family->linkinv(eta);
     arma::vec mueta = family->mueta(eta);
     arma::vec varmu = family->variance(mu);
     arma::vec w = (mueta % mueta) / varmu;
     arma::vec z = (eta - offset) + (y - mu) / mueta;
+
+    // Truncate extremely low and high weight values
     utils::trim(w, 1/thr, thr);
+
+    // Keep only the obsevations passing some safety controls on varmu and etamu
+    // arma::uvec keep = arma::find((varmu > 0) && (mueta != 0) && (w > 0));
+
+    // Compute the new estimate via penalized WLS
     arma::mat xtwx = X.t() * arma::diagmat(w) * X + arma::diagmat(penalty);
     arma::vec xtwz = X.t() * arma::diagmat(w) * z;
     arma::vec betat = arma::solve(xtwx, xtwz);
+
+    // Smooth the updated coefficient vector with the previous guess 
     beta = (1 - this->stepsize) * beta + this->stepsize * betat;
 }
 
@@ -43,9 +56,12 @@ void AIRWLS::glmfit (
     const std::unique_ptr<Family::Family> & family, 
     const arma::vec & offset, const arma::vec & penalty
 ) {
-    double tol = 1e-05;
+    // Set the convergence tolerance 
+    const double tol = 1e-05;
     const int p = beta.n_rows; 
     arma::vec betaold(p);
+
+    // Optimization cycle with Fisher scroring steps
     for (int iter = 0; iter < this->nsteps; iter++) {
         betaold = beta;
         this->glmstep(beta, y, X, family, offset, penalty);
@@ -59,15 +75,21 @@ void AIRWLS::update (
     const arma::uvec & idx, const arma::mat & offset, 
     const arma::vec & penalty, const bool & transp
 ) {
+    // Set the number of slices and the number of coefficients
     unsigned int nslices = transp ? Y.n_rows : Y.n_cols;
     unsigned int ncoefs = idx.n_elem;
     arma::vec coef(ncoefs);
+    arma::uvec ids(1);
+
+    unsigned int ncores = std::thread::hardware_concurrency();
+    unsigned int nthreads = parallel ? ncores-1 : 1;
+    omp_set_num_threads(nthreads);
         
     // Check whether we need to optimize row- or column-wise
     if (transp) {
         // We need to transpose all the matrices to update U
         // This loop can be parrallelized with openMP
-        arma::uvec ids;
+        #pragma omp parallel for
         for (unsigned int slice = 0; slice < nslices; slice++) {
             ids = {slice};
             coef = beta(ids, idx).t();
@@ -77,7 +99,7 @@ void AIRWLS::update (
     } else {
         // We don't need to transpose anything to update V
         // This loop can be parrallelized with openMP
-        arma::uvec ids;
+        #pragma omp parallel for
         for (unsigned int slice = 0; slice < nslices; slice++) {
             ids = {slice};
             coef = beta(ids, idx).t();

@@ -7,8 +7,12 @@
 #define AIRWLS_H
 
 #include <RcppArmadillo.h>
-#include <memory>
-#include <time.h>
+
+#include <memory>   // for dynamic pointers management with std::unique_ptr and std::make_unique 
+#include <thread>   // for checking the number of available cores with std::thread::hardware_concurrency()
+#include <time.h>   // for checking the CPU clocks and the execution time
+#include <omp.h>    // for parrallelizing the code via openMP
+
 #include "link.h"
 #include "family.h"
 #include "deviance.h"
@@ -27,6 +31,7 @@ class AIRWLS {
         double damping;
         bool verbose;
         int frequency;
+        bool parallel; // parallel = true is still under validation
         
         // Print the class attributs
         void summary ();
@@ -65,7 +70,7 @@ class AIRWLS {
             const double & stepsize, const double & eps, 
             const int & nafill, const double & tol, 
             const double & damping, const bool & verbose, 
-            const int & frequency
+            const int & frequency, const bool & parallel
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 250;}
             if (nsteps > 0) {this->nsteps = nsteps;} else {this->nsteps = 1;}
@@ -76,6 +81,7 @@ class AIRWLS {
             if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
             if (frequency > 1) {this->frequency = frequency;} else {this->frequency = 25;}
             this->verbose = verbose;
+            this->parallel = parallel;
         }
 };
 

@@ -49,8 +49,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // c_airwls_update
-arma::mat c_airwls_update(const arma::mat& beta, const arma::mat& Y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::uvec& idx, const arma::mat& offset, const arma::vec& penalty, const bool& transp, const int& nsteps, const double& stepsize, const bool& print);
-RcppExport SEXP _sgdGMF_c_airwls_update(SEXP betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP idxSEXP, SEXP offsetSEXP, SEXP penaltySEXP, SEXP transpSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP) {
+arma::mat c_airwls_update(const arma::mat& beta, const arma::mat& Y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::uvec& idx, const arma::mat& offset, const arma::vec& penalty, const bool& transp, const int& nsteps, const double& stepsize, const bool& print, const bool& parallel);
+RcppExport SEXP _sgdGMF_c_airwls_update(SEXP betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP idxSEXP, SEXP offsetSEXP, SEXP penaltySEXP, SEXP transpSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type nsteps(nstepsSEXP);
     Rcpp::traits::input_parameter< const double& >::type stepsize(stepsizeSEXP);
     Rcpp::traits::input_parameter< const bool& >::type print(printSEXP);
-    rcpp_result_gen = Rcpp::wrap(c_airwls_update(beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print));
+    Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_airwls_update(beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print, parallel));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -923,7 +924,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_airwls_glmstep", (DL_FUNC) &_sgdGMF_c_airwls_glmstep, 7},
     {"_sgdGMF_c_airwls_glmfit", (DL_FUNC) &_sgdGMF_c_airwls_glmfit, 10},
-    {"_sgdGMF_c_airwls_update", (DL_FUNC) &_sgdGMF_c_airwls_update, 12},
+    {"_sgdGMF_c_airwls_update", (DL_FUNC) &_sgdGMF_c_airwls_update, 13},
     {"_sgdGMF_c_deviance", (DL_FUNC) &_sgdGMF_c_deviance, 3},
     {"_sgdGMF_c_penalty", (DL_FUNC) &_sgdGMF_c_penalty, 2},
     {"_sgdGMF_c_gaussian_variance", (DL_FUNC) &_sgdGMF_c_gaussian_variance, 1},
