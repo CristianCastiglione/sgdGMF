@@ -1,7 +1,7 @@
 // airwls.h
 // author: Cristian Castiglione
 // creation: 02/10/2023
-// last change: 02/10/2023
+// last change: 05/10/2023
 
 #ifndef AIRWLS_H
 #define AIRWLS_H
@@ -9,7 +9,7 @@
 #include <RcppArmadillo.h>
 
 #include <memory>   // for dynamic pointers management with std::unique_ptr and std::make_unique 
-#include <thread>   // for checking the number of available cores with std::thread::hardware_concurrency()
+#include <thread>   // for checking the number of cores with std::thread::hardware_concurrency()
 #include <time.h>   // for checking the CPU clocks and the execution time
 #include <omp.h>    // for parrallelizing the code via openMP
 
