@@ -78,34 +78,49 @@ void AIRWLS::update (
     // Set the number of slices and the number of coefficients
     unsigned int nslices = transp ? Y.n_rows : Y.n_cols;
     unsigned int ncoefs = idx.n_elem;
-    arma::vec coef(ncoefs);
-    arma::uvec ids(1);
-
+    
+    // Get the number of cores and threads
     unsigned int ncores = std::thread::hardware_concurrency();
     unsigned int nthreads = parallel ? ncores-1 : 1;
+
+    // Set the number of threads for openMP
     omp_set_num_threads(nthreads);
         
     // Check whether we need to optimize row- or column-wise
     if (transp) {
         // We need to transpose all the matrices to update U
-        // This loop can be parrallelized with openMP
-        #pragma omp parallel for
-        for (unsigned int slice = 0; slice < nslices; slice++) {
-            ids = {slice};
-            coef = beta(ids, idx).t();
-            this->glmfit(coef, Y.row(slice).t(), X.cols(idx), family, offset.row(slice).t(), penalty(idx));
-            beta(ids, idx) = coef.t();
+        #pragma omp parallel 
+        {
+            // We need to instantiate ids and coefs here in order to make 
+            // openMP aware that they are thread-specific variables
+            arma::uvec ids(1);
+            arma::vec coef(ncoefs);
+            // This loop can be parrallelized with openMP since any iteration is independend on each other
+            #pragma omp for
+            for (unsigned int slice = 0; slice < nslices; slice++) {
+                ids = {slice};
+                coef = beta(ids, idx).t();
+                this->glmfit(coef, Y.row(slice).t(), X.cols(idx), family, offset.row(slice).t(), penalty(idx));
+                beta(ids, idx) = coef.t();
+            }
         }
     } else {
         // We don't need to transpose anything to update V
-        // This loop can be parrallelized with openMP
-        #pragma omp parallel for
-        for (unsigned int slice = 0; slice < nslices; slice++) {
-            ids = {slice};
-            coef = beta(ids, idx).t();
-            this->glmfit(coef, Y.col(slice), X.cols(idx), family, offset.col(slice), penalty(idx));
-            beta(ids, idx) = coef.t();
-        }
+        #pragma omp parallel 
+        {
+            // We need to instantiate ids and coefs here in order to make 
+            // openMP aware that they are thread-specific variables
+            arma::uvec ids(1);
+            arma::vec coef(ncoefs);
+            // This loop can be parrallelized with openMP since any iteration is independend on each other
+            #pragma omp for
+            for (unsigned int slice = 0; slice < nslices; slice++) {
+                ids = {slice};
+                coef = beta(ids, idx).t();
+                this->glmfit(coef, Y.col(slice), X.cols(idx), family, offset.col(slice), penalty(idx));
+                beta(ids, idx) = coef.t();
+            }
+        } 
     }
 }
 
