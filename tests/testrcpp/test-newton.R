@@ -1,7 +1,7 @@
 # test-newton.R
 # author: Cristian Castiglione
 # creation: 02/10/2023
-# last change: 02/10/2023
+# last change: 04/10/2023
 
 ## Workspace setup ----
 rm(list = ls())
@@ -11,8 +11,8 @@ graphics.off()
 devtools::load_all()
 
 ## Test: synthetic data ----
-n = 2000
-m = 100
+n = 100
+m = 20
 d = 3
 p = 3
 q = 4
@@ -42,14 +42,15 @@ UV = svd::propack.svd(logY - tcrossprod(cbind(X, A0), cbind(B0, Z)), neig = d)
 U0 = UV$u %*% diag(sqrt(UV$d))
 V0 = UV$v %*% diag(sqrt(UV$d))
 
-fit = sgdGMF::c_fit_newton(
+cfit = sgdGMF::c_fit_newton(
   Y = Y, X = X, B = B0, A = A0, Z = Z, U = U0, V = V0,
   familyname = "poisson", linkname = "log", ncomp = d,
   lambda = c(0, 0, 1, 0), maxiter = 500, stepsize = 0.1,
-  tol = 1e-04, frequency = 50)
+  tol = 1e-05, frequency = 50)
 
-fit = sgdGMF::sgdgmf(Y, X, Z, family = poisson(), ncomp = d,
-                     init = list(niter = 0), control = list(maxiter = 500))
+rfit = sgdGMF::sgdgmf(Y, X, Z, family = poisson(), ncomp = d,
+                      init = list(niter = 0),
+                      control = list(maxiter = 500, stepsize = 0.1))
 
 fit$mu
 fit$eta
@@ -57,7 +58,15 @@ fit$U
 fit$V
 tcrossprod(fit$U, fit$V)
 
-sgdGMF
+plot(c(rfit$pred$mu), c(cfit$mu))
+plot(c(Y), c(cfit$mu))
+cor(c(rfit$pred$mu), c(cfit$mu))
+
+plot3D::image2D(rfit$pred$mu)
+plot3D::image2D(cfit$mu)
+plot3D::image2D(Y)
+
+all.equal(c(rfit$pred$mu), c(cfit$mu))
 
 
 

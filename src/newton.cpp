@@ -5,6 +5,18 @@
 
 #include "newton.h"
 
+void Newton::summary () {
+    std::printf("------------------\n");
+    std::printf(" maxiter = %i \n", this->maxiter);
+    std::printf(" stepsize = %.4f \n", this->stepsize);
+    std::printf(" eps = %.4f \n", this->eps);
+    std::printf(" nafill = %i \n", this->nafill);
+    std::printf(" tol = %.5f \n", this->tol);
+    std::printf(" damping = %.5f \n", this->damping);
+    std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
+    std::printf(" frequency = %i \n", this->frequency);
+    std::printf("------------------\n");
+}
 
 void Newton::update (
     arma::mat & u, const arma::mat & v, 
@@ -28,7 +40,6 @@ Rcpp::List Newton::fit (
     const std::unique_ptr<Family::Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
-
     // Get the initial CPU time
     clock_t start = clock();
 

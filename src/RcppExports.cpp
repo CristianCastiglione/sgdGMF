@@ -11,6 +11,65 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// c_airwls_glmstep
+arma::vec c_airwls_glmstep(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::vec& offset, const arma::vec& penalty);
+RcppExport SEXP _sgdGMF_c_airwls_glmstep(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP offsetSEXP, SEXP penaltySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type penalty(penaltySEXP);
+    rcpp_result_gen = Rcpp::wrap(c_airwls_glmstep(beta, y, X, familyname, linkname, offset, penalty));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_airwls_glmfit
+arma::vec c_airwls_glmfit(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::vec& offset, const arma::vec& penalty, const int& nsteps, const double& stepsize, const bool& print);
+RcppExport SEXP _sgdGMF_c_airwls_glmfit(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP offsetSEXP, SEXP penaltySEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< const int& >::type nsteps(nstepsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type stepsize(stepsizeSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type print(printSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_airwls_glmfit(beta, y, X, familyname, linkname, offset, penalty, nsteps, stepsize, print));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_airwls_update
+arma::mat c_airwls_update(const arma::mat& beta, const arma::mat& Y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::uvec& idx, const arma::mat& offset, const arma::vec& penalty, const bool& transp, const int& nsteps, const double& stepsize, const bool& print);
+RcppExport SEXP _sgdGMF_c_airwls_update(SEXP betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP idxSEXP, SEXP offsetSEXP, SEXP penaltySEXP, SEXP transpSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type idx(idxSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< const bool& >::type transp(transpSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nsteps(nstepsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type stepsize(stepsizeSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type print(printSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_airwls_update(beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_deviance
 arma::mat c_deviance(const arma::mat& y, const arma::mat& mu, const std::string& familyname);
 RcppExport SEXP _sgdGMF_c_deviance(SEXP ySEXP, SEXP muSEXP, SEXP familynameSEXP) {
@@ -862,6 +921,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_sgdGMF_c_airwls_glmstep", (DL_FUNC) &_sgdGMF_c_airwls_glmstep, 7},
+    {"_sgdGMF_c_airwls_glmfit", (DL_FUNC) &_sgdGMF_c_airwls_glmfit, 10},
+    {"_sgdGMF_c_airwls_update", (DL_FUNC) &_sgdGMF_c_airwls_update, 12},
     {"_sgdGMF_c_deviance", (DL_FUNC) &_sgdGMF_c_deviance, 3},
     {"_sgdGMF_c_penalty", (DL_FUNC) &_sgdGMF_c_penalty, 2},
     {"_sgdGMF_c_gaussian_variance", (DL_FUNC) &_sgdGMF_c_gaussian_variance, 1},

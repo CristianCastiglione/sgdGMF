@@ -19,14 +19,17 @@
 
 class Newton {
     public:
-        int maxiter = 500;
-        double stepsize = 0.1;
-        double eps = 0.01;
-        int nafill = 1;
-        double tol = 1e-05;
-        double damping = 1e-03;
-        bool verbose = true;
-        int frequency = 10;
+        int maxiter;
+        double stepsize;
+        double eps;
+        int nafill;
+        double tol;
+        double damping;
+        bool verbose;
+        int frequency;
+
+        // Print the class attributs
+        void summary ();
 
         // Quasi-Newton block update of the parameters
         void update (
@@ -45,10 +48,10 @@ class Newton {
         
         // Class constructor
         Newton (
-            const int & maxiter = 500, const int & stepsize = 0.01, 
-            const double & eps = 1e-08, const int & nafill = 1, 
-            const double & tol = 1e-05, const double & damping = 1e-03,
-            const bool & verbose = true, const int & frequency = 50
+            const int & maxiter, const double & stepsize, 
+            const double & eps, const int & nafill, 
+            const double & tol, const double & damping,
+            const bool & verbose, const int & frequency
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 500;}
             if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}

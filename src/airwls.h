@@ -18,34 +18,37 @@
 
 class AIRWLS {
     public:
-        int maxiter = 250;
-        int nsteps = 1;
-        double stepsize = 0.1;
-        double eps = 1e-08;
-        int nafill = 1;
-        double tol = 1e-05;
-        double damping = 1e-03;
-        bool verbose = true;
-        int frequency = 25;
+        int maxiter;
+        int nsteps;
+        double stepsize;
+        double eps;
+        int nafill;
+        double tol;
+        double damping;
+        bool verbose;
+        int frequency;
+        
+        // Print the class attributs
+        void summary ();
 
         // Basic weighted least-squares solver for GLM steps
-        void wlsfit (
+        void glmstep (
             arma::vec & beta, const arma::vec & y, const arma::mat & X,
             const std::unique_ptr<Family::Family> & family, 
-            const arma::vec & offset, const double & penalty);
+            const arma::vec & offset, const arma::vec & penalty);
 
         // PIRLS algorithm for GLM fitting
         void glmfit (
             arma::vec & beta, const arma::vec & y, const arma::mat & X,
             const std::unique_ptr<Family::Family> & family, 
-            const arma::vec & offset, const double & penalty);
+            const arma::vec & offset, const arma::vec & penalty);
 
         // Sliced updates for penalized V-GLM  
         void update (
             arma::mat & beta, const arma::mat & Y, const arma::mat & X,
             const std::unique_ptr<Family::Family> & family,
-            const int & nslices, const arma::mat & offset, 
-            const double & penalty);
+            const arma::uvec & idx, const arma::mat & offset, 
+            const arma::vec & penalty, const bool & transp);
 
         // Model fitting via AIRWLS
         Rcpp::List fit (
@@ -58,15 +61,15 @@ class AIRWLS {
         
         // Class constructor
         AIRWLS (
-            const int & maxiter = 250, const int & nsteps = 1, 
-            const int & stepsize = 0.01, const double & eps = 1e-08, 
-            const int & nafill = 1, const double & tol = 1e-05, 
-            const double & damping = 1e-03, const bool & verbose = true, 
-            const int & frequency = 25
+            const int & maxiter, const int & nsteps, 
+            const double & stepsize, const double & eps, 
+            const int & nafill, const double & tol, 
+            const double & damping, const bool & verbose, 
+            const int & frequency
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 250;}
             if (nsteps > 0) {this->nsteps = nsteps;} else {this->nsteps = 1;}
-            if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}
+            if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.1;}
             if (eps >= 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
             if (nafill > 0) {this->nafill = nafill;} else {this->nafill = 1;}
             if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
