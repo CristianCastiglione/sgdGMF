@@ -43,7 +43,8 @@ void AIRWLS::glmstep (
     // arma::uvec keep = arma::find((varmu > 0) && (mueta != 0) && (w > 0));
 
     // Compute the new estimate via penalized WLS
-    arma::mat xtwx = X.t() * arma::diagmat(w) * X + arma::diagmat(penalty);
+    arma::mat pen = arma::diagmat(penalty + this->damping);
+    arma::mat xtwx = X.t() * arma::diagmat(w) * X + pen;
     arma::vec xtwz = X.t() * arma::diagmat(w) * z;
     arma::vec betat = arma::solve(xtwx, xtwz);
 
@@ -204,7 +205,7 @@ Rcpp::List AIRWLS::fit (
     }
 
     // Optimization loop
-    int iter; double diter;
+    int iter;
     for (iter = 1; iter < this->maxiter; iter++) {
 
         // Fill the missing values with the current predictions
@@ -239,8 +240,7 @@ Rcpp::List AIRWLS::fit (
         time = exetime(start, end);
         
         // Store the optimization state at the current iteration
-        diter = iter;
-        state = arma::vec{diter, dev, pen, obj, change, time};
+        state = arma::vec{double(iter), dev, pen, obj, change, time};
         trace.row(iter) = state.t();
 
         if (this->verbose && iter % frequency == 0) {
