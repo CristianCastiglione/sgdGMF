@@ -31,9 +31,9 @@ class AIRWLS {
         double damping;
         bool verbose;
         int frequency;
-        bool parallel; // parallel = true is still under validation
+        bool parallel;
         
-        // Print the class attributs
+        // Print the class attributes
         void summary ();
 
         // Basic weighted least-squares solver for GLM steps
