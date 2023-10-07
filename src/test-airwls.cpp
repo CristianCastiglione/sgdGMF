@@ -74,7 +74,7 @@ arma::mat c_airwls_update (
     if (print) {airwls.summary();}
 
     // GLM fit via PERLS
-    arma::mat xtx;
+    arma::mat xtx; 
     arma::mat xty;
     arma::mat coef;
     if (transp) {
@@ -84,7 +84,7 @@ arma::mat c_airwls_update (
     } else {
         xtx = X.t() * X;
         xty = X.t() * family->initialize(Y);
-        coef = arma::solve(X.t() * X, X.t() * family->initialize(Y)).t();
+        coef = arma::solve(xtx, xty).t();
     }
     // Rcpp::Rcout << "\n" << arma::size(coef);
     airwls.update(coef, Y, X, family, idx, offset, penalty, transp);
@@ -92,7 +92,7 @@ arma::mat c_airwls_update (
     return coef;    
 }
 
-/*
+// [[Rcpp::export]]
 Rcpp::List c_fit_airwls (
     const arma::mat & Y, 
     const arma::mat & X, const arma::mat & B, 
@@ -103,13 +103,15 @@ Rcpp::List c_fit_airwls (
     const int & ncomp, 
     const arma::vec & lambda,
     const int & maxiter = 500,
+    const int & nsteps = 1,
     const double & stepsize = 0.1,
     const double & eps = 1e-08,
     const int & nafill = 1,
     const double & tol = 1e-05,
     const double & damping = 1e-03,
     const bool & verbose = true,
-    const int & frequency = 10
+    const int & frequency = 10,
+    const bool & parallel = false
 ) {
     arma::mat y = Y;
 
@@ -117,7 +119,7 @@ Rcpp::List c_fit_airwls (
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
     
     // Instantiate the AIRWLS optimizer
-    AIRWLS airwls(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
 
     // Perform the optimization via Newton algorithm
     Rcpp::List output = airwls.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);
@@ -125,4 +127,3 @@ Rcpp::List c_fit_airwls (
     // Return the estimated model
     return output;
 }
-*/
