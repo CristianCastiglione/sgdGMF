@@ -20,6 +20,15 @@ get.glm.family = function (familyname = "gaussian", linkname = "identity") {
   return (f)
 }
 
+get.glm.init = function (familyname = "gaussian", linkname = "identity") {
+  f = NULL
+  if (familyname == "gaussian") f = function (x) x
+  if (familyname == "binomial") f = function (x) 2 * x - 1
+  if (familyname == "poisson") f = function (x) log(x + 0.1)
+  if (familyname == "gamma") f = function (x) log(x)
+  return (f)
+}
+
 # Fit a vector GLM via sequential IRLS
 vglm.fit = function (Y, X, familyname, linkname, penalty, transp) {
   family = get.glm.family(familyname, linkname)
@@ -180,14 +189,14 @@ eta = X %*% beta
   plot.coef.path(y, X, glm.coef, familyname = familyname, linkname = linkname)
 }
 
-## Test: multivariate gaussian-identity ----
+## Test: multivariate update ----
 {
+  n = 1000; m = 100; d = 5
   familyname = "poisson"
   linkname = "log"
   penalty = rep(0, length = d)
   offset = matrix(0, nrow = n, ncol = m)
   family = get.glm.family(familyname, linkname)
-  n = 100; m = 10; d = 3
   U = matrix(rnorm(n*d), nrow = n, ncol = d)
   V = matrix(rnorm(m*d), nrow = m, ncol = d)
   eta = tcrossprod(U, V) / 4
@@ -197,18 +206,28 @@ eta = X %*% beta
   if (familyname == "poisson") Y = matrix(sapply(mu, FUN = function (x) rpois(1, lambda = x)), nrow = n, ncol = m)
   if (familyname == "gamma") Y = matrix(sapply(mu, FUN = function (x) rgamma(1, shape = 1, rate = x)), nrow = n, ncol = m)
 
-  r.coef.v = vglm.fit(Y, U, familyname, linkname, FALSE)
-  r.coef.u = vglm.fit(Y, V, familyname, linkname, TRUE)
+  t0 = proc.time()
+  r.coef.v = vglm.fit(Y, U, familyname, linkname, penalty, FALSE)
+  print((proc.time() - t0)[3])
 
+  t0 = proc.time()
+  r.coef.u = vglm.fit(Y, V, familyname, linkname, penalty, TRUE)
+  print((proc.time() - t0)[3])
+
+  t0 = proc.time()
   c.coef.v = sgdGMF::c_airwls_update(
     beta = V, Y = Y, X = U, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = FALSE,
     nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE)
+  print((proc.time() - t0)[3])
 
+  t0 = proc.time()
   c.coef.u = sgdGMF::c_airwls_update(
     beta = U, Y = Y, X = V, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = TRUE,
     nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE)
+  print((proc.time() - t0)[3])
+
 
   print(all.equal(r.coef.v, c.coef.v))
   print(all.equal(r.coef.u, c.coef.u))
@@ -217,6 +236,66 @@ eta = X %*% beta
   plot(r.coef.v, c.coef.v)
   plot(r.coef.u, c.coef.u)
   par(mfrow = c(1,1))
+}
+
+## Test: airwls fit ----
+{
+  n = 1000; m = 100; p = 3; q = 1; d = 5
+  familyname = "gaussian"
+  linkname = "log"
+  penalty = rep(0, length = d)
+  offset = matrix(0, nrow = n, ncol = m)
+  family = get.glm.family(familyname, linkname)
+  init = get.glm.init(familyname, linkname)
+  X = matrix(rnorm(n*p, sd = 0.9), nrow = n, ncol = p) / sqrt(p)
+  B = matrix(rnorm(m*p, sd = 0.9), nrow = m, ncol = p) / sqrt(p)
+  A = matrix(rnorm(n*q, sd = 0.9), nrow = n, ncol = q) / sqrt(q)
+  Z = matrix(rnorm(m*q, sd = 0.9), nrow = m, ncol = q) / sqrt(q)
+  U = matrix(rnorm(n*d, sd = 0.9), nrow = n, ncol = d) / sqrt(d)
+  V = matrix(rnorm(m*d, sd = 0.9), nrow = m, ncol = d) / sqrt(d)
+  eta = tcrossprod(cbind(X, A, U), cbind(B, Z, V)) / 4
+  mu = family$linkinv(eta)
+  if (familyname == "gaussian") Y = matrix(sapply(mu, FUN = function (x) rnorm(1, mean = x, sd = 0.25)), nrow = n, ncol = m)
+  if (familyname == "binomial") Y = matrix(sapply(mu, FUN = function (x) rbinom(1, size = 1, prob = x)), nrow = n, ncol = m)
+  if (familyname == "poisson") Y = matrix(sapply(mu, FUN = function (x) rpois(1, lambda = x)), nrow = n, ncol = m)
+  if (familyname == "gamma") Y = matrix(sapply(mu, FUN = function (x) rgamma(1, shape = 1, rate = x)), nrow = n, ncol = m)
+
+  R = init(Y)
+  B0 = t(solve(crossprod(X), crossprod(X, R)))
+  A0 = t(solve(crossprod(Z), crossprod(Z, t(R - tcrossprod(X, B0)))))
+  UV = svd::propack.svd(R - tcrossprod(cbind(X, A0), cbind(B0, Z)), neig = d)
+  U0 = UV$u %*% diag(sqrt(UV$d))
+  V0 = UV$v %*% diag(sqrt(UV$d))
+
+  c.gmffit = sgdGMF::c_fit_airwls(
+    Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
+    ncomp = d, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
+    eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
+    frequency = 10, parallel = FALSE)
+
+  c.gmffit = sgdGMF::c_fit_airwls(
+    Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
+    ncomp = d, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
+    eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
+    frequency = 10, parallel = TRUE)
+
+  r.gmffit = sgdGMF::sgdgmf(
+    Y, X, Z, family = family, ncomp = d, method = "airwls", init = list(niter = 0),
+    control = list(maxiter = 500, stepsize = 0.9, eps = 1e-08, tol = 1e-05,
+                   damping = 1e-03, verbose = TRUE, frequency = 10))
+
+  print(all.equal(r.gmffit$pred$mu, c.gmffit$mu))
+  print(all.equal(r.gmffit$pred$eta, c.gmffit$eta))
+
+  print(cor(c(r.gmffit$pred$mu), c(c.gmffit$mu)))
+  print(cor(c(r.gmffit$pred$eta), c(c.gmffit$eta)))
+
+  plot(r.gmffit$pred$mu, c.gmffit$mu)
+  plot(r.gmffit$pred$eta, c.gmffit$eta)
+
+  plot(mu, c.gmffit$mu)
+  plot(eta, c.gmffit$eta)
+
 }
 
 
