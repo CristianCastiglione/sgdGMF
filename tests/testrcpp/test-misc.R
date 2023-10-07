@@ -1,7 +1,7 @@
 # test-misc.R
 # author: Cristian Castiglione
 # creation: 02/10/2023
-# last change: 02/10/2023
+# last change: 06/10/2023
 
 ## Workspace setup ----
 rm(list = ls())
@@ -43,6 +43,82 @@ devtools::load_all()
   c.pen = sgdGMF::c_get_uv_penalty(pen, p, q, d)
   print(all.equal(r.pen$penu, drop(c.pen$penu)))
   print(all.equal(r.pen$penv, drop(c.pen$penv)))
+}
+
+## Test: sample_minibatch() ----
+{
+  n = 9; size = 3; randomize = FALSE
+  r.chunks = sgdGMF::sample.minibatch(n, size, randomize)
+  c.chunks = sgdGMF::c_sample_minibatch(n, size, randomize)
+
+  flag = TRUE
+  for (h in 1:ceiling(n / size)) {
+    flagh = all.equal(r.chunks[[h]], c.chunks[[h]]+1)
+    flag = flag && flagh
+  }
+  print(flag)
+}
+
+
+{
+  n = 11; size = 3; randomize = FALSE
+  r.chunks = sgdGMF::sample.minibatch(n, size, randomize)
+  c.chunks = sgdGMF::c_sample_minibatch(n, size, randomize)
+
+  flag = TRUE
+  for (h in 1:ceiling(n / size)) {
+    flagh = all.equal(r.chunks[[h]], c.chunks[[h]]+1)
+    flag = flag && flagh
+  }
+  print(flag)
+}
+
+## Test: select_chunk ----
+{
+  iter = 10; nchunks = 3
+  r.idx = sgdGMF::select.minibatch(iter, nchunks)
+  c.idx = sgdGMF::c_select_minibatch(iter, nchunks)
+  print(all.equal(r.idx, c.idx+1))
+}
+
+## Test: get_chunks ----
+{
+  n = 9; size = 3; randomize = FALSE
+  r.chunks = sgdGMF::sample.minibatch(n, size, randomize)
+  c.chunks = sgdGMF::c_get_chunks(0:2, n, size, randomize)
+
+  flag = TRUE
+  for (h in 1:ceiling(n / size)) {
+    flagh = all.equal(r.chunks[[h]], c.chunks[[h]]+1)
+    flag = flag && flagh
+  }
+  print(flag)
+}
+
+{
+  n = 10; size = 3; randomize = FALSE
+  r.chunks = sgdGMF::sample.minibatch(n, size, randomize)
+  c.chunks = sgdGMF::c_get_chunks(0:3, n, size, randomize)
+
+  flag = TRUE
+  for (h in 1:ceiling(n / size)) {
+    flagh = all.equal(r.chunks[[h]], c.chunks[[h]]+1)
+    flag = flag && flagh
+  }
+  print(flag)
+}
+
+{
+  n = 11; size = 3; randomize = FALSE
+  r.chunks = sgdGMF::sample.minibatch(n, size, randomize)
+  c.chunks = sgdGMF::c_get_chunks(0:8, n, size, randomize)
+
+  flag = TRUE
+  for (h in 1:ceiling(n / size)) {
+    flagh = all.equal(r.chunks[[h]], c.chunks[[h]]+1)
+    flag = flag && flagh
+  }
+  print(flag)
 }
 
 ## End of file ----
