@@ -13,6 +13,10 @@ c_airwls_update <- function(beta, Y, X, familyname, linkname, idx, offset, penal
     .Call(`_sgdGMF_c_airwls_update`, beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print, parallel)
 }
 
+c_fit_airwls <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, nsteps = 1L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE) {
+    .Call(`_sgdGMF_c_fit_airwls`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel)
+}
+
 c_deviance <- function(y, mu, familyname) {
     .Call(`_sgdGMF_c_deviance`, y, mu, familyname)
 }
@@ -165,6 +169,14 @@ c_link_sqrt_mueta <- function(eta) {
     .Call(`_sgdGMF_c_link_sqrt_mueta`, eta)
 }
 
+c_get_chunk <- function(iter, n, size, randomize) {
+    .Call(`_sgdGMF_c_get_chunk`, iter, n, size, randomize)
+}
+
+c_get_chunks <- function(iters, n, size, randomize) {
+    .Call(`_sgdGMF_c_get_chunks`, iters, n, size, randomize)
+}
+
 c_make_link_family <- function(familyname, linkname) {
     invisible(.Call(`_sgdGMF_c_make_link_family`, familyname, linkname))
 }
@@ -179,6 +191,14 @@ c_get_uv_penalty <- function(pen, p, q, d) {
 
 c_get_uv_indices <- function(p, q, d) {
     .Call(`_sgdGMF_c_get_uv_indices`, p, q, d)
+}
+
+c_sample_minibatch <- function(n, size, randomize) {
+    .Call(`_sgdGMF_c_sample_minibatch`, n, size, randomize)
+}
+
+c_select_minibatch <- function(iter, nchunks) {
+    .Call(`_sgdGMF_c_select_minibatch`, iter, nchunks)
 }
 
 c_fit_newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L) {
