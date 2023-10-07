@@ -28,7 +28,7 @@ class Newton {
         bool verbose;
         int frequency;
 
-        // Print the class attributs
+        // Print the class attributes
         void summary ();
 
         // Quasi-Newton block update of the parameters
