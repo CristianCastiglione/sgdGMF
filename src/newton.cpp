@@ -121,7 +121,7 @@ Rcpp::List Newton::fit (
     }
 
     // Optimization loop
-    int iter; double diter;
+    int iter;
     for (iter = 1; iter < this->maxiter; iter++) {
 
         // Fill the missing values with the current predictions
@@ -162,8 +162,7 @@ Rcpp::List Newton::fit (
         time = exetime(start, end);
         
         // Store the optimization state at the current iteration
-        diter = iter;
-        state = arma::vec{diter, dev, pen, obj, change, time};
+        state = arma::vec{double(iter), dev, pen, obj, change, time};
         trace.row(iter) = state.t();
 
         if (this->verbose && iter % frequency == 0) {
