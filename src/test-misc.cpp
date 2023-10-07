@@ -67,3 +67,15 @@ Rcpp::List c_get_uv_indices (
 
     return out;
 }
+
+// [[Rcpp::export]]
+std::list<arma::uvec> c_sample_minibatch (
+    const int & n, const int & size, const bool & randomize
+) {
+    return sample_chunks(n, size, randomize);
+}
+
+// [[Rcpp::export]]
+int c_select_minibatch (const int & iter, const int & nchunks) {
+    return select_chunk(iter, nchunks);
+}
