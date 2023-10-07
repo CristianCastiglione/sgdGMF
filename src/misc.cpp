@@ -97,3 +97,39 @@ void print_state (
         std::printf(" %9i %11.2f %8.4f %8.2f m \n", iter, dev, change, time/60);
     }
 }
+
+
+
+std::list<arma::uvec> sample_chunks (
+    const int & n, const int & size, const bool & randomize
+) {
+    // If the data are ordered, it might be useful to shuffle the observations
+    arma::uvec idx(n);
+    idx = arma::linspace<arma::uvec>(0, n-1, n);
+    if (randomize) {idx = arma::shuffle(idx);}
+    
+    // Instantiate the chunk-specific starting and ending indices
+    int nchunks, start, end, range;
+    nchunks = ceil(double(n) / size);
+    
+    // Partition the data into chunks of (almost) the same size
+    // The last chunk could have a different size depending on 'n' and 'size'
+    arma::uvec chunk;
+    std::list<arma::uvec> chunks;
+    for (int i = 0; i < nchunks; i++) {
+        start = i * size;
+        end = std::min((i + 1) * size, n);
+        range = end - start;
+        chunk = arma::linspace<arma::uvec>(start, end-1, range);
+        chunks.push_back(idx(chunk));
+    }
+
+    // Return the chunk partition
+    return chunks;
+}
+
+int select_chunk (const int & iter, const int & nchunks) {
+    int mod = iter % nchunks;
+    int idx = (mod == 0) ? nchunks : mod;
+    return idx;
+}
