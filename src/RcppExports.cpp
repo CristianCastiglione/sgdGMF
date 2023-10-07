@@ -71,6 +71,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// c_fit_airwls
+Rcpp::List c_fit_airwls(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const int& nsteps, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency, const bool& parallel);
+RcppExport SEXP _sgdGMF_c_fit_airwls(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP parallelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nsteps(nstepsSEXP);
+    Rcpp::traits::input_parameter< const double& >::type stepsize(stepsizeSEXP);
+    Rcpp::traits::input_parameter< const double& >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const double& >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit_airwls(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_deviance
 arma::mat c_deviance(const arma::mat& y, const arma::mat& mu, const std::string& familyname);
 RcppExport SEXP _sgdGMF_c_deviance(SEXP ySEXP, SEXP muSEXP, SEXP familynameSEXP) {
@@ -496,6 +527,34 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// c_get_chunk
+arma::uvec c_get_chunk(const int& iter, const int& n, const int& size, const bool& randomize);
+RcppExport SEXP _sgdGMF_c_get_chunk(SEXP iterSEXP, SEXP nSEXP, SEXP sizeSEXP, SEXP randomizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const int& >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type randomize(randomizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_get_chunk(iter, n, size, randomize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_get_chunks
+std::list<arma::uvec> c_get_chunks(const arma::uvec& iters, const int& n, const int& size, const bool& randomize);
+RcppExport SEXP _sgdGMF_c_get_chunks(SEXP itersSEXP, SEXP nSEXP, SEXP sizeSEXP, SEXP randomizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::uvec& >::type iters(itersSEXP);
+    Rcpp::traits::input_parameter< const int& >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const int& >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type randomize(randomizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_get_chunks(iters, n, size, randomize));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_make_link_family
 void c_make_link_family(const std::string& familyname, const std::string& linkname);
 RcppExport SEXP _sgdGMF_c_make_link_family(SEXP familynameSEXP, SEXP linknameSEXP) {
@@ -546,6 +605,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type q(qSEXP);
     Rcpp::traits::input_parameter< const int& >::type d(dSEXP);
     rcpp_result_gen = Rcpp::wrap(c_get_uv_indices(p, q, d));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_sample_minibatch
+std::list<arma::uvec> c_sample_minibatch(const int& n, const int& size, const bool& randomize);
+RcppExport SEXP _sgdGMF_c_sample_minibatch(SEXP nSEXP, SEXP sizeSEXP, SEXP randomizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int& >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const int& >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type randomize(randomizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_sample_minibatch(n, size, randomize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_select_minibatch
+int c_select_minibatch(const int& iter, const int& nchunks);
+RcppExport SEXP _sgdGMF_c_select_minibatch(SEXP iterSEXP, SEXP nchunksSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nchunks(nchunksSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_select_minibatch(iter, nchunks));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -925,6 +1009,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_airwls_glmstep", (DL_FUNC) &_sgdGMF_c_airwls_glmstep, 7},
     {"_sgdGMF_c_airwls_glmfit", (DL_FUNC) &_sgdGMF_c_airwls_glmfit, 10},
     {"_sgdGMF_c_airwls_update", (DL_FUNC) &_sgdGMF_c_airwls_update, 13},
+    {"_sgdGMF_c_fit_airwls", (DL_FUNC) &_sgdGMF_c_fit_airwls, 21},
     {"_sgdGMF_c_deviance", (DL_FUNC) &_sgdGMF_c_deviance, 3},
     {"_sgdGMF_c_penalty", (DL_FUNC) &_sgdGMF_c_penalty, 2},
     {"_sgdGMF_c_gaussian_variance", (DL_FUNC) &_sgdGMF_c_gaussian_variance, 1},
@@ -963,10 +1048,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_link_sqrt_linkfun", (DL_FUNC) &_sgdGMF_c_link_sqrt_linkfun, 1},
     {"_sgdGMF_c_link_sqrt_linkinv", (DL_FUNC) &_sgdGMF_c_link_sqrt_linkinv, 1},
     {"_sgdGMF_c_link_sqrt_mueta", (DL_FUNC) &_sgdGMF_c_link_sqrt_mueta, 1},
+    {"_sgdGMF_c_get_chunk", (DL_FUNC) &_sgdGMF_c_get_chunk, 4},
+    {"_sgdGMF_c_get_chunks", (DL_FUNC) &_sgdGMF_c_get_chunks, 4},
     {"_sgdGMF_c_make_link_family", (DL_FUNC) &_sgdGMF_c_make_link_family, 2},
     {"_sgdGMF_c_get_data_bounds", (DL_FUNC) &_sgdGMF_c_get_data_bounds, 5},
     {"_sgdGMF_c_get_uv_penalty", (DL_FUNC) &_sgdGMF_c_get_uv_penalty, 4},
     {"_sgdGMF_c_get_uv_indices", (DL_FUNC) &_sgdGMF_c_get_uv_indices, 3},
+    {"_sgdGMF_c_sample_minibatch", (DL_FUNC) &_sgdGMF_c_sample_minibatch, 3},
+    {"_sgdGMF_c_select_minibatch", (DL_FUNC) &_sgdGMF_c_select_minibatch, 2},
     {"_sgdGMF_c_fit_newton", (DL_FUNC) &_sgdGMF_c_fit_newton, 19},
     {"_sgdGMF_c_dabsmax", (DL_FUNC) &_sgdGMF_c_dabsmax, 2},
     {"_sgdGMF_c_vabsmax", (DL_FUNC) &_sgdGMF_c_vabsmax, 2},
