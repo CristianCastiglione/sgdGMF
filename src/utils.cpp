@@ -1,7 +1,7 @@
-// utilities.cpp
+// utils.cpp
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 29/09/2023
+// last change: 07/10/2023
 
 #include "utils.h"
 
@@ -27,11 +27,23 @@ double norm (const arma::mat & x, const double & p) {
   return std::pow(arma::accu(arma::pow(x, p)), 1/p);
 }
 
-void trim (arma::mat & x, double a, double b) {
+void trim (arma::mat & x, const double & a, const double & b) {
   arma::uvec above = arma::find(x > b);
   arma::uvec below = arma::find(x < a);
   x.elem(above).fill(b);
   x.elem(below).fill(a);
+}
+
+void trim (arma::mat & x, const double & a, const double & b, const arma::uvec & idx) {
+  arma::mat xt = x.rows(idx);
+  trim(xt, a, b);
+  x.rows(idx) = xt;
+}
+
+void trim (arma::mat & x, const double & a, const double & b, const arma::uvec & idx, const arma::uvec & idy) {
+  arma::mat xt = x(idx, idy);
+  trim(xt, a, b);
+  x(idx, idy) = xt;
 }
 
 arma::mat xlogx (const arma::mat & x){
@@ -111,7 +123,7 @@ arma::mat expit2 (const arma::mat & x) {
   return arma::exp(x - 2.0 * arma::log1p(arma::exp(x)));
 }
 
-arma::mat expitn (const arma::mat & x, double n) {
+arma::mat expitn (const arma::mat & x, const double & n) {
   return arma::exp(x - n * arma::log1p(arma::exp(x)));
 }
 
@@ -216,11 +228,11 @@ arma::mat hinge (const arma::mat & x) {
   return 0.5 * (arma::abs(x) + x);
 }
 
-arma::mat dirac (const arma::mat & x, double a = 0) {
+arma::mat dirac (const arma::mat & x, const double & a = 0) {
   return arma::conv_to<arma::mat>::from(x == a);
 }
 
-arma::mat step (const arma::mat & x, double a = 0, bool lower = true) {
+arma::mat step (const arma::mat & x, const double & a = 0, const bool & lower = true) {
   arma::mat s(arma::size(x));
   if (lower) {
     s = arma::conv_to<arma::mat>::from(x < a);
