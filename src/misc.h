@@ -46,3 +46,10 @@ double exetime (const clock_t & start, const clock_t & end);
 void print_state (
     const int & iter, const double & div, 
     const double & change, const double & time);
+
+// Divide the data indices in random chunks
+std::list<arma::uvec> sample_chunks (
+    const int & n, const int & size, const bool & randomize);
+
+// Select the appropriate chunk for the current iteration
+int select_chunk (const int & iter, const int & nchunks);
