@@ -18,7 +18,7 @@ glm.step = function (X, Y,
   Winv = var.mu / mu.eta**2
   W = mu.eta**2 / var.mu
 
-  Z = (eta - offset) + (Y - mu) * Winv
+  Z = (eta - offset) + (Y - mu) / mu.eta # * Winv
 
   # Use only rows that give reasonable values
   thresh = 1e20
