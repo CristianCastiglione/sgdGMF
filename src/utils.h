@@ -69,7 +69,7 @@ arma::mat expexp (const arma::mat & x);
 // Standard Gaussian probability and cumulative density function
 arma::mat pdfn (const arma::mat & x);
 arma::mat cdfn (const arma::mat & x);
-arma::mat qdfn (const arma::mat & p)
+arma::mat qdfn (const arma::mat & p);
 
 // Standard Gaussian log-probability and cumulative density function
 arma::mat logpdfn (const arma::mat & x);
