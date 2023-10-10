@@ -6,7 +6,9 @@
 #include "misc.h"
 
 
-std::unique_ptr<Link::Link> make_link (const std::string & linkname) {
+std::unique_ptr<Link::Link> make_link (
+    const std::string & linkname
+) {
     std::unique_ptr<Link::Link> ptr;
     if (linkname == "identity") { ptr = std::make_unique<Link::Identity>();
     } else if (linkname == "logit") { ptr = std::make_unique<Link::Logit>();
@@ -20,7 +22,9 @@ std::unique_ptr<Link::Link> make_link (const std::string & linkname) {
     return ptr;
 }
 
-std::unique_ptr<Family::Family> make_family (const std::string & familyname, const std::string & linkname) {
+std::unique_ptr<Family::Family> make_family (
+    const std::string & familyname, const std::string & linkname
+) {
     std::unique_ptr<Link::Link> link = make_link(linkname);
     std::unique_ptr<Family::Family> family;
     if (familyname == "gaussian") { family = std::make_unique<Family::Gaussian>(link);
