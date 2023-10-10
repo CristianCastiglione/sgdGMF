@@ -13,7 +13,8 @@
 // Create a dynamic pointer to an appropriate link/family class starting  
 // from a string identifying the correct link/family to chose
 std::unique_ptr<Link::Link> make_link (const std::string & linkname);
-std::unique_ptr<Family::Family> make_family (const std::string & familyname, const std::string & linkname);
+std::unique_ptr<Family::Family> make_family (
+    const std::string & familyname, const std::string & linkname);
 
 // Set the lower and upper bounds for mu and eta based on the observed data range
 // so as to avoid to produce prediction with too extreme values 
