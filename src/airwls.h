@@ -1,7 +1,7 @@
 // airwls.h
 // author: Cristian Castiglione
 // creation: 02/10/2023
-// last change: 05/10/2023
+// last change: 10/10/2023
 
 #ifndef AIRWLS_H
 #define AIRWLS_H
@@ -79,7 +79,7 @@ class AIRWLS {
             if (nafill > 0) {this->nafill = nafill;} else {this->nafill = 1;}
             if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
             if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
-            if (frequency > 1) {this->frequency = frequency;} else {this->frequency = 25;}
+            if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 25;}
             this->verbose = verbose;
             this->parallel = parallel;
         }

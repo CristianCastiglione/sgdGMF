@@ -1,7 +1,7 @@
 // newton.cpp
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 02/10/2023
+// last change: 10/10/2023
 
 #include "newton.h"
 
@@ -13,6 +13,7 @@ void Newton::summary () {
     std::printf(" nafill = %i \n", this->nafill);
     std::printf(" tol = %.5f \n", this->tol);
     std::printf(" damping = %.5f \n", this->damping);
+    std::printf(" parallel = %s \n", this->parallel ? "true" : "false");
     std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
     std::printf(" frequency = %i \n", this->frequency);
     std::printf("------------------\n");
@@ -23,13 +24,38 @@ void Newton::update (
     const arma::vec & pen, const arma::uvec & idx,
     const arma::mat & deta, const arma::mat & ddeta
 ) {
-
-    const int n = u.n_rows;
-    const int m = idx.n_rows;
-    arma::mat du(n,m), ddu(n,m);
-    du = - deta * v.cols(idx) + u.cols(idx) * arma::diagmat(pen(idx));
-    ddu = ddeta * arma::square(v.cols(idx)) + arma::ones(n, m) * arma::diagmat(pen(idx)) + this->damping;
-    u.cols(idx) = u.cols(idx) - this->stepsize * (du / ddu);
+    if (this->parallel) {
+        // Block update via parallel operations over matrix slices
+        const unsigned int n = u.n_rows;
+        const unsigned int m = idx.n_rows;
+        // A convenient parallelization strategy is taken depending on the row and column dimensions
+        if (n >= m) {
+            // If n >= m, we perform the computations row-wise
+            #pragma omp parallel for
+            for (unsigned int i = 0; i < n; i++) {
+                arma::uvec ii = {i};
+                arma::rowvec dui = - deta.row(i) * v.cols(idx) + u(ii,idx) % pen(idx).t();
+                arma::rowvec ddui = ddeta.row(i) * arma::square(v.cols(idx)) + pen(idx).t() + this->damping;
+                u(ii,idx) = u(ii,idx) - this->stepsize * (dui / ddui);
+            }
+        } else {
+            // If n < m, we perform the computations column-wise
+            #pragma omp parallel for
+            for (const unsigned int & j : idx) {
+                arma::vec duj = - deta * v.col(j) + u.col(j) * pen(j);
+                arma::vec dduj = ddeta * arma::square(v.col(j)) + pen(j) + this->damping;
+                u.col(j) = u.col(j) - this->stepsize * (duj / dduj);
+            }
+        }        
+    } else {
+        // Block update via elementwise matrix operations
+        const unsigned int n = u.n_rows;
+        const unsigned int m = idx.n_rows;
+        arma::mat du(n,m), ddu(n,m);
+        du = - deta * v.cols(idx) + u.cols(idx) * arma::diagmat(pen(idx));
+        ddu = ddeta * arma::square(v.cols(idx)) + arma::ones(n, m) * arma::diagmat(pen(idx)) + this->damping;
+        u.cols(idx) = u.cols(idx) - this->stepsize * (du / ddu);
+    }
 }
 
 Rcpp::List Newton::fit (
@@ -50,6 +76,13 @@ Rcpp::List Newton::fit (
     const int p = X.n_cols; 
     const int q = Z.n_cols;
     const double nm = std::sqrt(n * m);
+
+    // Get the number of cores and threads
+    const unsigned int ncores = std::thread::hardware_concurrency();
+    const unsigned int nthreads = parallel ? ncores-1 : 1;
+
+    // Set the number of threads for openMP
+    omp_set_num_threads(nthreads);
 
     // Get the range of the data, and the lower and upper bounds
     double mulo, muup, etalo, etaup;
@@ -78,17 +111,10 @@ Rcpp::List Newton::fit (
     bool anyna = !Y.is_finite();
     arma::uvec isna = arma::find_nonfinite(Y);
 
-    // Get the linear predictor, the mean and the variance matrices
-    arma::mat eta(n,m), mu(n,m);
-    eta = u * v.t();
+    // Get the predicted values, the variances and the mu-differentials
+    arma::mat eta(n,m), mu(n,m), var(n,m), mueta(n,m);
+    eta = get_eta(u, v, etalo, etaup);
     mu = family->linkinv(eta);
-    
-    // Truncate all the extreme values
-    utils::trim(mu, mulo, muup);
-    utils::trim(eta, etalo, etaup);
-
-    // Get the variances and the mu-differentials
-    arma::mat var(n,m), mueta(n,m);
     var = family->variance(mu);
     mueta = family->mueta(eta);
 
@@ -115,17 +141,17 @@ Rcpp::List Newton::fit (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("-------------------------------------------\n");
-        std::printf(" Iteration    Deviance   Change   Exe-Time \n");
+        std::printf("--------------------------------------------\n");
+        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
         print_state(0, dev / nm, 1., time);
     }
 
     // Optimization loop
-    int iter;
+    int iter = 0;
     for (iter = 1; iter < this->maxiter; iter++) {
 
         // Fill the missing values with the current predictions
-        if (iter > 0 && anyna && iter % this->nafill == 0) {
+        if (anyna && iter % this->nafill == 0) {
             Y.elem(isna) = mu.elem(isna);
         }
 
@@ -139,15 +165,9 @@ Rcpp::List Newton::fit (
         u = ut;
         v = vt;
 
-        // Update the linear predictor and the mean matrix
-        eta = u * v.t();
+        // Update the predictions, the variances and the mu-differentials
+        eta = get_eta(u, v, etalo, etaup);
         mu = family->linkinv(eta);
-
-        // Truncate all the extreme values
-        utils::trim(mu, mulo, muup);
-        utils::trim(eta, etalo, etaup);
-        
-        // Update the variances and the mu-derivatives
         var = family->variance(mu);
         mueta = family->mueta(eta);
 
@@ -179,7 +199,7 @@ Rcpp::List Newton::fit (
 
     if (this->verbose) {
         print_state(iter, dev / nm, change, time);
-        std::printf("-------------------------------------------\n");
+        std::printf("--------------------------------------------\n");
     }
     
     // Get the final output

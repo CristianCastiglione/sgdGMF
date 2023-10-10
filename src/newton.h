@@ -1,15 +1,19 @@
 // newton.h
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 02/10/2023
+// last change: 10/10/2023
 
 #ifndef NEWTON_H
 #define NEWTON_H
 
 #include <RcppArmadillo.h>
+
 #include <memory>
 #include <string>
 #include <time.h>
+#include <thread>
+#include <omp.h>
+
 #include "link.h"
 #include "family.h"
 #include "deviance.h"
@@ -27,6 +31,7 @@ class Newton {
         double damping;
         bool verbose;
         int frequency;
+        bool parallel;
 
         // Print the class attributes
         void summary ();
@@ -51,7 +56,8 @@ class Newton {
             const int & maxiter, const double & stepsize, 
             const double & eps, const int & nafill, 
             const double & tol, const double & damping,
-            const bool & verbose, const int & frequency
+            const bool & verbose, const int & frequency,
+            const bool & parallel
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 500;}
             if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}
@@ -59,8 +65,9 @@ class Newton {
             if (nafill > 0) {this->nafill = nafill;} else {this->nafill = 1;}
             if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
             if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
-            if (frequency > 1) {this->frequency = frequency;} else {this->frequency = 50;}
+            if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 50;}
             this->verbose = verbose;
+            this->parallel = parallel;
         }
 };
 

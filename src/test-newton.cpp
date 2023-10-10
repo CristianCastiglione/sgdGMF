@@ -1,7 +1,7 @@
 // test-newton.cpp
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 01/10/2023
+// last change: 10/10/2023
 
 #include "newton.h"
 
@@ -22,7 +22,8 @@ Rcpp::List c_fit_newton (
     const double & tol = 1e-05,
     const double & damping = 1e-03,
     const bool & verbose = true,
-    const int & frequency = 10
+    const int & frequency = 10,
+    const bool & parallel = false
 ) {
     arma::mat y = Y;
 
@@ -30,7 +31,7 @@ Rcpp::List c_fit_newton (
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
     
     // Instantiate the Newton optimizer
-    Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency);
+    Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
 
     // Perform the optimization via Newton algorithm
     Rcpp::List output = newton.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);

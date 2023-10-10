@@ -1,7 +1,7 @@
 // airwls.cpp
 // author: Cristian Castiglione
 // creation: 02/10/2023
-// last change: 05/10/2023
+// last change: 10/10/2023
 
 #include "airwls.h"
 
@@ -93,10 +93,11 @@ void AIRWLS::update (
         #pragma omp parallel 
         {
             // We need to instantiate ids and coefs here in order to make 
-            // openMP aware that they are thread-specific variables
+            // openMP aware that they are private thread-specific variables
             arma::uvec ids(1);
             arma::vec coef(ncoefs);
-            // This loop can be parrallelized with openMP since any iteration is independend on each other
+            // This loop can be parallelized with openMP since any iteration 
+            // is independent of each other
             #pragma omp for
             for (unsigned int slice = 0; slice < nslices; slice++) {
                 ids = {slice};
@@ -110,10 +111,11 @@ void AIRWLS::update (
         #pragma omp parallel 
         {
             // We need to instantiate ids and coefs here in order to make 
-            // openMP aware that they are thread-specific variables
+            // openMP aware that they are private thread-specific variables
             arma::uvec ids(1);
             arma::vec coef(ncoefs);
-            // This loop can be parrallelized with openMP since any iteration is independend on each other
+            // This loop can be parallelized with openMP since any iteration 
+            // is independent of each other
             #pragma omp for
             for (unsigned int slice = 0; slice < nslices; slice++) {
                 ids = {slice};
@@ -170,14 +172,10 @@ Rcpp::List AIRWLS::fit (
     bool anyna = !Y.is_finite();
     arma::uvec isna = arma::find_nonfinite(Y);
 
-    // Get the linear predictor, the mean and the variance matrices
+    // Get the linear predictor and the mean matrices
     arma::mat eta(n,m), mu(n,m), offset(n,m);
-    eta = u * v.t();
+    eta = get_eta(u, v, etalo, etaup);
     mu = family->linkinv(eta);
-    
-    // Truncate all the extreme values
-    utils::trim(mu, mulo, muup);
-    utils::trim(eta, etalo, etaup);
 
     // Fill the missing values with the initial predictions
     Y.elem(isna) = mu.elem(isna);
@@ -199,17 +197,17 @@ Rcpp::List AIRWLS::fit (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("-------------------------------------------\n");
-        std::printf(" Iteration    Deviance   Change   Exe-Time \n");
+        std::printf("--------------------------------------------\n");
+        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
         print_state(0, dev / nm, 1., time);
     }
 
     // Optimization loop
-    int iter;
+    int iter = 0;
     for (iter = 1; iter < this->maxiter; iter++) {
 
         // Fill the missing values with the current predictions
-        if (iter > 0 && anyna && iter % this->nafill == 0) {
+        if (anyna && iter % this->nafill == 0) {
             Y.elem(isna) = mu.elem(isna);
         }
 
@@ -222,12 +220,8 @@ Rcpp::List AIRWLS::fit (
         this->update(u, Y, v, family, idu, offset, penu, true);
 
         // Update the linear predictor and the mean matrix
-        eta = u * v.t();
+        eta = get_eta(u, v, etalo, etaup);
         mu = family->linkinv(eta);
-
-        // Truncate all the extreme values
-        utils::trim(mu, mulo, muup);
-        utils::trim(eta, etalo, etaup);
 
         // Update the initial deviance, penalty and objective function
         dev = arma::accu(deviance(Y, mu, family));
@@ -257,7 +251,7 @@ Rcpp::List AIRWLS::fit (
 
     if (this->verbose) {
         print_state(iter, dev / nm, change, time);
-        std::printf("-------------------------------------------\n");
+        std::printf("--------------------------------------------\n");
     }
     
     // Get the final output
