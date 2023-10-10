@@ -107,10 +107,10 @@ get.glm.init = function (familyname = "gaussian", linkname = "identity") {
     ncomp = d, lambda = c(0,0,1,0), maxiter = 100, burn = 1, rate0 = 0.1,
     size = 100, frequency = 10)
 
-  # c.sgdfit = sgdGMF::c_fit2_msgd(
-  #   Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
-  #   ncomp = d, lambda = c(0,0,1,0), maxiter = 50, burn = 1, rate0 = 0.1,
-  #   size = 100, frequency = 10, parallel = TRUE)
+  c.sgdfit = sgdGMF::c_fit2_msgd(
+    Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
+    ncomp = d, lambda = c(0,0,1,0), maxiter = 5, burn = 1, rate0 = 0.1,
+    size = 100, frequency = 1, parallel = TRUE)
 
 
   print(all.equal(c.wlsfit$mu, c.sgdfit$mu))
