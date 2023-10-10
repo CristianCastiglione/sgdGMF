@@ -47,3 +47,55 @@ std::list<arma::uvec> Chunks::get_chunks (const arma::uvec & iters) {
     }
     return chunks;
 }
+
+
+void ChunkPile::fill_tovisit () {
+    this->tovisit = this->visited;
+}
+
+void ChunkPile::empty_visited () {
+    this->visited = {};
+}
+
+void ChunkPile::pop_tovisit (const int & id) {
+    int n = this->tovisit.n_elem;
+    arma::uvec h = arma::find(this->tovisit == id);
+    int i = h(0);
+    if (i ==   0) {this->tovisit = this->tovisit.tail(n-1);}
+    if (i == n-1) {this->tovisit = this->tovisit.head(n-1);}
+    if (i > 0 && i < n-1) {
+        arma::uvec head = this->tovisit.head(i);
+        arma::uvec tail = this->tovisit.tail(n-i-1);
+        this->tovisit = arma::join_cols(head, tail);
+    }
+}
+
+void ChunkPile::push_visited (const int & id) {
+    arma::uword i = id;
+    this->visited = arma::join_cols(this->visited, arma::uvec{i});
+}
+
+void ChunkPile::sample_idx () {
+    int n = this->tovisit.n_elem;
+    int which;
+    if (this->random) {
+        which = arma::randi<int>(arma::distr_param(0, n-1));
+    } else {
+        which = 0;
+    }
+    this->idx = this->tovisit(which);
+}
+
+void ChunkPile::update () {
+    // If tovisit is empty, fill it using visited and empty the later
+    int n = this->tovisit.n_elem;
+    if (n == 0) {
+        this->fill_tovisit();
+        this->empty_visited();
+    }
+
+    // Sample a random index, pop it from to visit and push it to visited
+    this->sample_idx();
+    this->pop_tovisit(idx);
+    this->push_visited(idx);
+}

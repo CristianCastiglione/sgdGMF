@@ -1,10 +1,11 @@
 // misc.h
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 01/10/2023
+// last change: 10/10/2023
 
 #include <RcppArmadillo.h>
 #include <time.h>
+#include "utils.h"
 #include "link.h"
 #include "family.h"
 #include <memory>
@@ -21,6 +22,16 @@ void set_data_bounds (
     double & mulo, double & muup, double & etalo, double & etaup, 
     const double & eps, const double & ymin, const double & ymax, 
     const std::unique_ptr<Family::Family> & family);
+
+// Set the linear predictor trimming the extreme values
+void set_eta (
+    arma::mat & eta, const arma::mat & u, const arma::mat & v, 
+    const double & etamin, const double & etamax);
+
+// Get the linear predictor trimming the extreme values
+arma::mat get_eta (
+    const arma::mat & u, const arma::mat & v, 
+    const double & etamin, const double & etamax);
 
 // Set the augmented u and v matrices merging by column the fixed and latent effect matrices
 void set_uv_matrices (

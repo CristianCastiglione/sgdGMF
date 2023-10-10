@@ -1,7 +1,7 @@
 // misc.cpp
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 01/10/2023
+// last change: 10/10/2023
 
 #include "misc.h"
 
@@ -55,6 +55,23 @@ void set_data_bounds (
     etalo = etalot(0,0); etaup = etaupt(0,0);
 }
 
+void set_eta (
+    arma::mat & eta, const arma::mat & u, const arma::mat & v, 
+    const double & etamin, const double & etamax
+) {
+    eta = u * v.t();
+    utils::trim(eta, etamin, etamax);
+}
+
+arma::mat get_eta (
+    const arma::mat & u, const arma::mat & v, 
+    const double & etamin, const double & etamax
+) {
+    arma::mat eta(u.n_rows, v.n_rows);
+    set_eta(eta, u, v, etamin, etamax);
+    return eta;
+}
+
 void set_uv_matrices (
     arma::mat & u, arma::mat & v,
     const arma::mat & A, const arma::mat & Z,
@@ -92,9 +109,9 @@ void print_state (
     const double & change, const double & time
 ) {
     if (time < 60) {
-        std::printf(" %9i %11.2f %8.4f %8.2f s \n", iter, dev, change, time);
+        std::printf(" %9i %11.2f %9.5f %8.2f s \n", iter, dev, change, time);
     } else {
-        std::printf(" %9i %11.2f %8.4f %8.2f m \n", iter, dev, change, time/60);
+        std::printf(" %9i %11.2f %9.5f %8.2f m \n", iter, dev, change, time/60);
     }
 }
 
