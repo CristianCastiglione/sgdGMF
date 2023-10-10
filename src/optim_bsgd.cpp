@@ -3,7 +3,7 @@
 // creation: 07/10/2023
 // last change: 10/10/2023
 
-#include "sgd.h"
+#include "optim.h"
 
 void BSGD::summary () {
     std::printf("------------------\n");

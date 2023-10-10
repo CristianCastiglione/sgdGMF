@@ -3,7 +3,7 @@
 // creation: 30/09/2023
 // last change: 05/10/2023
 
-#include "airwls.h"
+#include "optim.h"
 
 // [[Rcpp::export]]
 arma::vec c_airwls_glmstep (

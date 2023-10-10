@@ -1,18 +1,17 @@
-// csgd.cpp
+// msgd.cpp
 // author: Cristian Castiglione
 // creation: 09/10/2023
 // last change: 10/10/2023
 
-#include "sgd.h"
+#include "optim.h"
 
-void CSGD::summary () {
+void MSGD::summary () {
     std::printf("------------------\n");
     std::printf(" maxiter = %i \n", this->maxiter);
     std::printf(" eps = %.5f \n", this->eps);
     std::printf(" nafill = %i \n", this->nafill);
     std::printf(" tol = %.5f \n", this->tol);
-    std::printf(" size1 = %i \n", this->size1);
-    std::printf(" size2 = %i \n", this->size2);
+    std::printf(" size1 = %i \n", this->size);
     std::printf(" burn = %.5f \n", this->burn);
     std::printf(" rate0 = %.5f \n", this->rate0);
     std::printf(" decay = %.5f \n", this->decay);
@@ -26,72 +25,91 @@ void CSGD::summary () {
     std::printf("------------------\n");
 }
 
-void CSGD::update_rate (double & rate, const int & iter) {
+void MSGD::update_rate (double & rate, const int & iter) {
     rate = this->rate0 / std::pow(1 + this->decay * this->rate0 * iter, .75);
 }
 
-void CSGD::update_deta (
-    dEta & deta, const arma::uvec & idx, 
+void MSGD::update_deta (
+    dEta & deta, const arma::uvec & idx,
     const arma::mat & Y,  const arma::mat & eta, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family, const bool & transp
+    const std::unique_ptr<Family::Family> & family
 ) {
     arma::mat var = family->variance(mu);
     arma::mat mueta = family->mueta(eta);
-    if (transp) {
-        deta.deta.cols(idx) = (Y - mu) % mueta / var;
-        deta.ddeta.cols(idx) = (mueta % mueta) / var;
-    } else {
-        deta.deta.rows(idx) = (Y - mu) % mueta / var;
-        deta.ddeta.rows(idx) = (mueta % mueta) / var;
-    }
+    deta.deta.rows(idx) = (Y - mu) % mueta / var;
+    deta.ddeta.rows(idx) = (mueta % mueta) / var;
 }
 
-void CSGD::update_dpar (
-    dPar & dpar, const dEta & deta, const arma::uvec & idx,
-    const arma::mat & u, const arma::mat & v, const arma::vec & penalty, 
-    const double & scale, const bool & transp
+void MSGD::update_dpar (
+    dPar & dpar, const dEta & deta, const arma::uvec & idx, 
+    const arma::mat & u, const arma::mat & v, 
+    const arma::vec & penalty, const double & scale,
+    const bool & transp
 ) {
-    const int n = u.n_rows;
-    const int d = u.n_cols;
-    arma::mat grad(n,d), hess(n,d), pen(d,d);
-    pen = arma::diagmat(penalty);
     if (transp) {
         // This update is for the loading matrix
+        const int m = u.n_rows;
+        const int d = u.n_cols;
+        arma::mat grad(m,d), hess(m,d), pen(d,d);
+        pen = arma::diagmat(penalty);
         grad = - scale * (deta.deta.rows(idx).t() * v.rows(idx)) + u * pen;
-        hess = scale * (deta.ddeta.rows(idx).t() * arma::square(v.rows(idx))) + arma::ones(n, d) * pen + this->damping;
+        hess = scale * (deta.ddeta.rows(idx).t() * arma::square(v.rows(idx))) + arma::ones(m, d) * pen + this->damping;
         dpar.dpar = (1 - this->rate1) * dpar.dpar + this->rate1 * grad;
         dpar.ddpar = (1 - this->rate2) * dpar.ddpar + this->rate2 * hess;
     } else {
         // This update is for the factor scores
-        grad = - scale * (deta.deta.cols(idx) * v.rows(idx)) + u * pen;
-        hess = scale * (deta.ddeta.cols(idx) * arma::square(v.rows(idx))) + arma::ones(n, d) * pen + this->damping;
-        dpar.dpar = (1 - this->rate1) * dpar.dpar + this->rate1 * grad;
-        dpar.ddpar = (1 - this->rate2) * dpar.ddpar + this->rate2 * hess;
+        const int n = idx.n_elem;
+        const int d = u.n_cols;
+        arma::mat grad(n,d), hess(n,d), pen(d,d);
+        pen = arma::diagmat(penalty);
+        grad = - scale * (deta.deta.rows(idx) * v) + u.rows(idx) * pen;
+        hess = scale * (deta.ddeta.rows(idx) * arma::square(v)) + arma::ones(n, d) * pen + this->damping;
+        dpar.dpar.rows(idx) = (1 - this->rate1) * dpar.dpar.rows(idx) + this->rate1 * grad;
+        dpar.ddpar.rows(idx) = (1 - this->rate2) * dpar.ddpar.rows(idx) + this->rate2 * hess;
     }
 }
 
-void CSGD::update_par (
+void MSGD::update_par (
     arma::mat & par, const dPar & dpar, 
-    const double & rate, const arma::uvec & idx
+    const double & rate, const arma::uvec & idy
 ) {
-    par.cols(idx) = par.cols(idx) - rate * (dpar.dpar / dpar.ddpar);
+    par.cols(idy) = par.cols(idy) - rate * (dpar.dpar / dpar.ddpar);
 }
 
-void CSGD::smooth_par (
+void MSGD::update_par (
+    arma::mat & par, const dPar & dpar, const double & rate,
+    const arma::uvec & idx, const arma::uvec & idy
+) {
+    par(idx, idy) = par(idx, idy) - rate * (dpar.dpar.rows(idx) / dpar.ddpar.rows(idx));
+}
+
+void MSGD::smooth_par (
     arma::mat & u, const arma::mat & ut, 
-    const int & iter, const arma::uvec & idx
+    const int & iter, const arma::uvec & idy
 ) {
     int thr = floor(double(this->maxiter) * this->burn);
     if (iter > thr) {
         double rate = 1 / (iter - thr);
-        u.cols(idx) = (1 - rate) * u.cols(idx) + rate * ut.cols(idx);
+        u.cols(idy) = (1 - rate) * u.cols(idy) + rate * ut.cols(idy);
     } else {
-        u.cols(idx) = ut.cols(idx);
+        u.cols(idy) = ut.cols(idy);
     }
 }
 
+void MSGD::smooth_par (
+    arma::mat & u, const arma::mat & ut, const int & iter,
+    const arma::uvec & idx, const arma::uvec & idy
+) {
+    int thr = floor(double(this->maxiter) * this->burn);
+    if (iter > thr) {
+        double rate = 1 / (iter - thr);
+        u(idx, idy) = (1 - rate) * u(idx, idy) + rate * ut(idx, idy);
+    } else {
+        u(idx, idy) = ut(idx, idy);
+    }
+}
 
-Rcpp::List CSGD::fit (
+Rcpp::List MSGD::fit (
     arma::mat & Y, 
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
@@ -115,23 +133,14 @@ Rcpp::List CSGD::fit (
     set_data_bounds(mulo, muup, etalo, etaup, this->eps, Y.min(), Y.max(), family);
 
     // Get the row and column minibatch partition of the data
-    this->size1 = std::min(n, this->size1);
-    this->size2 = std::min(m, this->size2);
-    Chunks rowchunks(n, this->size1, true);
-    Chunks colchunks(m, this->size2, true);
-
-    // Get the row and column chunk piles, which permits us to
-    // efficiently chose the new chunk to use at the next iteration 
-    // of the algorithm. The new minibatch is sampled in such a way
-    // that the same chunk is re-visited only when all the other 
-    // chunks have already been used
-    ChunkPile rowpile(rowchunks.nchunks, true);
-    ChunkPile colpile(colchunks.nchunks, true);
+    this->size = std::min(n, this->size);
+    Chunks chunks(n, this->size, true);
+    int nepochs = chunks.nchunks;
 
     // Set the chunk dimensions, scale factors and indices
-    int nc, mc;
-    double scaler, scalec;
-    arma::uvec idr, idc;
+    int nc;
+    double scale;
+    arma::uvec idx;
 
     // Build the left and right decomposition matrices
     arma::mat u, v, ut, vt;
@@ -152,6 +161,7 @@ Rcpp::List CSGD::fit (
     dEta deta(n, m);
     dPar du(n, q+d);
     dPar dv(m, p+d);
+    dCube dV(m, p+d, nepochs);
 
     // Save the optimization history
     arma::vec state(6);
@@ -204,44 +214,45 @@ Rcpp::List CSGD::fit (
         // Update the learning rate
         this->update_rate(rate, iter);
 
-        // Sample the minibatch indices
-        rowpile.update();
-        colpile.update();
-        idr = rowchunks.get_chunk(rowpile.idx);
-        idc = colchunks.get_chunk(colpile.idx);
-        nc = idr.n_elem;
-        mc = idc.n_elem;
+        // Cycle over the epochs
+        for (int epoch = 0; epoch < nepochs; epoch++) {
+            // Get the minibatch indices
+            idx = chunks.get_chunk(epoch);
+            nc = idx.n_elem;
+            scale = n / nc;
 
-        // Get the minibatch normalization factors
-        scaler = n / nc;
-        scalec = m / mc;
+            dPar dvt(m, p+d);
+            dvt.dpar = dv.dpar;
+            dvt.ddpar = dv.ddpar;
 
-        // Update the linear predictor and the mean matrix
-        arma::mat etar = get_eta(ut.rows(idr), vt, etalo, etaup);
-        arma::mat etac = get_eta(ut, vt.rows(idc), etalo, etaup);        
-        arma::mat mur = family->linkinv(etar);
-        arma::mat muc = family->linkinv(etac);
-        arma::mat Yr = Y.rows(idr);
-        arma::mat Yc = Y.cols(idc);
+            // Update the linear predictor and the mean matrix
+            arma::mat etat = get_eta(ut.rows(idx), vt, etalo, etaup);
+            arma::mat mut = family->linkinv(etat);
+            arma::mat Yt = Y.rows(idx);
 
-        eta.rows(idr) = etar;
-        eta.cols(idc) = etac;
-        mu.rows(idr) = mur;
-        mu.cols(idc) = muc;
+            eta.rows(idx) = etat;
+            mu.rows(idx) = mut;
 
-        // Update the log-likelihood differentials
-        this->update_deta(deta, idr, Yr, etar, mur, family, false);
-        this->update_deta(deta, idc, Yc, etac, muc, family, true);
-        
-        this->update_dpar(du, deta, idc, ut.cols(idu), vt.cols(idu), penu(idu), scalec, false);
-        this->update_dpar(dv, deta, idr, vt.cols(idv), ut.cols(idv), penv(idv), scaler, true);
-        
-        // Update the parameter estimates
-        this->update_par(ut, du, rate, idu);
+            // Update the log-likelihood differentials of u
+            this->update_deta(deta, idx, Yt, etat, mut, family);
+            this->update_dpar(du, deta, idx, ut.cols(idu), vt.cols(idu), penu(idu), scale, false);
+
+            // Update the log-likelihood differentials of v
+            this->update_dpar(dvt, deta, idx, vt.cols(idv), ut.cols(idv), penv(idv), scale, true);
+            dV.dpar.slice(epoch) = dvt.dpar;
+            dV.ddpar.slice(epoch) = dvt.ddpar;
+            
+            // Update and smooth the estimate of u
+            this->update_par(ut, du, rate, idx, idu);
+            this->smooth_par(u, ut, iter, idx, idu);
+        }
+
+        // Accumulate al the differentials wrt v
+        dv.dpar = arma::mean(dV.dpar, 2);
+        dv.ddpar = arma::mean(dV.ddpar, 2);
+
+        // Update and smooth the estimate of v
         this->update_par(vt, dv, rate, idv);
-        
-        // Smooth the parameter estimates
-        this->smooth_par(u, ut, iter, idu);
         this->smooth_par(v, vt, iter, idv);
         
         if (iter % frequency == 0) {
@@ -268,12 +279,12 @@ Rcpp::List CSGD::fit (
         if (change < this->tol) {break;}
     }
 
-    // Get the estimated predictions
+    // Get the estimated predictions and variances
     eta = get_eta(u, v, etalo, etaup);
     mu = family->linkinv(eta);
     var = family->variance(mu);
 
-    // The the deviance, penalty and objective function 
+    // The the deviance, penalty and objective function     
     dev = arma::accu(deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen;
@@ -308,4 +319,3 @@ Rcpp::List CSGD::fit (
     // Return the estimated model
     return output;
 }
-

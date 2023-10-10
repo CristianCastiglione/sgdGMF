@@ -3,7 +3,7 @@
 // creation: 28/09/2023
 // last change: 10/10/2023
 
-#include "newton.h"
+#include "optim.h"
 
 void Newton::summary () {
     std::printf("------------------\n");
