@@ -555,6 +555,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// c_get_next
+Rcpp::List c_get_next(const int& iter, const int& n, const bool& rnd);
+RcppExport SEXP _sgdGMF_c_get_next(SEXP iterSEXP, SEXP nSEXP, SEXP rndSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type rnd(rndSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_get_next(iter, n, rnd));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_make_link_family
 void c_make_link_family(const std::string& familyname, const std::string& linkname);
 RcppExport SEXP _sgdGMF_c_make_link_family(SEXP familynameSEXP, SEXP linknameSEXP) {
@@ -634,8 +647,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // c_fit_newton
-Rcpp::List c_fit_newton(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency);
-RcppExport SEXP _sgdGMF_c_fit_newton(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP) {
+Rcpp::List c_fit_newton(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency, const bool& parallel);
+RcppExport SEXP _sgdGMF_c_fit_newton(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -658,7 +671,191 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type damping(dampingSEXP);
     Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
-    rcpp_result_gen = Rcpp::wrap(c_fit_newton(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency));
+    Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit_newton(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_fit_bsgd
+Rcpp::List c_fit_bsgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, int maxiter, double eps, int nafill, double tol, int size1, int size2, double burn, double rate0, double decay, double damping, double rate1, double rate2, bool parallel, bool verbose, int frequency, bool progress);
+RcppExport SEXP _sgdGMF_c_fit_bsgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int >::type size1(size1SEXP);
+    Rcpp::traits::input_parameter< int >::type size2(size2SEXP);
+    Rcpp::traits::input_parameter< double >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< double >::type rate0(rate0SEXP);
+    Rcpp::traits::input_parameter< double >::type decay(decaySEXP);
+    Rcpp::traits::input_parameter< double >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< double >::type rate1(rate1SEXP);
+    Rcpp::traits::input_parameter< double >::type rate2(rate2SEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< bool >::type progress(progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit_bsgd(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, verbose, frequency, progress));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_fit2_bsgd
+Rcpp::List c_fit2_bsgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, int maxiter, double eps, int nafill, double tol, int size1, int size2, double burn, double rate0, double decay, double damping, double rate1, double rate2, bool parallel, bool verbose, int frequency, bool progress);
+RcppExport SEXP _sgdGMF_c_fit2_bsgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int >::type size1(size1SEXP);
+    Rcpp::traits::input_parameter< int >::type size2(size2SEXP);
+    Rcpp::traits::input_parameter< double >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< double >::type rate0(rate0SEXP);
+    Rcpp::traits::input_parameter< double >::type decay(decaySEXP);
+    Rcpp::traits::input_parameter< double >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< double >::type rate1(rate1SEXP);
+    Rcpp::traits::input_parameter< double >::type rate2(rate2SEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< bool >::type progress(progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit2_bsgd(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, verbose, frequency, progress));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_fit_csgd
+Rcpp::List c_fit_csgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, int maxiter, double eps, int nafill, double tol, int size1, int size2, double burn, double rate0, double decay, double damping, double rate1, double rate2, bool parallel, bool verbose, int frequency, bool progress);
+RcppExport SEXP _sgdGMF_c_fit_csgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int >::type size1(size1SEXP);
+    Rcpp::traits::input_parameter< int >::type size2(size2SEXP);
+    Rcpp::traits::input_parameter< double >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< double >::type rate0(rate0SEXP);
+    Rcpp::traits::input_parameter< double >::type decay(decaySEXP);
+    Rcpp::traits::input_parameter< double >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< double >::type rate1(rate1SEXP);
+    Rcpp::traits::input_parameter< double >::type rate2(rate2SEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< bool >::type progress(progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit_csgd(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, verbose, frequency, progress));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_fit_msgd
+Rcpp::List c_fit_msgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, int maxiter, double eps, int nafill, double tol, int size, double burn, double rate0, double decay, double damping, double rate1, double rate2, bool parallel, bool verbose, int frequency, bool progress);
+RcppExport SEXP _sgdGMF_c_fit_msgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP sizeSEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< double >::type rate0(rate0SEXP);
+    Rcpp::traits::input_parameter< double >::type decay(decaySEXP);
+    Rcpp::traits::input_parameter< double >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< double >::type rate1(rate1SEXP);
+    Rcpp::traits::input_parameter< double >::type rate2(rate2SEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< bool >::type progress(progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit_msgd(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size, burn, rate0, decay, damping, rate1, rate2, parallel, verbose, frequency, progress));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_fit2_msgd
+Rcpp::List c_fit2_msgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, int maxiter, double eps, int nafill, double tol, int size, double burn, double rate0, double decay, double damping, double rate1, double rate2, bool parallel, bool verbose, int frequency, bool progress);
+RcppExport SEXP _sgdGMF_c_fit2_msgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP sizeSEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< double >::type rate0(rate0SEXP);
+    Rcpp::traits::input_parameter< double >::type decay(decaySEXP);
+    Rcpp::traits::input_parameter< double >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< double >::type rate1(rate1SEXP);
+    Rcpp::traits::input_parameter< double >::type rate2(rate2SEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< bool >::type progress(progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_fit2_msgd(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size, burn, rate0, decay, damping, rate1, rate2, parallel, verbose, frequency, progress));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1050,13 +1247,19 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_link_sqrt_mueta", (DL_FUNC) &_sgdGMF_c_link_sqrt_mueta, 1},
     {"_sgdGMF_c_get_chunk", (DL_FUNC) &_sgdGMF_c_get_chunk, 4},
     {"_sgdGMF_c_get_chunks", (DL_FUNC) &_sgdGMF_c_get_chunks, 4},
+    {"_sgdGMF_c_get_next", (DL_FUNC) &_sgdGMF_c_get_next, 3},
     {"_sgdGMF_c_make_link_family", (DL_FUNC) &_sgdGMF_c_make_link_family, 2},
     {"_sgdGMF_c_get_data_bounds", (DL_FUNC) &_sgdGMF_c_get_data_bounds, 5},
     {"_sgdGMF_c_get_uv_penalty", (DL_FUNC) &_sgdGMF_c_get_uv_penalty, 4},
     {"_sgdGMF_c_get_uv_indices", (DL_FUNC) &_sgdGMF_c_get_uv_indices, 3},
     {"_sgdGMF_c_sample_minibatch", (DL_FUNC) &_sgdGMF_c_sample_minibatch, 3},
     {"_sgdGMF_c_select_minibatch", (DL_FUNC) &_sgdGMF_c_select_minibatch, 2},
-    {"_sgdGMF_c_fit_newton", (DL_FUNC) &_sgdGMF_c_fit_newton, 19},
+    {"_sgdGMF_c_fit_newton", (DL_FUNC) &_sgdGMF_c_fit_newton, 20},
+    {"_sgdGMF_c_fit_bsgd", (DL_FUNC) &_sgdGMF_c_fit_bsgd, 27},
+    {"_sgdGMF_c_fit2_bsgd", (DL_FUNC) &_sgdGMF_c_fit2_bsgd, 27},
+    {"_sgdGMF_c_fit_csgd", (DL_FUNC) &_sgdGMF_c_fit_csgd, 27},
+    {"_sgdGMF_c_fit_msgd", (DL_FUNC) &_sgdGMF_c_fit_msgd, 26},
+    {"_sgdGMF_c_fit2_msgd", (DL_FUNC) &_sgdGMF_c_fit2_msgd, 26},
     {"_sgdGMF_c_dabsmax", (DL_FUNC) &_sgdGMF_c_dabsmax, 2},
     {"_sgdGMF_c_vabsmax", (DL_FUNC) &_sgdGMF_c_vabsmax, 2},
     {"_sgdGMF_c_trim", (DL_FUNC) &_sgdGMF_c_trim, 3},
