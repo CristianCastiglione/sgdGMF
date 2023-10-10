@@ -1,4 +1,4 @@
-// csgd.cpp
+// optim_csgd.cpp
 // author: Cristian Castiglione
 // creation: 09/10/2023
 // last change: 10/10/2023

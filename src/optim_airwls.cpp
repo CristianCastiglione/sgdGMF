@@ -1,4 +1,4 @@
-// airwls.cpp
+// optim_airwls.cpp
 // author: Cristian Castiglione
 // creation: 02/10/2023
 // last change: 10/10/2023

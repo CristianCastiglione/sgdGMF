@@ -1,4 +1,4 @@
-// bsgd.cpp
+// optim_bsgd.cpp
 // author: Cristian Castiglione
 // creation: 07/10/2023
 // last change: 10/10/2023

@@ -1,4 +1,4 @@
-// newton.cpp
+// optim_newton.cpp
 // author: Cristian Castiglione
 // creation: 28/09/2023
 // last change: 10/10/2023
