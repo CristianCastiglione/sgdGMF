@@ -241,7 +241,7 @@ eta = X %*% beta
 ## Test: airwls fit ----
 {
   n = 1000; m = 100; p = 3; q = 1; d = 5
-  familyname = "gaussian"
+  familyname = "poisson"
   linkname = "log"
   penalty = rep(0, length = d)
   offset = matrix(0, nrow = n, ncol = m)
@@ -267,6 +267,11 @@ eta = X %*% beta
   U0 = UV$u %*% diag(sqrt(UV$d))
   V0 = UV$v %*% diag(sqrt(UV$d))
 
+  r.gmffit = sgdGMF::sgdgmf(
+    Y, X, Z, family = family, ncomp = d, method = "airwls", init = list(niter = 0),
+    control = list(maxiter = 500, stepsize = 0.9, eps = 1e-08, tol = 1e-05,
+                   damping = 1e-03, verbose = TRUE, frequency = 10))
+
   c.gmffit = sgdGMF::c_fit_airwls(
     Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
     ncomp = d, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
@@ -278,11 +283,6 @@ eta = X %*% beta
     ncomp = d, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
     eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
     frequency = 10, parallel = TRUE)
-
-  r.gmffit = sgdGMF::sgdgmf(
-    Y, X, Z, family = family, ncomp = d, method = "airwls", init = list(niter = 0),
-    control = list(maxiter = 500, stepsize = 0.9, eps = 1e-08, tol = 1e-05,
-                   damping = 1e-03, verbose = TRUE, frequency = 10))
 
   print(all.equal(r.gmffit$pred$mu, c.gmffit$mu))
   print(all.equal(r.gmffit$pred$eta, c.gmffit$eta))
@@ -298,6 +298,85 @@ eta = X %*% beta
 
 }
 
+## Test:: splatter date ----
+{
+
+  suppressPackageStartupMessages({
+    library(splatter)
+    library(scater)
+  })
+
+  n = 1000
+  m = 250
+  params = splatter::newSplatParams()
+  params = splatter::setParam(params, "batchCells", n)
+  params = splatter::setParam(params, "nGenes", m)
+  params = splatter::setParam(params, "group.prob", c(0.1, 0.2, 0.2, 0.2, 0.3))
+  params = splatter::setParam(params, "de.prob", c(0.3, 0.1, 0.2, 0.01, 0.1))
+  params = splatter::setParam(params, "de.downProb", c(0.1, 0.4, 0.9, 0.6, 0.5))
+  params = splatter::setParam(params, "de.facLoc", c(0.6, 0.1, 0.1, 0.01, 0.2))
+  params = splatter::setParam(params, "de.facScale", c(0.1, 0.4, 0.2, 0.5, 0.4))
+  # params = splatter::setParam(params, "seed", 140275)
+
+  sim = splatter::splatSimulateGroups(params, verbose = FALSE)
+
+  ## DIMENSION REDUCTION
+  sim = scater::logNormCounts(sim)
+  sim = scater::runPCA(sim)
+  scater::plotPCA(sim, colour_by = "Group") +
+    labs(title = "Different DE factors")
+
+  ## DATA EXTRACTION
+  counts = as.data.frame(counts(sim))
+  cells = as.data.frame(colData(sim))
+  genes = as.data.frame(rowData(sim))
+  meta = metadata(sim)
+
+  ## LATENT FACTOR ESTIMATION
+  Y = matrix(NA, nrow = n, ncol = m)
+  Y[] = t(counts)
+  X = matrix(1, nrow = nrow(Y), ncol = 1)
+  Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+  ncomp = 5
+  family = poisson()
+
+  familyname = "poisson"
+  linkname = "log"
+
+  init = get.glm.init(familyname, linkname)
+  R = init(Y)
+  B0 = t(solve(crossprod(X), crossprod(X, R)))
+  A0 = t(solve(crossprod(Z), crossprod(Z, t(R - tcrossprod(X, B0)))))
+  UV = svd::propack.svd(R - tcrossprod(cbind(X, A0), cbind(B0, Z)), neig = ncomp)
+  U0 = UV$u %*% diag(sqrt(UV$d))
+  V0 = UV$v %*% diag(sqrt(UV$d))
+
+
+
+  r.gmffit = sgdGMF::sgdgmf(
+    Y, X, Z, family = family, ncomp = ncomp, method = "airwls", init = list(niter = 0),
+    control = list(maxiter = 500, stepsize = 0.9, eps = 1e-08, tol = 1e-05,
+                   damping = 1e-03, verbose = TRUE, frequency = 10))
+
+  c.gmffit = sgdGMF::c_fit_airwls(
+    Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
+    ncomp = ncomp, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
+    eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
+    frequency = 10, parallel = FALSE)
+
+  c.gmffit = sgdGMF::c_fit_airwls(
+    Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
+    ncomp = ncomp, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
+    eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
+    frequency = 10, parallel = TRUE)
+}
+
+B = matrix(NA, nrow = m, ncol = 1)
+B[] = B0
+
+
+str(B)
 
 
 
