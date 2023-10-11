@@ -75,7 +75,7 @@ Rcpp::List Newton::fit (
     const int d = ncomp; 
     const int p = X.n_cols; 
     const int q = Z.n_cols;
-    const double nm = std::sqrt(n * m);
+    const double nm = n * m;
 
     // Get the number of cores and threads
     const unsigned int ncores = std::thread::hardware_concurrency();

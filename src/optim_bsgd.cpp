@@ -120,7 +120,7 @@ Rcpp::List BSGD::fit (
     const int d = ncomp; 
     const int p = X.n_cols; 
     const int q = Z.n_cols;
-    const double nm = std::sqrt(n * m);
+    const double nm = n * m;
 
     // Get the range of the data, and the lower and upper bounds
     double mulo, muup, etalo, etaup;
@@ -343,7 +343,7 @@ Rcpp::List BSGD::fit2 (
     const int d = ncomp; 
     const int p = X.n_cols; 
     const int q = Z.n_cols;
-    const double nm = std::sqrt(n * m);
+    const double nm = n * m;
 
     // Get the range of the data, and the lower and upper bounds
     double mulo, muup, etalo, etaup;
