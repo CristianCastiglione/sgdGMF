@@ -167,7 +167,7 @@ Rcpp::List BSGD::fit (
 
     // Save the optimization history
     arma::vec state(6);
-    arma::mat trace(maxiter, 6);
+    arma::mat trace(0, 6);
 
     // Check if and where there are some NA values
     bool anyna = !Y.is_finite();
@@ -194,7 +194,7 @@ Rcpp::List BSGD::fit (
 
     // Save the objective status before starting the optimization loop
     state = arma::vec{.0, dev, pen, obj, change, time};
-    trace.row(0) = state.t();
+    trace = arma::join_cols(trace, state.t());
 
     // Print the optimization state
     if (verbose) {
@@ -263,7 +263,7 @@ Rcpp::List BSGD::fit (
 
             // Store the optimization state at the current iteration
             state = arma::vec{double(iter), dev, pen, obj, change, time};
-            trace.row(iter) = state.t();
+            trace = arma::join_cols(trace, state.t());
 
             if (this->verbose) {
                 print_state(iter, dev / nm, change, time);
@@ -309,7 +309,7 @@ Rcpp::List BSGD::fit (
     output["deviance"] = dev;
     output["objective"] = obj;
     output["exe.time"] = time;
-    output["trace"] = trace.rows(0, iter-1);
+    output["trace"] = trace;
 
     // Return the estimated model
     return output;
@@ -385,7 +385,7 @@ Rcpp::List BSGD::fit2 (
 
     // Save the optimization history
     arma::vec state(6);
-    arma::mat trace(maxiter, 6);
+    arma::mat trace(0, 6);
 
     // Check if and where there are some NA values
     bool anyna = !Y.is_finite();
@@ -412,7 +412,7 @@ Rcpp::List BSGD::fit2 (
 
     // Save the objective status before starting the optimization loop
     state = arma::vec{.0, dev, pen, obj, change, time};
-    trace.row(0) = state.t();
+    trace = arma::join_cols(trace, state.t());
 
     // Print the optimization state
     if (verbose) {
@@ -482,7 +482,7 @@ Rcpp::List BSGD::fit2 (
 
             // Store the optimization state at the current iteration
             state = arma::vec{double(iter), dev, pen, obj, change, time};
-            trace.row(iter) = state.t();
+            trace = arma::join_cols(trace, state.t());
 
             if (this->verbose) {
                 print_state(iter, dev / nm, change, time);
@@ -528,7 +528,7 @@ Rcpp::List BSGD::fit2 (
     output["deviance"] = dev;
     output["objective"] = obj;
     output["exe.time"] = time;
-    output["trace"] = trace.rows(0, iter-1);
+    output["trace"] = trace;
 
     // Return the estimated model
     return output;
