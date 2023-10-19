@@ -138,14 +138,11 @@ void AIRWLS::update (
             } 
         }
     } else {
+        arma::uvec ids(1);
+        arma::vec coef(ncoefs);
         // Check whether we need to optimize row- or column-wise
         if (transp) {
             // We need to transpose all the matrices to update U
-            // We need to instantiate ids and coefs here in order to make 
-            arma::uvec ids(1);
-            arma::vec coef(ncoefs);
-            // This loop can be parallelized with openMP since any iteration 
-            // is independent of each other
             for (unsigned int slice = 0; slice < nslices; slice++) {
                 ids = {slice};
                 coef = beta(ids, idx).t();
@@ -154,11 +151,6 @@ void AIRWLS::update (
             }
         } else {
             // We don't need to transpose anything to update V
-            // We need to instantiate ids and coefs here in order to make 
-            arma::uvec ids(1);
-            arma::vec coef(ncoefs);
-            // This loop can be parallelized with openMP since any iteration 
-            // is independent of each other
             for (unsigned int slice = 0; slice < nslices; slice++) {
                 ids = {slice};
                 coef = beta(ids, idx).t();
