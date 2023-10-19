@@ -25,7 +25,7 @@ void AIRWLS::glmstep (
     const std::unique_ptr<Family::Family> & family, 
     const arma::vec & offset, const arma::vec & penalty
 ) {
-    // Set the tollerance threshold for the weight vector
+    // Set the tollerance threshold and the parameter dimension
     const double thr = 1e+06;
     const int p = beta.n_rows;
 
@@ -40,16 +40,12 @@ void AIRWLS::glmstep (
     // Truncate extremely low and high weight values
     utils::trim(w, 1/thr, thr);
 
-    // Keep only the obsevations passing some safety controls on varmu and etamu
-    // arma::uvec keep = arma::find((varmu > 0) && (mueta != 0) && (w > 0));
-
     // Compute the new estimate via penalized WLS
     arma::mat pen = arma::diagmat(penalty + this->damping);
     arma::mat xtwx = X.t() * arma::diagmat(w) * X + pen;
     arma::vec xtwz = X.t() * (w % z);
-    // arma::vec betat = arma::solve(xtwx, xtwz);
-
     arma::vec betat(p);
+
     try {
         // This system might fail in the case where xtwx is not positive definite
         betat = arma::solve(xtwx, xtwz);
@@ -74,10 +70,10 @@ void AIRWLS::glmfit (
 ) {
     // Set the convergence tolerance 
     const double tol = 1e-05;
-    const int p = beta.n_rows; 
-    arma::vec betaold(p);
+    const int p = beta.n_rows;
 
-    // Optimization cycle with Fisher scroring steps
+    // Optimization cycle with Fisher scroring steps 
+    arma::vec betaold(p);
     for (int iter = 0; iter < this->nsteps; iter++) {
         betaold = beta;
         this->glmstep(beta, y, X, family, offset, penalty);
