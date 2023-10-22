@@ -298,7 +298,7 @@ eta = X %*% beta
 
 }
 
-## Test:: splatter date ----
+## Test:: splatter data ----
 {
 
   suppressPackageStartupMessages({
@@ -306,7 +306,7 @@ eta = X %*% beta
     library(scater)
   })
 
-  n = 1000
+  n = 2000
   m = 250
   params = splatter::newSplatParams()
   params = splatter::setParam(params, "batchCells", n)
@@ -371,15 +371,6 @@ eta = X %*% beta
     eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
     frequency = 10, parallel = TRUE)
 }
-
-B = matrix(NA, nrow = m, ncol = 1)
-B[] = B0
-
-
-str(B)
-
-
-
 
 
 
