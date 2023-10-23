@@ -1,4 +1,4 @@
-// sgd.h
+// optim.h
 // author: Cristian Castiglione
 // creation: 05/10/2023
 // last change: 10/10/2023
