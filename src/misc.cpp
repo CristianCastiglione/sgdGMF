@@ -9,29 +9,34 @@
 std::unique_ptr<Link::Link> make_link (
     const std::string & linkname
 ) {
-    std::unique_ptr<Link::Link> ptr;
-    if (linkname == "identity") { ptr = std::make_unique<Link::Identity>();
-    } else if (linkname == "logit") { ptr = std::make_unique<Link::Logit>();
-    } else if (linkname == "probit") { ptr = std::make_unique<Link::Probit>();
-    } else if (linkname == "cauchit") { ptr = std::make_unique<Link::Cauchy>();
-    } else if (linkname == "cloglog") { ptr = std::make_unique<Link::cLogLog>();
-    } else if (linkname == "log") { ptr = std::make_unique<Link::Log>();
-    } else if (linkname == "inverse") { ptr = std::make_unique<Link::Inverse>();
-    } else if (linkname == "sqrt") { ptr = std::make_unique<Link::Sqrt>();
-    } else { Rcpp::stop("Link function not available."); }
-    return ptr;
+    bool flag = true;
+    std::unique_ptr<Link::Link> link;
+    if (linkname == "identity") { flag = false; link = std::make_unique<Link::Identity>(); }
+    if (linkname == "logit") { flag = false; link = std::make_unique<Link::Logit>(); }
+    if (linkname == "probit") { flag = false; link = std::make_unique<Link::Probit>(); }
+    if (linkname == "cauchit") { flag = false; link = std::make_unique<Link::Cauchy>(); }
+    if (linkname == "cloglog") { flag = false; link = std::make_unique<Link::cLogLog>(); }
+    if (linkname == "log") { flag = false; link = std::make_unique<Link::Log>(); }
+    if (linkname == "inverse") { flag = false; link = std::make_unique<Link::Inverse>(); }
+    if (linkname == "sqrt") { flag = false; link = std::make_unique<Link::Sqrt>(); }
+    if (flag) { throw std::string("Link function not available"); }
+    return link;
 }
 
 std::unique_ptr<Family::Family> make_family (
     const std::string & familyname, const std::string & linkname
 ) {
+    bool flag = true;
     std::unique_ptr<Link::Link> link = make_link(linkname);
     std::unique_ptr<Family::Family> family;
-    if (familyname == "gaussian") { family = std::make_unique<Family::Gaussian>(link);
-    } else if (familyname == "binomial") { family = std::make_unique<Family::Binomial>(link);
-    } else if (familyname == "poisson") { family = std::make_unique<Family::Poisson>(link);
-    } else if (familyname == "gamma") { family = std::make_unique<Family::Gamma>(link);
-    } else { Rcpp::stop("Family not available."); }
+    if (familyname == "gaussian") { flag = false; family = std::make_unique<Family::Gaussian>(link); }
+    if (familyname == "binomial") { flag = false; family = std::make_unique<Family::Binomial>(link); }
+    if (familyname == "poisson") { flag = false; family = std::make_unique<Family::Poisson>(link); }
+    if (familyname == "gamma") { flag = false; family = std::make_unique<Family::Gamma>(link); }
+    if (familyname == "negbinom") { flag = false; family = std::make_unique<Family::NegativeBinomial>(link); }
+    if (familyname == "quasibinomial") { flag = false; family = std::make_unique<Family::QuasiBinomial>(link); }
+    if (familyname == "quasipoisson") { flag = false; family = std::make_unique<Family::QuasiPoisson>(link); }
+    if (flag) { throw std::string("Family not available"); }
     return family;
 }
 

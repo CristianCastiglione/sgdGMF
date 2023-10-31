@@ -32,3 +32,27 @@ arma::mat Family::Gamma::initialize (const arma::mat & y) const {return this->li
 arma::mat Family::Gamma::devresid (const arma::mat & y, const arma::mat & mu) const {return - 2 * (arma::log(y / mu) - (y - mu) / mu);}
 bool Family::Gamma::validmu (const arma::mat & mu) const {return arma::all(arma::all(mu > 0));}
 bool Family::Gamma::valideta (const arma::mat & eta) const {return true;}
+
+// Negative-Binomial family
+arma::mat Family::NegativeBinomial::variance (const arma::mat & mu) const {return mu + this->dispersion * (mu % mu);}
+arma::mat Family::NegativeBinomial::initialize (const arma::mat & y) const {return this->linkfun(y + 0.1);}
+arma::mat Family::NegativeBinomial::devresid (const arma::mat & y, const arma::mat & mu) const {
+    double phi = this->dispersion;
+    return 2 * (utils::xlogx(y) - y % arma::log(mu) - (y + phi) % (arma::log(y + phi) - arma::log(mu + phi)));
+}
+bool Family::NegativeBinomial::validmu (const arma::mat & mu) const {return arma::all(arma::all(mu > 0));}
+bool Family::NegativeBinomial::valideta (const arma::mat & eta) const {return true;}
+
+// Quasi-Binomial family
+arma::mat Family::QuasiBinomial::variance (const arma::mat & mu) const {return mu % (1 - mu);}
+arma::mat Family::QuasiBinomial::initialize (const arma::mat & y) const {return 2 * y - 1;}
+arma::mat Family::QuasiBinomial::devresid (const arma::mat & y, const arma::mat & mu) const {return - 2 * (y % arma::log(mu) + (1 - y) % arma::log(1 - mu));}
+bool Family::QuasiBinomial::validmu (const arma::mat & mu) const {return arma::all(arma::all(mu > 0)) && arma::all(arma::all(mu < 1));}
+bool Family::QuasiBinomial::valideta (const arma::mat & eta) const {return true;}
+
+// Quasi-Poisson family
+arma::mat Family::QuasiPoisson::variance (const arma::mat & mu) const {return mu;}
+arma::mat Family::QuasiPoisson::initialize (const arma::mat & y) const {return this->linkfun(y + 0.1);}
+arma::mat Family::QuasiPoisson::devresid (const arma::mat & y, const arma::mat & mu) const {return 2 * (utils::xlogx(y) - y % arma::log(mu) - (y - mu));}
+bool Family::QuasiPoisson::validmu (const arma::mat & mu) const {return arma::all(arma::all(mu > 0));}
+bool Family::QuasiPoisson::valideta (const arma::mat & eta) const {return true;}
