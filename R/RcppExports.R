@@ -57,6 +57,18 @@ c_gamma_devresid <- function(y, mu) {
     .Call(`_sgdGMF_c_gamma_devresid`, y, mu)
 }
 
+c_negbinom_variance <- function(mu) {
+    .Call(`_sgdGMF_c_negbinom_variance`, mu)
+}
+
+c_negbinom_initialize <- function(y) {
+    .Call(`_sgdGMF_c_negbinom_initialize`, y)
+}
+
+c_negbinom_devresid <- function(y, mu) {
+    .Call(`_sgdGMF_c_negbinom_devresid`, y, mu)
+}
+
 c_link_identity_linkfun <- function(mu) {
     .Call(`_sgdGMF_c_link_identity_linkfun`, mu)
 }
