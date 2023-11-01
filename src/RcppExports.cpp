@@ -172,6 +172,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// c_negbinom_variance
+arma::vec c_negbinom_variance(const arma::vec& mu);
+RcppExport SEXP _sgdGMF_c_negbinom_variance(SEXP muSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_negbinom_variance(mu));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_negbinom_initialize
+arma::vec c_negbinom_initialize(const arma::vec& y);
+RcppExport SEXP _sgdGMF_c_negbinom_initialize(SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(c_negbinom_initialize(y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_negbinom_devresid
+arma::vec c_negbinom_devresid(const arma::vec& y, const arma::vec& mu);
+RcppExport SEXP _sgdGMF_c_negbinom_devresid(SEXP ySEXP, SEXP muSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type mu(muSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_negbinom_devresid(y, mu));
+    return rcpp_result_gen;
+END_RCPP
+}
 // c_link_identity_linkfun
 arma::vec c_link_identity_linkfun(const arma::vec& mu);
 RcppExport SEXP _sgdGMF_c_link_identity_linkfun(SEXP muSEXP) {
@@ -1181,6 +1215,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_c_gamma_variance", (DL_FUNC) &_sgdGMF_c_gamma_variance, 1},
     {"_sgdGMF_c_gamma_initialize", (DL_FUNC) &_sgdGMF_c_gamma_initialize, 1},
     {"_sgdGMF_c_gamma_devresid", (DL_FUNC) &_sgdGMF_c_gamma_devresid, 2},
+    {"_sgdGMF_c_negbinom_variance", (DL_FUNC) &_sgdGMF_c_negbinom_variance, 1},
+    {"_sgdGMF_c_negbinom_initialize", (DL_FUNC) &_sgdGMF_c_negbinom_initialize, 1},
+    {"_sgdGMF_c_negbinom_devresid", (DL_FUNC) &_sgdGMF_c_negbinom_devresid, 2},
     {"_sgdGMF_c_link_identity_linkfun", (DL_FUNC) &_sgdGMF_c_link_identity_linkfun, 1},
     {"_sgdGMF_c_link_identity_linkinv", (DL_FUNC) &_sgdGMF_c_link_identity_linkinv, 1},
     {"_sgdGMF_c_link_identity_mueta", (DL_FUNC) &_sgdGMF_c_link_identity_mueta, 1},
