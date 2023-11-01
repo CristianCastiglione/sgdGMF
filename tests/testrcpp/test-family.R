@@ -92,3 +92,23 @@ par(mfrow = c(1, 3))
   print(all.equal(r.devresid, c.devresid))
 }
 
+## Test: negative binomial ----
+{
+  n = 100
+  x = seq(from = 0.1, to = 5, length = n)
+  y = seq(from = 0.1, to = 5, length = n)
+  z = rep(1, length = n)
+  plot.link(x, sgdGMF::c_negbinom_variance(x), main = "Negative Binomial \n variance")
+  plot.link(x, sgdGMF::c_negbinom_initialize(y), main = "Negative Binomial \n initialize")
+  plot.link(x, sgdGMF::c_negbinom_devresid(z, x), main = "Negative Binomial \n devresid")
+
+  r.variance = MASS::neg.bin(10)$variance(x)
+  c.variance = drop(sgdGMF::c_negbinom_variance(x))
+  print(all.equal(r.variance, c.variance))
+
+  r.devresid = MASS::neg.bin(10)$dev.resid(z, x, 1)
+  c.devresid = drop(sgdGMF::c_negbinom_devresid(z, x))
+  print(all.equal(r.devresid, c.devresid))
+}
+
+
