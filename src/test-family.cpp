@@ -88,3 +88,24 @@ arma::vec c_gamma_devresid (const arma::vec & y, const arma::vec & mu) {
     Family::Gamma f(ptr);
     return f.devresid(y, mu);
 }
+
+// [[Rcpp::export]]
+arma::vec c_negbinom_variance (const arma::vec & mu) {
+    std::unique_ptr<Link::Link> ptr = std::make_unique<Link::Log>();
+    Family::NegativeBinomial f(ptr);
+    return f.variance(mu);
+}
+
+// [[Rcpp::export]]
+arma::vec c_negbinom_initialize (const arma::vec & y) {
+    std::unique_ptr<Link::Link> ptr = std::make_unique<Link::Log>();
+    Family::NegativeBinomial f(ptr);
+    return f.initialize(y);
+}
+
+// [[Rcpp::export]]
+arma::vec c_negbinom_devresid (const arma::vec & y, const arma::vec & mu) {
+    std::unique_ptr<Link::Link> ptr = std::make_unique<Link::Log>();
+    Family::NegativeBinomial f(ptr);
+    return f.devresid(y, mu);
+}
