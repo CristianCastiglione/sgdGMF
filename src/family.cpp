@@ -34,7 +34,7 @@ bool Family::Gamma::validmu (const arma::mat & mu) const {return arma::all(arma:
 bool Family::Gamma::valideta (const arma::mat & eta) const {return true;}
 
 // Negative-Binomial family
-arma::mat Family::NegativeBinomial::variance (const arma::mat & mu) const {return mu + this->dispersion * (mu % mu);}
+arma::mat Family::NegativeBinomial::variance (const arma::mat & mu) const {return mu + (mu % mu) / this->dispersion;}
 arma::mat Family::NegativeBinomial::initialize (const arma::mat & y) const {return this->linkfun(y + 0.1);}
 arma::mat Family::NegativeBinomial::devresid (const arma::mat & y, const arma::mat & mu) const {
     double phi = this->dispersion;
