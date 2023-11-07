@@ -58,6 +58,7 @@ class AIRWLS {
         bool verbose;
         int frequency;
         bool parallel;
+        int nthreads;
         
         // Print the class attributes
         void summary ();
@@ -96,7 +97,8 @@ class AIRWLS {
             const double & stepsize, const double & eps, 
             const int & nafill, const double & tol, 
             const double & damping, const bool & verbose, 
-            const int & frequency, const bool & parallel
+            const int & frequency, const bool & parallel,
+            const int & nthreads
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 250;}
             if (nsteps > 0) {this->nsteps = nsteps;} else {this->nsteps = 1;}
@@ -106,6 +108,7 @@ class AIRWLS {
             if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
             if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 25;}
+            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->verbose = verbose;
             this->parallel = parallel;
         }
@@ -123,6 +126,7 @@ class Newton {
         bool verbose;
         int frequency;
         bool parallel;
+        int nthreads;
 
         // Print the class attributes
         void summary ();
@@ -148,7 +152,7 @@ class Newton {
             const double & eps, const int & nafill, 
             const double & tol, const double & damping,
             const bool & verbose, const int & frequency,
-            const bool & parallel
+            const bool & parallel, const int & nthreads
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 500;}
             if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}
@@ -157,6 +161,7 @@ class Newton {
             if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
             if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 50;}
+            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->verbose = verbose;
             this->parallel = parallel;
         }
@@ -178,6 +183,7 @@ class BSGD {
         double rate1;
         double rate2;
         bool parallel;
+        int nthreads;
         bool verbose;
         int frequency;
         bool progress;
@@ -235,8 +241,8 @@ class BSGD {
             const int & nafill, const double & tol, const int & size1, 
             const int & size2, const double & burn, const double & rate0, 
             const double & decay, const double & damping, const double & rate1, 
-            const double & rate2, const bool & parallel, const bool & verbose, 
-            const int & frequency, const bool & progress
+            const double & rate2, const bool & parallel, const int & nthreads, 
+            const bool & verbose, const int & frequency, const bool & progress
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 100;}
             if (eps > 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
@@ -251,6 +257,7 @@ class BSGD {
             if (rate1 > 0 && rate1 < 1) {this->rate1 = rate1;} else {this->rate1 = 0.05;}
             if (rate2 > 0 && rate2 < 1) {this->rate2 = rate2;} else {this->rate2 = 0.01;}
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 10;}
+            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->parallel = parallel;
             this->verbose = verbose;
             this->progress = progress;
@@ -273,6 +280,7 @@ class CSGD {
         double rate1;
         double rate2;
         bool parallel;
+        int nthreads;
         bool verbose;
         int frequency;
         bool progress;
@@ -320,8 +328,8 @@ class CSGD {
             const int & nafill, const double & tol, const int & size1, 
             const int & size2, const double & burn, const double & rate0, 
             const double & decay, const double & damping, const double & rate1, 
-            const double & rate2, const bool & parallel, const bool & verbose, 
-            const int & frequency, const bool & progress
+            const double & rate2, const bool & parallel, const int & nthreads, 
+            const bool & verbose, const int & frequency, const bool & progress
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 100;}
             if (eps > 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
@@ -336,6 +344,7 @@ class CSGD {
             if (rate1 > 0 && rate1 < 1) {this->rate1 = rate1;} else {this->rate1 = 0.05;}
             if (rate2 > 0 && rate2 < 1) {this->rate2 = rate2;} else {this->rate2 = 0.01;}
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 10;}
+            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->parallel = parallel;
             this->verbose = verbose;
             this->progress = progress;
@@ -357,6 +366,7 @@ class MSGD {
         double rate1;
         double rate2;
         bool parallel;
+        int nthreads;
         bool verbose;
         int frequency;
         bool progress;
@@ -423,7 +433,8 @@ class MSGD {
             const double & tol, const int & size, const double & burn,
             const double & rate0, const double & decay, const double & damping, 
             const double & rate1, const double & rate2, const bool & parallel, 
-            const bool & verbose, const int & frequency, const bool & progress
+            const bool & verbose, const int & frequency, const bool & progress,
+            const int & nthreads
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 100;}
             if (eps > 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
@@ -437,6 +448,7 @@ class MSGD {
             if (rate1 > 0 && rate1 < 1) {this->rate1 = rate1;} else {this->rate1 = 0.05;}
             if (rate2 > 0 && rate2 < 1) {this->rate2 = rate2;} else {this->rate2 = 0.01;}
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 10;}
+            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->parallel = parallel;
             this->verbose = verbose;
             this->progress = progress;

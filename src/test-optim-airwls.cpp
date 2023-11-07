@@ -16,9 +16,9 @@ arma::vec c_airwls_glmstep (
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false, parallel = false;
-    int maxiter = 100, nsteps = 10, nafill = 10, frequency = 25;
+    int maxiter = 100, nsteps = 10, nafill = 10, frequency = 25, nthreads = 1;
     double stepsize = 0.1, eps = 1e-08, tol = 1e-05, damping = 1e-03;
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
 
     // Update the current parameter estimate via WLS
     arma::vec coef = beta;
@@ -40,9 +40,9 @@ arma::vec c_airwls_glmfit (
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false, parallel = false;
-    int maxiter = 100, nafill = 10, frequency = 25;
+    int maxiter = 100, nafill = 10, frequency = 25, nthreads = 1;
     double eps = 1e-08, tol = 1e-05, damping = 1e-04;
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
     if (print) {airwls.summary();}
 
     // GLM fit via PERLS
@@ -61,7 +61,8 @@ arma::mat c_airwls_update (
     const arma::uvec & idx, const arma::mat & offset, 
     const arma::vec & penalty, const bool & transp = false, 
     const int & nsteps = 100, const double & stepsize = 0.1, 
-    const bool & print = false, const bool & parallel = false
+    const bool & print = false, const bool & parallel = false,
+    const int & nthreads = 1
 ) {
     // Instantiate the parametrized family object
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
@@ -70,7 +71,7 @@ arma::mat c_airwls_update (
     bool verbose = false;
     int maxiter = 100, nafill = 10, frequency = 25;
     double eps = 1e-08, tol = 1e-05, damping = 1e-04;
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
     if (print) {airwls.summary();}
 
     // GLM fit via PERLS
@@ -111,7 +112,8 @@ Rcpp::List c_fit_airwls (
     const double & damping = 1e-03,
     const bool & verbose = true,
     const int & frequency = 10,
-    const bool & parallel = false
+    const bool & parallel = false,
+    const int & nthreads = 1
 ) {
     arma::mat y = Y;
 
@@ -119,7 +121,7 @@ Rcpp::List c_fit_airwls (
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
     
     // Instantiate the AIRWLS optimizer
-    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
+    AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
 
     // Perform the optimization via Newton algorithm
     Rcpp::List output = airwls.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);

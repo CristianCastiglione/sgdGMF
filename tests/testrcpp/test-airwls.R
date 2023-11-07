@@ -218,14 +218,14 @@ eta = X %*% beta
   c.coef.v = sgdGMF::c_airwls_update(
     beta = V, Y = Y, X = U, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = FALSE,
-    nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE)
+    nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE, nthreads = 4)
   print((proc.time() - t0)[3])
 
   t0 = proc.time()
   c.coef.u = sgdGMF::c_airwls_update(
     beta = U, Y = Y, X = V, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = TRUE,
-    nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE)
+    nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE, nthreads = 4)
   print((proc.time() - t0)[3])
 
 

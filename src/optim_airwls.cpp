@@ -93,11 +93,16 @@ void AIRWLS::update (
 
     if (this->parallel) {
         // Get the number of cores and threads
+        const unsigned int mcores = this->nthreads;
         unsigned int ncores = std::thread::hardware_concurrency();
-        unsigned int nthreads = this->parallel ? ncores-1 : 1;
+        unsigned int threads = this->parallel ? std::min(mcores, ncores-1) : 1;
+
+        // std::printf("Input: %i \n", mcores);
+        // std::printf("Cores: %i \n", ncores);
+        // std::printf("Threads: %i \n", threads);
 
         // Set the number of threads for openMP
-        omp_set_num_threads(nthreads);
+        omp_set_num_threads(threads);
             
         // Check whether we need to optimize row- or column-wise
         if (transp) {

@@ -23,7 +23,8 @@ Rcpp::List c_fit_newton (
     const double & damping = 1e-03,
     const bool & verbose = true,
     const int & frequency = 10,
-    const bool & parallel = false
+    const bool & parallel = false,
+    const int & nthreads = 1
 ) {
     arma::mat y = Y;
 
@@ -31,7 +32,7 @@ Rcpp::List c_fit_newton (
     std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
     
     // Instantiate the Newton optimizer
-    Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel);
+    Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
 
     // Perform the optimization via Newton algorithm
     Rcpp::List output = newton.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);

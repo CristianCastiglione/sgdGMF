@@ -78,11 +78,12 @@ Rcpp::List Newton::fit (
     const double nm = n * m;
 
     // Get the number of cores and threads
+    const unsigned int mcores = this->nthreads;
     const unsigned int ncores = std::thread::hardware_concurrency();
-    const unsigned int nthreads = parallel ? ncores-1 : 1;
+    const unsigned int threads = parallel ? std::min(mcores, ncores-1) : 1;
 
     // Set the number of threads for openMP
-    omp_set_num_threads(nthreads);
+    omp_set_num_threads(threads);
 
     // Get the range of the data, and the lower and upper bounds
     double mulo, muup, etalo, etaup;
