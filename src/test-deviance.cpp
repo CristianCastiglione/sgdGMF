@@ -7,9 +7,11 @@
 #include "misc.h"
 #include <memory>
 
+using namespace glm;
+
 // [[Rcpp::export]]
 arma::mat c_deviance (const arma::mat & y, const arma::mat & mu, const std::string & familyname) {
-    std::unique_ptr<Family::Family> family = make_family(familyname, std::string("identity"));
+    std::unique_ptr<Family> family = make_family(familyname, std::string("identity"));
     return deviance(y, mu, family);
 }
 

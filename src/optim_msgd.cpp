@@ -5,6 +5,8 @@
 
 #include "optim.h"
 
+using namespace glm;
+
 void MSGD::summary () {
     std::printf("------------------\n");
     std::printf(" maxiter = %i \n", this->maxiter);
@@ -32,7 +34,7 @@ void MSGD::update_rate (double & rate, const int & iter) {
 void MSGD::update_deta (
     dEta & deta, const arma::uvec & idx,
     const arma::mat & Y,  const arma::mat & eta, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family
+    const std::unique_ptr<Family> & family
 ) {
     arma::mat var = family->variance(mu);
     arma::mat mueta = family->mueta(eta);
@@ -114,7 +116,7 @@ Rcpp::List MSGD::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
-    const std::unique_ptr<Family::Family> & family,
+    const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
     // Get the initial CPU time

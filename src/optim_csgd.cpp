@@ -5,6 +5,8 @@
 
 #include "optim.h"
 
+using namespace glm;
+
 void CSGD::summary () {
     std::printf("------------------\n");
     std::printf(" maxiter = %i \n", this->maxiter);
@@ -33,7 +35,7 @@ void CSGD::update_rate (double & rate, const int & iter) {
 void CSGD::update_deta (
     dEta & deta, const arma::uvec & idx, 
     const arma::mat & Y,  const arma::mat & eta, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family, const bool & transp
+    const std::unique_ptr<Family> & family, const bool & transp
 ) {
     arma::mat var = family->variance(mu);
     arma::mat mueta = family->mueta(eta);
@@ -96,7 +98,7 @@ Rcpp::List CSGD::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
-    const std::unique_ptr<Family::Family> & family,
+    const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
     // Get the initial CPU time
@@ -170,11 +172,12 @@ Rcpp::List CSGD::fit (
     Y.elem(isna) = mu.elem(isna);
 
     // Get the initial deviance, penalty and objective function
-    double dev, pen, obj, objt, change;
+    double dev, pen, obj, objt, change, scanned;
     dev = arma::accu(deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
+    scanned = 0;
 
     // Get the current execution time
     clock_t end = clock();
@@ -186,9 +189,9 @@ Rcpp::List CSGD::fit (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("--------------------------------------------\n");
-        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
-        print_state(0, dev / nm, 1., time);
+        std::printf("------------------------------------------------------\n");
+        std::printf(" Iteration    Deviance    Change   Scanned   Exe-Time \n");
+        print_state(0, dev / nm, 1., time, scanned);
     }
 
     // Optimization loop
@@ -215,6 +218,7 @@ Rcpp::List CSGD::fit (
         // Get the minibatch normalization factors
         scaler = n / nc;
         scalec = m / mc;
+        scanned += (nc * mc) / nm; 
 
         // Update the linear predictor and the mean matrix
         arma::mat etar = get_eta(ut.rows(idr), vt, etalo, etaup);
@@ -260,7 +264,7 @@ Rcpp::List CSGD::fit (
             trace = arma::join_cols(trace, state.t());
 
             if (this->verbose) {
-                print_state(iter, dev / nm, change, time);
+                print_state(iter, dev / nm, change, time, scanned);
             }
         }
         
@@ -283,8 +287,8 @@ Rcpp::List CSGD::fit (
     time = exetime(start, end);
 
     if (this->verbose) {
-        print_state(iter, dev / nm, change, time);
-        std::printf("--------------------------------------------\n");
+        print_state(iter, dev / nm, change, time, scanned);
+        std::printf("------------------------------------------------------\n");
     }
     
     // Get the final output

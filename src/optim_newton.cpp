@@ -5,6 +5,8 @@
 
 #include "optim.h"
 
+using namespace glm;
+
 void Newton::summary () {
     std::printf("------------------\n");
     std::printf(" maxiter = %i \n", this->maxiter);
@@ -19,42 +21,60 @@ void Newton::summary () {
     std::printf("------------------\n");
 }
 
+void Newton::blocked_update (
+    arma::mat & u, const arma::mat & v, 
+    const arma::vec & pen, const arma::uvec & idx,
+    const arma::mat & deta, const arma::mat & ddeta
+) {
+    // Block update via elementwise matrix operations
+    const unsigned int n = u.n_rows;
+    const unsigned int m = idx.n_rows;
+    arma::mat du(n,m), ddu(n,m);
+    du = - deta * v.cols(idx) + u.cols(idx) * arma::diagmat(pen(idx));
+    ddu = ddeta * arma::square(v.cols(idx)) + arma::ones(n, m) * arma::diagmat(pen(idx)) + this->damping;
+    u.cols(idx) = u.cols(idx) - this->stepsize * (du / ddu);
+}
+
+void Newton::parallel_update (
+    arma::mat & u, const arma::mat & v, 
+    const arma::vec & pen, const arma::uvec & idx,
+    const arma::mat & deta, const arma::mat & ddeta
+) {
+    // Block update via parallel operations over matrix slices
+    const unsigned int n = u.n_rows;
+    const unsigned int m = idx.n_rows;
+    // A convenient parallelization strategy is taken depending on the row and column dimensions
+    if (n >= m) {
+        // If n >= m, we perform the computations row-wise
+        #pragma omp parallel for
+        for (unsigned int i = 0; i < n; i++) {
+            arma::uvec ii = {i};
+            arma::rowvec dui = - deta.row(i) * v.cols(idx) + u(ii,idx) % pen(idx).t();
+            arma::rowvec ddui = ddeta.row(i) * arma::square(v.cols(idx)) + pen(idx).t() + this->damping;
+            u(ii,idx) = u(ii,idx) - this->stepsize * (dui / ddui);
+        }
+    } else {
+        // If n < m, we perform the computations column-wise
+        #pragma omp parallel for
+        for (const unsigned int & j : idx) {
+            arma::vec duj = - deta * v.col(j) + u.col(j) * pen(j);
+            arma::vec dduj = ddeta * arma::square(v.col(j)) + pen(j) + this->damping;
+            u.col(j) = u.col(j) - this->stepsize * (duj / dduj);
+        }
+    }
+}
+
 void Newton::update (
     arma::mat & u, const arma::mat & v, 
     const arma::vec & pen, const arma::uvec & idx,
     const arma::mat & deta, const arma::mat & ddeta
 ) {
     if (this->parallel) {
-        // Block update via parallel operations over matrix slices
-        const unsigned int n = u.n_rows;
-        const unsigned int m = idx.n_rows;
-        // A convenient parallelization strategy is taken depending on the row and column dimensions
-        if (n >= m) {
-            // If n >= m, we perform the computations row-wise
-            #pragma omp parallel for
-            for (unsigned int i = 0; i < n; i++) {
-                arma::uvec ii = {i};
-                arma::rowvec dui = - deta.row(i) * v.cols(idx) + u(ii,idx) % pen(idx).t();
-                arma::rowvec ddui = ddeta.row(i) * arma::square(v.cols(idx)) + pen(idx).t() + this->damping;
-                u(ii,idx) = u(ii,idx) - this->stepsize * (dui / ddui);
-            }
-        } else {
-            // If n < m, we perform the computations column-wise
-            #pragma omp parallel for
-            for (const unsigned int & j : idx) {
-                arma::vec duj = - deta * v.col(j) + u.col(j) * pen(j);
-                arma::vec dduj = ddeta * arma::square(v.col(j)) + pen(j) + this->damping;
-                u.col(j) = u.col(j) - this->stepsize * (duj / dduj);
-            }
-        }        
+        // Block update via parallel operations over matrix slices     
+        this->parallel_update(u, v, pen, idx, deta, ddeta);
     } else {
         // Block update via elementwise matrix operations
-        const unsigned int n = u.n_rows;
-        const unsigned int m = idx.n_rows;
-        arma::mat du(n,m), ddu(n,m);
-        du = - deta * v.cols(idx) + u.cols(idx) * arma::diagmat(pen(idx));
-        ddu = ddeta * arma::square(v.cols(idx)) + arma::ones(n, m) * arma::diagmat(pen(idx)) + this->damping;
-        u.cols(idx) = u.cols(idx) - this->stepsize * (du / ddu);
+        this->blocked_update(u, v, pen, idx, deta, ddeta);
     }
 }
 
@@ -63,7 +83,7 @@ Rcpp::List Newton::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
-    const std::unique_ptr<Family::Family> & family,
+    const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
     // Get the initial CPU time

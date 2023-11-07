@@ -5,6 +5,8 @@
 
 #include "optim.h"
 
+using namespace glm;
+
 // [[Rcpp::export]]
 Rcpp::List c_fit_bsgd (
     const arma::mat & Y, 
@@ -36,7 +38,7 @@ Rcpp::List c_fit_bsgd (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
     
     // Instantiate the Newton optimizer
     BSGD sgd(
@@ -81,7 +83,7 @@ Rcpp::List c_fit2_bsgd (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
     
     // Instantiate the Newton optimizer
     BSGD sgd(

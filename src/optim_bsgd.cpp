@@ -5,6 +5,8 @@
 
 #include "optim.h"
 
+using namespace glm;
+
 void BSGD::summary () {
     std::printf("------------------\n");
     std::printf(" maxiter = %i \n", this->maxiter);
@@ -33,7 +35,7 @@ void BSGD::update_rate (double & rate, const int & iter) {
 void BSGD::update_deta (
     dEta & deta, const arma::uvec & idx, const arma::uvec & idy, 
     const arma::mat & Y,  const arma::mat & eta, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family
+    const std::unique_ptr<Family> & family
 ) {
     arma::mat var = family->variance(mu);
     arma::mat mueta = family->mueta(eta);
@@ -97,7 +99,7 @@ Rcpp::List BSGD::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
-    const std::unique_ptr<Family::Family> & family,
+    const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
     /*
@@ -321,7 +323,7 @@ Rcpp::List BSGD::fit2 (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
-    const std::unique_ptr<Family::Family> & family,
+    const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
     /*
@@ -400,11 +402,12 @@ Rcpp::List BSGD::fit2 (
     Y.elem(isna) = mu.elem(isna);
 
     // Get the initial deviance, penalty and objective function
-    double dev, pen, obj, objt, change;
+    double dev, pen, obj, objt, change, scanned;
     dev = arma::accu(deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
+    scanned = 0;
 
     // Get the current execution time
     clock_t end = clock();
@@ -416,9 +419,9 @@ Rcpp::List BSGD::fit2 (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("--------------------------------------------\n");
-        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
-        print_state(0, dev / nm, 1., time);
+        std::printf("------------------------------------------------------\n");
+        std::printf(" Iteration    Deviance    Change   Scanned   Exe-Time \n");
+        print_state(0, dev / nm, 1., time, scanned);
     }
 
     // Optimization loop
@@ -475,6 +478,7 @@ Rcpp::List BSGD::fit2 (
             pen = penalty(u, penu) + penalty(v, penv);
             objt = obj; obj = dev + 0.5 * pen;
             change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
+            scanned = (iter * this->size1) / n;
 
             // Get the current execution time
             end = clock();
@@ -485,7 +489,7 @@ Rcpp::List BSGD::fit2 (
             trace = arma::join_cols(trace, state.t());
 
             if (this->verbose) {
-                print_state(iter, dev / nm, change, time);
+                print_state(iter, dev / nm, change, time, scanned);
             }
         }
         
@@ -508,8 +512,9 @@ Rcpp::List BSGD::fit2 (
     time = exetime(start, end);
 
     if (this->verbose) {
-        print_state(iter, dev / nm, change, time);
-        std::printf("--------------------------------------------\n");
+        scanned = (this->maxiter * this->size1) / n;
+        print_state(iter, dev / nm, change, time, scanned);
+        std::printf("------------------------------------------------------\n");
     }
     
     // Get the final output

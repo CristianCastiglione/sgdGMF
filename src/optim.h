@@ -21,6 +21,8 @@
 #include "misc.h"
 #include "minibatch.h"
 
+using namespace glm;
+
 // Log-likelihood differentials with respect to the linear predictor 
 struct dEta {
     arma::mat deta;
@@ -66,19 +68,33 @@ class AIRWLS {
         // Basic weighted least-squares solver for GLM steps
         void glmstep (
             arma::vec & beta, const arma::vec & y, const arma::mat & X,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const arma::vec & offset, const arma::vec & penalty);
 
         // PIRLS algorithm for GLM fitting
         void glmfit (
             arma::vec & beta, const arma::vec & y, const arma::mat & X,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const arma::vec & offset, const arma::vec & penalty);
+
+        // Sliced updates for penalized V-GLM (sequential implementation)
+        void sequential_update (
+            arma::mat & beta, const arma::mat & Y, const arma::mat & X,
+            const std::unique_ptr<Family> & family,
+            const arma::uvec & idx, const arma::mat & offset, 
+            const arma::vec & penalty, const bool & transp);
+
+        // Sliced updates for penalized V-GLM (parallel implementation)
+        void parallel_update (
+            arma::mat & beta, const arma::mat & Y, const arma::mat & X,
+            const std::unique_ptr<Family> & family,
+            const arma::uvec & idx, const arma::mat & offset, 
+            const arma::vec & penalty, const bool & transp);
 
         // Sliced updates for penalized V-GLM  
         void update (
             arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-            const std::unique_ptr<Family::Family> & family,
+            const std::unique_ptr<Family> & family,
             const arma::uvec & idx, const arma::mat & offset, 
             const arma::vec & penalty, const bool & transp);
 
@@ -88,7 +104,7 @@ class AIRWLS {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
         
         // Class constructor
@@ -131,6 +147,18 @@ class Newton {
         // Print the class attributes
         void summary ();
 
+        // Quasi-Newton block update of the parameters (block implementation)
+        void blocked_update (
+            arma::mat & u, const arma::mat & v, 
+            const arma::vec & pen, const arma::uvec & idx,
+            const arma::mat & deta, const arma::mat & ddeta);
+
+        // Quasi-Newton block update of the parameters (parallel implementation)
+        void parallel_update (
+            arma::mat & u, const arma::mat & v, 
+            const arma::vec & pen, const arma::uvec & idx,
+            const arma::mat & deta, const arma::mat & ddeta);
+
         // Quasi-Newton block update of the parameters
         void update (
             arma::mat & u, const arma::mat & v, 
@@ -143,7 +171,7 @@ class Newton {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
         
         // Class constructor
@@ -198,7 +226,7 @@ class BSGD {
         void update_deta (
             dEta & deta, const arma::uvec & idx, const arma::uvec & idy, 
             const arma::mat & Y, const arma::mat & eta, const arma::mat & mu, 
-            const std::unique_ptr<Family::Family> & family);
+            const std::unique_ptr<Family> & family);
 
         // Update the deviance differentials wrt the parameters
         void update_dpar (
@@ -223,7 +251,7 @@ class BSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
         // Model fitting via SGD (2) - SLICEWISE UPDATES
@@ -232,7 +260,7 @@ class BSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
         // Class constructor
@@ -295,7 +323,7 @@ class CSGD {
         void update_deta (
             dEta & deta, const arma::uvec & idx, 
             const arma::mat & Y, const arma::mat & eta, const arma::mat & mu, 
-            const std::unique_ptr<Family::Family> & family, const bool & transp);
+            const std::unique_ptr<Family> & family, const bool & transp);
 
         // Update the deviance differentials wrt the parameters
         void update_dpar (
@@ -319,7 +347,7 @@ class CSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
         // Class constructor
@@ -381,7 +409,7 @@ class MSGD {
         void update_deta (
             dEta & deta, const arma::uvec & idx,
             const arma::mat & Y, const arma::mat & eta, const arma::mat & mu, 
-            const std::unique_ptr<Family::Family> & family);
+            const std::unique_ptr<Family> & family);
 
         // Update the deviance differentials wrt the parameters
         void update_dpar (
@@ -415,7 +443,7 @@ class MSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
         // Model fitting via SGD (2) - PARALLEL UPDATES
@@ -424,7 +452,7 @@ class MSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family::Family> & family, 
+            const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
         // Class constructor
@@ -433,8 +461,9 @@ class MSGD {
             const double & tol, const int & size, const double & burn,
             const double & rate0, const double & decay, const double & damping, 
             const double & rate1, const double & rate2, const bool & parallel, 
-            const bool & verbose, const int & frequency, const bool & progress,
-            const int & nthreads
+            const int & nthreads, const bool & verbose, const int & frequency, 
+            const bool & progress
+            
         ) {
             if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 100;}
             if (eps > 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}

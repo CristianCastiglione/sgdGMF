@@ -5,10 +5,12 @@
 
 #include "deviance.h"
 
+using namespace glm;
+
 // Pointwise deviance
 void deviance (
     arma::mat & dev, const arma::mat & y, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family
+    const std::unique_ptr<Family> & family
 ) {
     bool anyna = !y.is_finite();
     if (anyna) {
@@ -21,7 +23,7 @@ void deviance (
 
 arma::mat deviance (
     const arma::mat & y, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family
+    const std::unique_ptr<Family> & family
 ) {
     arma::mat dev(arma::size(y));
     deviance(dev, y, mu, family);

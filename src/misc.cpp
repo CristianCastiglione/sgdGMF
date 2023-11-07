@@ -5,37 +5,38 @@
 
 #include "misc.h"
 
+using namespace glm;
 
-std::unique_ptr<Link::Link> make_link (
+std::unique_ptr<Link> make_link (
     const std::string & linkname
 ) {
     bool flag = true;
-    std::unique_ptr<Link::Link> link;
-    if (linkname == "identity") { flag = false; link = std::make_unique<Link::Identity>(); }
-    if (linkname == "logit") { flag = false; link = std::make_unique<Link::Logit>(); }
-    if (linkname == "probit") { flag = false; link = std::make_unique<Link::Probit>(); }
-    if (linkname == "cauchit") { flag = false; link = std::make_unique<Link::Cauchy>(); }
-    if (linkname == "cloglog") { flag = false; link = std::make_unique<Link::cLogLog>(); }
-    if (linkname == "log") { flag = false; link = std::make_unique<Link::Log>(); }
-    if (linkname == "inverse") { flag = false; link = std::make_unique<Link::Inverse>(); }
-    if (linkname == "sqrt") { flag = false; link = std::make_unique<Link::Sqrt>(); }
+    std::unique_ptr<Link> link;
+    if (linkname == "identity") { flag = false; link = std::make_unique<Identity>(); }
+    if (linkname == "logit") { flag = false; link = std::make_unique<Logit>(); }
+    if (linkname == "probit") { flag = false; link = std::make_unique<Probit>(); }
+    if (linkname == "cauchit") { flag = false; link = std::make_unique<Cauchy>(); }
+    if (linkname == "cloglog") { flag = false; link = std::make_unique<cLogLog>(); }
+    if (linkname == "log") { flag = false; link = std::make_unique<Log>(); }
+    if (linkname == "inverse") { flag = false; link = std::make_unique<Inverse>(); }
+    if (linkname == "sqrt") { flag = false; link = std::make_unique<Sqrt>(); }
     if (flag) { throw std::string("Link function not available"); }
     return link;
 }
 
-std::unique_ptr<Family::Family> make_family (
+std::unique_ptr<Family> make_family (
     const std::string & familyname, const std::string & linkname
 ) {
     bool flag = true;
-    std::unique_ptr<Link::Link> link = make_link(linkname);
-    std::unique_ptr<Family::Family> family;
-    if (familyname == "gaussian") { flag = false; family = std::make_unique<Family::Gaussian>(link); }
-    if (familyname == "binomial") { flag = false; family = std::make_unique<Family::Binomial>(link); }
-    if (familyname == "poisson") { flag = false; family = std::make_unique<Family::Poisson>(link); }
-    if (familyname == "gamma") { flag = false; family = std::make_unique<Family::Gamma>(link); }
-    if (familyname == "negbinom") { flag = false; family = std::make_unique<Family::NegativeBinomial>(link); }
-    if (familyname == "quasibinomial") { flag = false; family = std::make_unique<Family::QuasiBinomial>(link); }
-    if (familyname == "quasipoisson") { flag = false; family = std::make_unique<Family::QuasiPoisson>(link); }
+    std::unique_ptr<Link> link = make_link(linkname);
+    std::unique_ptr<Family> family;
+    if (familyname == "gaussian") { flag = false; family = std::make_unique<Gaussian>(link); }
+    if (familyname == "binomial") { flag = false; family = std::make_unique<Binomial>(link); }
+    if (familyname == "poisson") { flag = false; family = std::make_unique<Poisson>(link); }
+    if (familyname == "gamma") { flag = false; family = std::make_unique<Gamma>(link); }
+    if (familyname == "negbinom") { flag = false; family = std::make_unique<NegativeBinomial>(link); }
+    if (familyname == "quasibinomial") { flag = false; family = std::make_unique<QuasiBinomial>(link); }
+    if (familyname == "quasipoisson") { flag = false; family = std::make_unique<QuasiPoisson>(link); }
     if (flag) { throw std::string("Family not available"); }
     return family;
 }
@@ -43,7 +44,7 @@ std::unique_ptr<Family::Family> make_family (
 void set_data_bounds (
     double & mulo, double & muup, double & etalo, double & etaup, 
     const double & eps, const double & ymin, const double & ymax, 
-    const std::unique_ptr<Family::Family> & family
+    const std::unique_ptr<Family> & family
 ) {
     // We compute the lower and upper bounds on matrices of dim 1x1,
     // since we need to back-transform them using the family->linkfun()
@@ -124,6 +125,21 @@ void print_state (
     }
 }
 
+void print_state (
+    const int & iter, const double & dev, 
+    const double & change, const double & time,
+    const double & scanned
+) {
+    if (time < 60) {
+        std::printf(
+            " %9i %11.2f %9.5f %7.0f %% %8.2f s \n", 
+            iter, 100*dev, change, 100*scanned, time);
+    } else {
+        std::printf(
+            " %9i %11.2f %9.5f %7.0f %% %8.2f m \n", 
+            iter, 100*dev, change, 100*scanned, time/60);
+    }
+}
 
 
 std::list<arma::uvec> sample_chunks (

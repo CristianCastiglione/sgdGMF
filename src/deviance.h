@@ -10,13 +10,15 @@
 #include <memory>
 #include "family.h"
 
+using namespace glm;
+
 // Pointwise deviance
 void deviance (
     arma::mat & dev, const arma::mat & y, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family);
+    const std::unique_ptr<Family> & family);
 arma::mat deviance (
     const arma::mat & y, const arma::mat & mu, 
-    const std::unique_ptr<Family::Family> & family);
+    const std::unique_ptr<Family> & family);
 
 // Penalty function
 void penalty (double & pen, const arma::mat & u, const arma::vec & p);

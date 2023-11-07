@@ -5,6 +5,8 @@
 
 #include "optim.h"
 
+using namespace glm;
+
 // [[Rcpp::export]]
 arma::vec c_airwls_glmstep (
     const arma::vec & beta, const arma::vec & y, const arma::mat & X,
@@ -12,7 +14,7 @@ arma::vec c_airwls_glmstep (
     const arma::vec & offset, const arma::vec & penalty
 ) {
     // Instantiate the parametrized family object
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false, parallel = false;
@@ -36,7 +38,7 @@ arma::vec c_airwls_glmfit (
     const bool & print = false
 ) {
     // Instantiate the parametrized family object
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false, parallel = false;
@@ -65,7 +67,7 @@ arma::mat c_airwls_update (
     const int & nthreads = 1
 ) {
     // Instantiate the parametrized family object
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false;
@@ -118,7 +120,7 @@ Rcpp::List c_fit_airwls (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
     
     // Instantiate the AIRWLS optimizer
     AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);

@@ -8,16 +8,13 @@
 
 #include <RcppArmadillo.h>
 #include <memory>
-// memory permits to manage pointer objects of the form std::unique_ptr<typename>
-
 #include "link.h"
 
-
-namespace Family {
+namespace glm {
 
 class Family {
     private:
-        std::unique_ptr<Link::Link> linkobj;
+        std::unique_ptr<Link> linkobj;
 
     public:
         std::string family;
@@ -34,7 +31,7 @@ class Family {
         virtual bool validmu (const arma::mat & mu) const = 0;
         virtual bool valideta (const arma::mat & eta) const = 0;
         
-        Family (std::unique_ptr<Link::Link> & link) : linkobj(std::move(link)) {
+        Family (std::unique_ptr<Link> & link) : linkobj(std::move(link)) {
             this->family = "Family";
             this->link = linkobj->link;
             this->dispersion = 1;
@@ -51,7 +48,7 @@ class Gaussian : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        Gaussian (std::unique_ptr<Link::Link> & link) : Family(link) {
+        Gaussian (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "Gaussian";
         }
 };
@@ -64,7 +61,7 @@ class Binomial : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        Binomial (std::unique_ptr<Link::Link> & link) : Family(link) {
+        Binomial (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "Binomial";
         }
 };
@@ -77,7 +74,7 @@ class Poisson : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        Poisson (std::unique_ptr<Link::Link> & link) : Family(link) {
+        Poisson (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "Poisson";
         }
 };
@@ -90,7 +87,7 @@ class Gamma : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        Gamma (std::unique_ptr<Link::Link> & link) : Family(link) {
+        Gamma (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "Gamma";
         }
 };
@@ -103,7 +100,7 @@ class NegativeBinomial : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        NegativeBinomial (std::unique_ptr<Link::Link> & link) : Family(link) {
+        NegativeBinomial (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "NegativeBinomial";
             this->dispersion = 10;
         }
@@ -117,7 +114,7 @@ class QuasiBinomial : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        QuasiBinomial (std::unique_ptr<Link::Link> & link) : Family(link) {
+        QuasiBinomial (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "QuasiBinomial";
         }
 };
@@ -130,7 +127,7 @@ class QuasiPoisson : public Family {
         bool validmu (const arma::mat & mu) const;
         bool valideta (const arma::mat & eta) const;
         
-        QuasiPoisson (std::unique_ptr<Link::Link> & link) : Family(link) {
+        QuasiPoisson (std::unique_ptr<Link> & link) : Family(link) {
             this->family = "QuasiPoisson";
         }
 };

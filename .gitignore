@@ -69,3 +69,6 @@ Rcpp.pro.user
 # VS-Code
 .vscode
 .vscode/
+
+# Compressed files
+*.zip

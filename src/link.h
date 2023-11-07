@@ -9,7 +9,7 @@
 #include <RcppArmadillo.h>
 #include "utils.h"
 
-namespace Link {
+namespace glm {
 
 class Link {
     public:

@@ -5,8 +5,9 @@
 
 #include "misc.h"
 
+using namespace glm;
 
-void c_print_link_family (const std::unique_ptr<Family::Family> & family) {
+void c_print_link_family (const std::unique_ptr<Family> & family) {
     Rcpp::Rcout << "Family: " << family->family << "\n";
     Rcpp::Rcout << "Link: " << family->link << "\n";
     Rcpp::Rcout << "Mu: " << arma::vec{0.25, 0.5, 0.75} << "\n";
@@ -15,7 +16,7 @@ void c_print_link_family (const std::unique_ptr<Family::Family> & family) {
 
 // [[Rcpp::export]]
 void c_make_link_family (const std::string & familyname, const std::string & linkname) {
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
     c_print_link_family(family);
 }
 
@@ -24,7 +25,7 @@ Rcpp::List c_get_data_bounds (
     const double & eps, const double & ymin, const double & ymax, 
     const std::string & familyname, const std::string & linkname
 ) {
-    std::unique_ptr<Family::Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname);
 
     double mulo, muup, etalo, etaup;
     set_data_bounds(mulo, muup, etalo, etaup, eps, ymin, ymax, family);

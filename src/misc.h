@@ -10,10 +10,12 @@
 #include "family.h"
 #include <memory>
 
+using namespace glm;
+
 // Create a dynamic pointer to an appropriate link/family class starting  
 // from a string identifying the correct link/family to chose
-std::unique_ptr<Link::Link> make_link (const std::string & linkname);
-std::unique_ptr<Family::Family> make_family (
+std::unique_ptr<Link> make_link (const std::string & linkname);
+std::unique_ptr<Family> make_family (
     const std::string & familyname, const std::string & linkname);
 
 // Set the lower and upper bounds for mu and eta based on the observed data range
@@ -22,7 +24,7 @@ std::unique_ptr<Family::Family> make_family (
 void set_data_bounds (
     double & mulo, double & muup, double & etalo, double & etaup, 
     const double & eps, const double & ymin, const double & ymax, 
-    const std::unique_ptr<Family::Family> & family);
+    const std::unique_ptr<Family> & family);
 
 // Set the linear predictor trimming the extreme values
 void set_eta (
@@ -58,6 +60,12 @@ double exetime (const clock_t & start, const clock_t & end);
 void print_state (
     const int & iter, const double & div, 
     const double & change, const double & time);
+
+// Print the optimization state
+void print_state (
+    const int & iter, const double & div, 
+    const double & change, const double & time,
+    const double & scanned);
 
 // Divide the data indices in random chunks
 std::list<arma::uvec> sample_chunks (
