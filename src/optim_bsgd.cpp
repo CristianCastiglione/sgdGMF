@@ -1,7 +1,7 @@
 // optim_bsgd.cpp
 // author: Cristian Castiglione
 // creation: 07/10/2023
-// last change: 10/10/2023
+// last change: 13/11/2023
 
 #include "optim.h"
 
@@ -93,6 +93,59 @@ void BSGD::smooth_par (
     }
 }
 
+// Initialize the dispersion parameter estimate
+void BSGD::init_phi (
+    double & phi, const int & df, 
+    const arma::mat & Y, const arma::mat & mu, 
+    const std::unique_ptr<Family> & family
+) {
+    double ssq;
+    arma::mat var;
+    if (family->estdisp()) {
+        if (family->getfamily() == "NegativeBinomial") {
+            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
+            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            family->setdisp(1 / phi);
+        } else {
+            var = family->variance(mu);
+            ssq = arma::accu(arma::square(Y - mu) / var);
+            phi = std::max(1e-08, ssq / df);
+            family->setdisp(phi);
+        }
+    }
+}
+
+// Update and smooth the dispersion parameter estimate
+void BSGD::update_phi (
+    double & phi, const double & rate, 
+    const int & nm, const int & df, 
+    const arma::mat & Y, const arma::mat & mu, 
+    const arma::uvec & idx, const arma::uvec & idy, 
+    const std::unique_ptr<Family> & family
+) {
+    const int ni = idx.n_elem;
+    const int mi = idy.n_elem;
+    const int nmi = ni * mi;
+    double ssq, phit;
+    arma::mat yi = Y(idx, idy);
+    arma::mat mui = mu(idx, idy);
+    arma::mat vari(ni, mi);
+    if (family->estdisp()) {
+        if (family->getfamily() == "NegativeBinomial") {
+            ssq = arma::accu(arma::square(yi - mui) - mui);
+            phit = ssq / arma::accu(mui % mui);
+            phit = std::max(1e-08, phit);
+            phi = (1 - rate) * phi + rate * phit;
+            family->setdisp(1 / phi);
+        } else {
+            vari = family->variance(mui);
+            ssq = arma::accu(arma::square(yi - mui) / vari) / nmi;
+            phit = std::max(1e-08, ssq * (nm / df));
+            phi = (1 - rate) * phi + rate * phit;
+            family->setdisp(phi);
+        }
+    }
+}
 
 Rcpp::List BSGD::fit (
     arma::mat & Y, 
@@ -298,8 +351,8 @@ Rcpp::List BSGD::fit (
     // Get the final output
     Rcpp::List output;
     output["method"] = std::string("B-SGD");
-    output["family"] = family->family;
-    output["link"] = family->link;
+    output["family"] = family->getfamily();
+    output["link"] = family->getlink();
     output["idu"] = idu;
     output["idv"] = idv;
     output["U"] = u;
@@ -346,6 +399,7 @@ Rcpp::List BSGD::fit2 (
     const int p = X.n_cols; 
     const int q = Z.n_cols;
     const double nm = n * m;
+    const double df = n * m - n * (q + d) - m * (p + d);
 
     // Get the range of the data, and the lower and upper bounds
     double mulo, muup, etalo, etaup;
@@ -400,6 +454,10 @@ Rcpp::List BSGD::fit2 (
 
     // Fill the missing values with the initial predictions
     Y.elem(isna) = mu.elem(isna);
+
+    // Get the initial dispersion parameter
+    double phi = 1;
+    this->init_phi(phi, df, Y, mu, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change, scanned;
@@ -470,6 +528,9 @@ Rcpp::List BSGD::fit2 (
             // Smooth the parameter estimates
             this->smooth_par(u, ut, iter, idr, idu);
             this->smooth_par(v, vt, iter, idc, idv);
+
+            // Update the dispersion estimate
+            this->update_phi(phi, rate, nm, df, Y, mu, idr, idc, family);
         }
 
         if (iter % frequency == 0) {
@@ -520,8 +581,8 @@ Rcpp::List BSGD::fit2 (
     // Get the final output
     Rcpp::List output;
     output["method"] = std::string("B-SGD");
-    output["family"] = family->family;
-    output["link"] = family->link;
+    output["family"] = family->getfamily();
+    output["link"] = family->getlink();
     output["idu"] = idu;
     output["idv"] = idv;
     output["U"] = u;
@@ -529,6 +590,7 @@ Rcpp::List BSGD::fit2 (
     output["eta"] = eta;
     output["mu"] = mu;
     output["var"] = var;
+    output["phi"] = phi;
     output["penalty"] = pen;
     output["deviance"] = dev;
     output["objective"] = obj;

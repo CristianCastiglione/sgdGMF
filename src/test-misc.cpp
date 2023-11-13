@@ -1,15 +1,15 @@
 // test-misc.cpp
 // author: Cristian Castiglione
 // creation: 01/10/2023
-// last change: 01/10/2023
+// last change: 13/10/2023
 
 #include "misc.h"
 
 using namespace glm;
 
 void c_print_link_family (const std::unique_ptr<Family> & family) {
-    Rcpp::Rcout << "Family: " << family->family << "\n";
-    Rcpp::Rcout << "Link: " << family->link << "\n";
+    Rcpp::Rcout << "Family: " << family->getfamily() << "\n";
+    Rcpp::Rcout << "Link: " << family->getlink() << "\n";
     Rcpp::Rcout << "Mu: " << arma::vec{0.25, 0.5, 0.75} << "\n";
     Rcpp::Rcout << "Eta: " << family->linkfun(arma::vec{0.25, 0.5, 0.75}) << "\n";
 }
@@ -31,8 +31,8 @@ Rcpp::List c_get_data_bounds (
     set_data_bounds(mulo, muup, etalo, etaup, eps, ymin, ymax, family);
 
     Rcpp::List out;
-    out["family"] = family->family;
-    out["link"] = family->link;
+    out["family"] = family->getfamily();
+    out["link"] = family->getlink();
     out["ylim"] = arma::vec{ymin, ymax};
     out["mulim"] = arma::vec{mulo, muup};
     out["etalim"] = arma::vec{etalo, etaup};

@@ -187,6 +187,47 @@ void AIRWLS::update (
     }
 }
 
+void AIRWLS::init_phi (
+    double & phi, const int & df, const arma::mat & Y, 
+    const arma::mat & mu, const arma::mat & var, 
+    const std::unique_ptr<Family> & family
+) {
+    double ssq;
+    if (family->estdisp()) {
+        if (family->getfamily() == "NegativeBinomial") {
+            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
+            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            family->setdisp(1 / phi);
+        } else {
+            ssq = arma::accu(arma::square(Y - mu) / var);
+            phi = std::max(1e-08, ssq / df);
+            family->setdisp(phi);
+        }
+    }
+}
+
+void AIRWLS::update_phi (
+    double & phi, const int & df, const arma::mat & Y, 
+    const arma::mat & mu, const arma::mat & var, 
+    const std::unique_ptr<Family> & family
+) {
+    double ssq, phit, lambda = 0.5;
+    if (family->estdisp()) {
+        if (family->getfamily() == "NegativeBinomial") {
+            ssq = arma::accu(arma::square(Y - mu));
+            phit = (ssq - arma::accu(mu)) / arma::accu(mu % mu);
+            phit = std::max(1e-08, phit);
+            phi = (1 - lambda) * phi + lambda * phit;
+            family->setdisp(1 / phi);
+        } else {
+            ssq = arma::accu(arma::square(Y - mu) / var);
+            phit = std::max(1e-08, ssq / df);
+            phi = (1 - lambda) * phi + lambda * phit;
+            family->setdisp(phi);
+        }
+    }
+}
+
 
 Rcpp::List AIRWLS::fit (
     arma::mat & Y, // to fill NA values we need Y to be non-const
@@ -206,6 +247,7 @@ Rcpp::List AIRWLS::fit (
     const int p = X.n_cols; 
     const int q = Z.n_cols;
     const double nm = n * m;
+    const double df = n * m - n * (q + d) - m * (p + d);
 
     // Get the range of the data, and the lower and upper bounds
     double mulo, muup, etalo, etaup;
@@ -233,12 +275,17 @@ Rcpp::List AIRWLS::fit (
     arma::uvec isna = arma::find_nonfinite(Y);
 
     // Get the linear predictor and the mean matrices
-    arma::mat eta(n,m), mu(n,m), offset(n,m);
+    arma::mat eta(n,m), mu(n,m), var(n,m), offset(n,m);
     eta = get_eta(u, v, etalo, etaup);
     mu = family->linkinv(eta);
+    var = family->variance(mu);
 
     // Fill the missing values with the initial predictions
     Y.elem(isna) = mu.elem(isna);
+
+    // Get the initial dispersion parameter
+    double phi = 1;
+    this->init_phi(phi, df, Y, mu, var, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
@@ -283,6 +330,12 @@ Rcpp::List AIRWLS::fit (
         eta = get_eta(u, v, etalo, etaup);
         mu = family->linkinv(eta);
 
+        // Update the dispersion parameter
+        if (iter % 10 == 0){
+            var = family->variance(mu);
+            this->update_phi(phi, df, Y, mu, var, family);
+        }
+
         // Update the initial deviance, penalty and objective function
         dev = arma::accu(deviance(Y, mu, family));
         pen = penalty(u, penu) + penalty(v, penv);
@@ -305,6 +358,10 @@ Rcpp::List AIRWLS::fit (
         if (change < this->tol) {break;}
     }
 
+    // Update the dispersion parameter
+    var = family->variance(mu);
+    this->update_phi(phi, df, Y, mu, var, family);
+
     // Get the final execution time
     end = clock();
     time = exetime(start, end);
@@ -317,15 +374,16 @@ Rcpp::List AIRWLS::fit (
     // Get the final output
     Rcpp::List output;
     output["method"] = std::string("AIRWLS");
-    output["family"] = family->family;
-    output["link"] = family->link;
+    output["family"] = family->getfamily();
+    output["link"] = family->getlink();
     output["idu"] = idu;
     output["idv"] = idv;
     output["U"] = u;
     output["V"] = v;
     output["eta"] = eta;
     output["mu"] = mu;
-    output["var"] = family->variance(mu);
+    output["var"] = var;
+    output["phi"] = phi;
     output["penalty"] = pen;
     output["deviance"] = dev;
     output["objective"] = obj;

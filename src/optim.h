@@ -1,7 +1,7 @@
 // optim.h
 // author: Cristian Castiglione
 // creation: 05/10/2023
-// last change: 10/10/2023
+// last change: 13/11/2023
 
 #ifndef OPTIM_H
 #define OPTIM_H
@@ -64,6 +64,18 @@ class AIRWLS {
         
         // Print the class attributes
         void summary ();
+
+        // Dispersion parameter initialization
+        void init_phi (
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
+
+        // Dispersion parameter update
+        void update_phi (
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
 
         // Basic weighted least-squares solver for GLM steps
         void glmstep (
@@ -146,6 +158,18 @@ class Newton {
 
         // Print the class attributes
         void summary ();
+
+        // Dispersion parameter initialization
+        void init_phi (
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
+
+        // Dispersion parameter update
+        void update_phi (
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
 
         // Quasi-Newton block update of the parameters (block implementation)
         void blocked_update (
@@ -244,6 +268,20 @@ class BSGD {
         void smooth_par (
             arma::mat & u, const arma::mat & ut, const int & iter,
             const arma::uvec & idx, const arma::uvec & idy);
+        
+        // Initialize the dispersion parameter estimate
+        void init_phi (
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & mu, 
+            const std::unique_ptr<Family> & family);
+
+        // Update and smooth the dispersion parameter estimate
+        void update_phi (
+            double & phi, const double & rate, 
+            const int & nm, const int & df, 
+            const arma::mat & Y, const arma::mat & mu, 
+            const arma::uvec & idx, const arma::uvec & idy, 
+            const std::unique_ptr<Family> & family);
 
         // Model fitting via SGD (1) - SCATTERED UPDATES
         Rcpp::List fit (
@@ -340,6 +378,20 @@ class CSGD {
         void smooth_par (
             arma::mat & u, const arma::mat & ut, 
             const int & iter, const arma::uvec & idx);
+        
+        // Initialize the dispersion parameter estimate
+        void init_phi (
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & mu, 
+            const std::unique_ptr<Family> & family);
+
+        // Update and smooth the dispersion parameter estimate
+        void update_phi (
+            double & phi, const double & rate, 
+            const int & nm, const int & df, 
+            const arma::mat & Y, const arma::mat & mu, 
+            const arma::uvec & idx, const arma::uvec & idy, 
+            const std::unique_ptr<Family> & family);
 
         // Model fitting via SGD
         Rcpp::List fit (
@@ -436,6 +488,20 @@ class MSGD {
         void smooth_par (
             arma::mat & u, const arma::mat & ut, const int & iter,
             const arma::uvec & idx, const arma::uvec & idy);
+        
+        // Initialize the dispersion parameter estimate
+        void init_phi (
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & mu, 
+            const std::unique_ptr<Family> & family);
+
+        // Update and smooth the dispersion parameter estimate
+        void update_phi (
+            double & phi, const double & rate, 
+            const int & nm, const int & df, 
+            const arma::mat & Y, const arma::mat & mu, 
+            const arma::uvec & idx, 
+            const std::unique_ptr<Family> & family);
 
         // Model fitting via SGD (1) - SLICEWISE UPDATES
         Rcpp::List fit (

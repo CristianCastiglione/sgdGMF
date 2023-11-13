@@ -21,6 +21,47 @@ void Newton::summary () {
     std::printf("------------------\n");
 }
 
+void Newton::init_phi (
+    double & phi, const int & df, const arma::mat & Y, 
+    const arma::mat & mu, const arma::mat & var, 
+    const std::unique_ptr<Family> & family
+) {
+    double ssq;
+    if (family->estdisp()) {
+        if (family->getfamily() == "NegativeBinomial") {
+            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
+            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            family->setdisp(1 / phi);
+        } else {
+            ssq = arma::accu(arma::square(Y - mu) / var);
+            phi = std::max(1e-08, ssq / df);
+            family->setdisp(phi);
+        }
+    }
+}
+
+void Newton::update_phi (
+    double & phi, const int & df, const arma::mat & Y, 
+    const arma::mat & mu, const arma::mat & var, 
+    const std::unique_ptr<Family> & family
+) {
+    double ssq, phit, lambda = 0.5;
+    if (family->estdisp()) {
+        if (family->getfamily() == "NegativeBinomial") {
+            ssq = arma::accu(arma::square(Y - mu));
+            phit = (ssq - arma::accu(mu)) / arma::accu(mu % mu);
+            phit = std::max(1e-08, phit);
+            phi = (1 - lambda) * phi + lambda * phit;
+            family->setdisp(1 / phi);
+        } else {
+            ssq = arma::accu(arma::square(Y - mu) / var);
+            phit = std::max(1e-08, ssq / df);
+            phi = (1 - lambda) * phi + lambda * phit;
+            family->setdisp(phi);
+        }
+    }
+}
+
 void Newton::blocked_update (
     arma::mat & u, const arma::mat & v, 
     const arma::vec & pen, const arma::uvec & idx,
@@ -96,6 +137,7 @@ Rcpp::List Newton::fit (
     const int p = X.n_cols; 
     const int q = Z.n_cols;
     const double nm = n * m;
+    const double df = n * m - n * (q + d) - m * (p + d);
 
     // Get the number of cores and threads
     const unsigned int mcores = this->nthreads;
@@ -141,6 +183,10 @@ Rcpp::List Newton::fit (
 
     // Fill the missing values with the initial predictions
     Y.elem(isna) = mu.elem(isna);
+
+    // Get the initial dispersion parameter
+    double phi = 1;
+    this->init_phi(phi, df, Y, mu, var, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
@@ -192,6 +238,11 @@ Rcpp::List Newton::fit (
         var = family->variance(mu);
         mueta = family->mueta(eta);
 
+        // Update the dispersion parameter
+        if (iter % 10 == 0){
+            this->update_phi(phi, df, Y, mu, var, family);
+        }
+        
         // Update the initial deviance, penalty and objective function
         dev = arma::accu(deviance(Y, mu, family));
         pen = penalty(u, penu) + penalty(v, penv);
@@ -214,6 +265,9 @@ Rcpp::List Newton::fit (
         if (change < this->tol) {break;}
     }
 
+    // Update the dispersion parameter
+    this->update_phi(phi, df, Y, mu, var, family);
+
     // Get the final execution time
     end = clock();
     time = exetime(start, end);
@@ -226,8 +280,8 @@ Rcpp::List Newton::fit (
     // Get the final output
     Rcpp::List output;
     output["method"] = std::string("Newton");
-    output["family"] = family->family;
-    output["link"] = family->link;
+    output["family"] = family->getfamily();
+    output["link"] = family->getlink();
     output["idu"] = idu;
     output["idv"] = idv;
     output["U"] = u;
@@ -235,6 +289,7 @@ Rcpp::List Newton::fit (
     output["eta"] = eta;
     output["mu"] = mu;
     output["var"] = var;
+    output["phi"] = phi;
     output["penalty"] = pen;
     output["deviance"] = dev;
     output["objective"] = obj;
