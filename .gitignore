@@ -70,5 +70,10 @@ Rcpp.pro.user
 .vscode
 .vscode/
 
+# Image folder
+img
+img/
+img/**
+
 # Compressed files
 *.zip
