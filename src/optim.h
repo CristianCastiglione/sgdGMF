@@ -6,6 +6,8 @@
 #ifndef OPTIM_H
 #define OPTIM_H
 
+#define ARMA_WARN_LEVEL 1
+
 #include <RcppArmadillo.h>
 
 #include <string>

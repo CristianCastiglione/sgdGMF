@@ -29,7 +29,7 @@ void AIRWLS::glmstep (
 ) {
     // Set the tollerance threshold and the parameter dimension
     const double thr = 1e+06;
-    const int p = beta.n_rows;
+    // const int p = beta.n_rows;
 
     // Compute the approximate suffucient statistics
     arma::vec eta = offset + X * beta;
@@ -44,22 +44,28 @@ void AIRWLS::glmstep (
 
     // Compute the new estimate via penalized WLS
     arma::mat pen = arma::diagmat(penalty + this->damping);
-    arma::mat xtwx = X.t() * arma::diagmat(w) * X + pen;
+    arma::mat xtwx = X.t() * arma::diagmat(w) * X;
     arma::vec xtwz = X.t() * (w % z);
-    arma::vec betat(p);
-
-    try {
-        // This system might fail in the case where xtwx is not positive definite
-        betat = arma::solve(xtwx, xtwz);
-    } catch (...) {
-        // Here we handle ill-conditioned systems by approximating the matrix inverse
-        // using only the first positive (enough) eigenvalues/vectors
-        arma::vec eigval(p);
-        arma::mat eigvec(p, p);
-        arma::eig_sym(eigval, eigvec, xtwx);
-        arma::uvec idx = arma::find(eigval > 1/thr);
-        betat = eigvec.cols(idx) * arma::diagmat(1 / eigval(idx)) * eigvec.cols(idx).t() * xtwz;
+    arma::vec betat = beta;
+    bool status = arma::solve(betat, xtwx + pen, xtwz);
+    
+    if (!status) {
+        betat = beta;
     }
+    
+
+    // try {
+    //     // This system might fail in the case where xtwx is not positive definite
+    //     betat = arma::solve(xtwx, xtwz);
+    // } catch (...) {
+    //     // Here we handle ill-conditioned systems by approximating the matrix inverse
+    //     // using only the first positive (enough) eigenvalues/vectors
+    //     arma::vec eigval(p);
+    //     arma::mat eigvec(p, p);
+    //     arma::eig_sym(eigval, eigvec, xtwx);
+    //     arma::uvec idx = arma::find(eigval > 1/thr);
+    //     betat = eigvec.cols(idx) * arma::diagmat(1 / eigval(idx)) * eigvec.cols(idx).t() * xtwz;
+    // }
 
     // Smooth the updated coefficient vector with the previous guess 
     beta = (1 - this->stepsize) * beta + this->stepsize * betat;
