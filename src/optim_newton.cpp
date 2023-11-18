@@ -62,6 +62,72 @@ void Newton::update_phi (
     }
 }
 
+void Newton::update_dstat (
+    dStat & dstat, const arma::mat & Y,
+    const arma::mat & u, const arma::mat & v, 
+    const double & lo, const double & up,
+    const std::unique_ptr<Family> & family
+) {
+    if (this->parallel) {
+        const unsigned int n = dstat.eta.n_rows;
+        const unsigned int m = dstat.eta.n_cols;
+        if (n > m) {
+            #pragma omp parallel for
+            for (unsigned int i = 0; i < n; i++) {
+                dstat.eta.row(i) = get_eta(u.row(i), v, lo, up);
+                dstat.mu.row(i) = family->linkinv(dstat.eta.row(i));
+                dstat.var.row(i) = family->variance(dstat.mu.row(i));
+                dstat.mueta.row(i) = family->mueta(dstat.eta.row(i));
+                dstat.dev.row(i) = deviance(Y.row(i), dstat.mu.row(i), family);
+            }
+        } else {
+            #pragma omp parallel for
+            for (unsigned int j = 0; j < m; j++) {
+                dstat.eta.col(j) = get_eta(u, v.col(j), lo, up);
+                dstat.mu.col(j) = family->linkinv(dstat.eta.col(j));
+                dstat.var.col(j) = family->variance(dstat.mu.col(j));
+                dstat.mueta.col(j) = family->mueta(dstat.eta.col(j));
+                dstat.dev.col(j) = deviance(Y.col(j), dstat.mu.col(j), family);
+            }
+        }
+    } else {
+        dstat.eta = get_eta(u, v, lo, up);
+        dstat.mu = family->linkinv(dstat.eta);
+        dstat.var = family->variance(dstat.mu);
+        dstat.mueta = family->mueta(dstat.eta);
+        dstat.dev = deviance(Y, dstat.mu, family);
+    }
+}
+
+void Newton::update_deta (
+    dEta & deta, 
+    const dStat & dstat, const arma::mat & Y,
+    const std::unique_ptr<Family> & family
+) {
+    if (this->parallel) {
+        const unsigned int n = deta.deta.n_rows;
+        const unsigned int m = deta.deta.n_cols;
+        if (n > m) {
+            #pragma omp parallel for
+            for (unsigned int i = 0; i < n; i++) {
+                deta.deta.row(i) = (Y.row(i) - dstat.mu.row(i)) % dstat.mueta.row(i) / dstat.var.row(i);
+                deta.ddeta.row(i) = arma::square(dstat.mueta.row(i)) / dstat.var.row(i);
+            }
+        } else {
+            #pragma omp parallel for
+            for (unsigned int j = 0; j < m; j++) {
+                deta.deta.col(j) = (Y.col(j) - dstat.mu.col(j)) % dstat.mueta.col(j) / dstat.var.col(j);
+                deta.ddeta.col(j) = arma::square(dstat.mueta.col(j)) / dstat.var.col(j);
+            }
+        }
+    } else {
+        deta.deta = (Y - dstat.mu) % dstat.mueta / dstat.var;
+        deta.ddeta = (dstat.mueta % dstat.mueta) / dstat.var;
+    }
+}
+
+
+
 void Newton::blocked_update (
     arma::mat & u, const arma::mat & v, 
     const arma::vec & pen, const arma::uvec & idx,
@@ -175,28 +241,33 @@ Rcpp::List Newton::fit (
     arma::uvec isna = arma::find_nonfinite(Y);
 
     // Get the predicted values, the variances and the mu-differentials
-    arma::mat eta(n,m), mu(n,m), var(n,m), mueta(n,m);
-    eta = get_eta(u, v, etalo, etaup);
-    mu = family->linkinv(eta);
-    var = family->variance(mu);
-    mueta = family->mueta(eta);
+    dStat dstat(n, m);
+    dEta deta(n, m);
+    
+    this->update_dstat(dstat, Y, u, v, etalo, etaup, family);
+
+    // arma::mat eta(n,m), mu(n,m), var(n,m), mueta(n,m);
+    // eta = get_eta(u, v, etalo, etaup);
+    // mu = family->linkinv(eta);
+    // var = family->variance(mu);
+    // mueta = family->mueta(eta);
 
     // Fill the missing values with the initial predictions
-    Y.elem(isna) = mu.elem(isna);
+    Y.elem(isna) = dstat.mu.elem(isna);
 
     // Get the initial dispersion parameter
     double phi = 1;
-    this->init_phi(phi, df, Y, mu, var, family);
+    this->init_phi(phi, df, Y, dstat.mu, dstat.var, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(deviance(Y, dstat.mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
 
     // Initialize the differentials
-    arma::mat deta(n,m), ddeta(n,m);
+    // arma::mat deta(n,m), ddeta(n,m);
 
     // Get the current execution time
     clock_t end = clock();
@@ -219,32 +290,35 @@ Rcpp::List Newton::fit (
 
         // Fill the missing values with the current predictions
         if (anyna && iter % this->nafill == 0) {
-            Y.elem(isna) = mu.elem(isna);
+            Y.elem(isna) = dstat.mu.elem(isna);
         }
 
         // Set up helper matrices for computing differentials
-        deta = (Y - mu) % mueta / var;
-        ddeta = (mueta % mueta) / var;
+        this->update_deta(deta, dstat, Y, family);
+        // deta = (Y - mu) % mueta / var;
+        // ddeta = (mueta % mueta) / var;
 
         // Update U and V elementwise via quasi-Newton
-        this->update(ut, v, penu, idu, deta, ddeta);
-        this->update(vt, u, penv, idv, deta.t(), ddeta.t());
+        this->update(ut, v, penu, idu, deta.deta, deta.ddeta);
+        this->update(vt, u, penv, idv, deta.deta.t(), deta.ddeta.t());
         u = ut;
         v = vt;
 
         // Update the predictions, the variances and the mu-differentials
-        eta = get_eta(u, v, etalo, etaup);
-        mu = family->linkinv(eta);
-        var = family->variance(mu);
-        mueta = family->mueta(eta);
+        this->update_dstat(dstat, Y, u, v, etalo, etaup, family);
+        // eta = get_eta(u, v, etalo, etaup);
+        // mu = family->linkinv(eta);
+        // var = family->variance(mu);
+        // mueta = family->mueta(eta);
 
         // Update the dispersion parameter
         if (iter % 10 == 0){
-            this->update_phi(phi, df, Y, mu, var, family);
+            this->update_phi(phi, df, Y, dstat.mu, dstat.var, family);
         }
         
         // Update the initial deviance, penalty and objective function
-        dev = arma::accu(deviance(Y, mu, family));
+        dev = arma::accu(dstat.dev);
+        // dev = arma::accu(deviance(Y, dstat.mu, family));
         pen = penalty(u, penu) + penalty(v, penv);
         objt = obj; obj = dev + 0.5 * pen;
         change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
@@ -266,7 +340,7 @@ Rcpp::List Newton::fit (
     }
 
     // Update the dispersion parameter
-    this->update_phi(phi, df, Y, mu, var, family);
+    this->update_phi(phi, df, Y, dstat.mu, dstat.var, family);
 
     // Get the final execution time
     end = clock();
@@ -286,9 +360,9 @@ Rcpp::List Newton::fit (
     output["idv"] = idv;
     output["U"] = u;
     output["V"] = v;
-    output["eta"] = eta;
-    output["mu"] = mu;
-    output["var"] = var;
+    output["eta"] = dstat.eta;
+    output["mu"] = dstat.mu;
+    output["var"] = dstat.var;
     output["phi"] = phi;
     output["penalty"] = pen;
     output["deviance"] = dev;
