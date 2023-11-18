@@ -48,25 +48,12 @@ void AIRWLS::glmstep (
     arma::vec xtwz = X.t() * (w % z);
     arma::vec betat = beta;
     bool status = arma::solve(betat, xtwx + pen, xtwz);
-    
-    if (!status) {
-        betat = beta;
-    }
-    
+    if (!status) betat = beta;
 
-    // try {
-    //     // This system might fail in the case where xtwx is not positive definite
-    //     betat = arma::solve(xtwx, xtwz);
-    // } catch (...) {
-    //     // Here we handle ill-conditioned systems by approximating the matrix inverse
-    //     // using only the first positive (enough) eigenvalues/vectors
-    //     arma::vec eigval(p);
-    //     arma::mat eigvec(p, p);
-    //     arma::eig_sym(eigval, eigvec, xtwx);
-    //     arma::uvec idx = arma::find(eigval > 1/thr);
-    //     betat = eigvec.cols(idx) * arma::diagmat(1 / eigval(idx)) * eigvec.cols(idx).t() * xtwz;
-    // }
-
+    // If the system is poorly conditioned, we need to stabilize 
+    // the updates. Some possibilities are to the following:
+    // eigen-correction, fisher update + line-serach
+    
     // Smooth the updated coefficient vector with the previous guess 
     beta = (1 - this->stepsize) * beta + this->stepsize * betat;
 }
