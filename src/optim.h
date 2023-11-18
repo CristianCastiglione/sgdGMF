@@ -33,6 +33,17 @@ struct dEta {
         : deta(n, m), ddeta(n, m) {}
 };
 
+// Sufficient statistics for the calculation of the differentials
+struct dStat {
+    arma::mat eta;
+    arma::mat mu;
+    arma::mat var;
+    arma::mat mueta;
+    arma::mat dev;
+    dStat (const int & n, const int & m)
+        : eta(n, m), mu(n, m), var(n, m), mueta(n, m), dev(n, m) {}
+};
+
 // Log-likelihood differentials with respect to the parameters
 struct dPar {
     arma::mat dpar;
@@ -171,6 +182,17 @@ class Newton {
         void update_phi (
             double & phi, const int & df, const arma::mat & Y, 
             const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
+
+        void update_dstat (
+            dStat & dstat, const arma::mat & Y,
+            const arma::mat & u, const arma::mat & v, 
+            const double & lo, const double & up, 
+            const std::unique_ptr<Family> & family);
+        
+        void update_deta (
+            dEta & deta, 
+            const dStat & dstat, const arma::mat & Y,
             const std::unique_ptr<Family> & family);
 
         // Quasi-Newton block update of the parameters (block implementation)
