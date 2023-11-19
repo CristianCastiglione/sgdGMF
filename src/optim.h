@@ -208,7 +208,7 @@ class Newton {
             const arma::mat & deta, const arma::mat & ddeta);
 
         // Quasi-Newton block update of the parameters
-        void update (
+        void update_par (
             arma::mat & u, const arma::mat & v, 
             const arma::vec & pen, const arma::uvec & idx,
             const arma::mat & deta, const arma::mat & ddeta);
