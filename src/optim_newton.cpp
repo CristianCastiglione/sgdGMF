@@ -78,7 +78,8 @@ void Newton::update_dstat (
                 dstat.mu.row(i) = family->linkinv(dstat.eta.row(i));
                 dstat.var.row(i) = family->variance(dstat.mu.row(i));
                 dstat.mueta.row(i) = family->mueta(dstat.eta.row(i));
-                dstat.dev.row(i) = deviance(Y.row(i), dstat.mu.row(i), family);
+                dstat.dev.row(i) = family->devresid(Y.row(i), dstat.mu.row(i));
+                // dstat.dev.row(i) = deviance(Y.row(i), dstat.mu.row(i), family);
             }
         } else {
             #pragma omp parallel for
@@ -87,7 +88,8 @@ void Newton::update_dstat (
                 dstat.mu.col(j) = family->linkinv(dstat.eta.col(j));
                 dstat.var.col(j) = family->variance(dstat.mu.col(j));
                 dstat.mueta.col(j) = family->mueta(dstat.eta.col(j));
-                dstat.dev.col(j) = deviance(Y.col(j), dstat.mu.col(j), family);
+                dstat.dev.col(j) = family->devresid(Y.col(j), dstat.mu.col(j));
+                // dstat.dev.col(j) = deviance(Y.col(j), dstat.mu.col(j), family);
             }
         }
     } else {
@@ -95,7 +97,8 @@ void Newton::update_dstat (
         dstat.mu = family->linkinv(dstat.eta);
         dstat.var = family->variance(dstat.mu);
         dstat.mueta = family->mueta(dstat.eta);
-        dstat.dev = deviance(Y, dstat.mu, family);
+        dstat.dev = family->devresid(Y, dstat.mu); 
+        // dstat.dev = deviance(Y, dstat.mu, family);
     }
 }
 
@@ -125,8 +128,6 @@ void Newton::update_deta (
         deta.ddeta = (dstat.mueta % dstat.mueta) / dstat.var;
     }
 }
-
-
 
 void Newton::blocked_update (
     arma::mat & u, const arma::mat & v, 
@@ -171,7 +172,7 @@ void Newton::parallel_update (
     }
 }
 
-void Newton::update (
+void Newton::update_par (
     arma::mat & u, const arma::mat & v, 
     const arma::vec & pen, const arma::uvec & idx,
     const arma::mat & deta, const arma::mat & ddeta
@@ -246,12 +247,6 @@ Rcpp::List Newton::fit (
     
     this->update_dstat(dstat, Y, u, v, etalo, etaup, family);
 
-    // arma::mat eta(n,m), mu(n,m), var(n,m), mueta(n,m);
-    // eta = get_eta(u, v, etalo, etaup);
-    // mu = family->linkinv(eta);
-    // var = family->variance(mu);
-    // mueta = family->mueta(eta);
-
     // Fill the missing values with the initial predictions
     Y.elem(isna) = dstat.mu.elem(isna);
 
@@ -261,13 +256,10 @@ Rcpp::List Newton::fit (
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
-    dev = arma::accu(deviance(Y, dstat.mu, family));
+    dev = arma::accu(family->devresid(Y, dstat.mu));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
-
-    // Initialize the differentials
-    // arma::mat deta(n,m), ddeta(n,m);
 
     // Get the current execution time
     clock_t end = clock();
@@ -295,21 +287,15 @@ Rcpp::List Newton::fit (
 
         // Set up helper matrices for computing differentials
         this->update_deta(deta, dstat, Y, family);
-        // deta = (Y - mu) % mueta / var;
-        // ddeta = (mueta % mueta) / var;
 
         // Update U and V elementwise via quasi-Newton
-        this->update(ut, v, penu, idu, deta.deta, deta.ddeta);
-        this->update(vt, u, penv, idv, deta.deta.t(), deta.ddeta.t());
+        this->update_par(ut, v, penu, idu, deta.deta, deta.ddeta);
+        this->update_par(vt, u, penv, idv, deta.deta.t(), deta.ddeta.t());
         u = ut;
         v = vt;
 
         // Update the predictions, the variances and the mu-differentials
         this->update_dstat(dstat, Y, u, v, etalo, etaup, family);
-        // eta = get_eta(u, v, etalo, etaup);
-        // mu = family->linkinv(eta);
-        // var = family->variance(mu);
-        // mueta = family->mueta(eta);
 
         // Update the dispersion parameter
         if (iter % 10 == 0){
@@ -318,7 +304,6 @@ Rcpp::List Newton::fit (
         
         // Update the initial deviance, penalty and objective function
         dev = arma::accu(dstat.dev);
-        // dev = arma::accu(deviance(Y, dstat.mu, family));
         pen = penalty(u, penu) + penalty(v, penv);
         objt = obj; obj = dev + 0.5 * pen;
         change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
