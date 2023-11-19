@@ -1,7 +1,7 @@
 // optim.h
 // author: Cristian Castiglione
 // creation: 05/10/2023
-// last change: 13/11/2023
+// last change: 19/11/2023
 
 #ifndef OPTIM_H
 #define OPTIM_H
@@ -60,7 +60,7 @@ struct dCube {
         : dpar(n, m, k), ddpar(n, m, k) {}
 };
 
-// AIRWLS (i.e. Fisher scoring) optimizer
+// AIRWLS (i.e. row-wise Fisher scoring) optimizer
 class AIRWLS {
     public:
         int maxiter;
@@ -155,7 +155,95 @@ class AIRWLS {
         }
 };
 
-// Quasi-Neewton optimizer
+// Fisher (i.e. column-wise Fisher scoring) optimizer
+class Fisher {
+    public:
+        int maxiter;
+        double stepsize;
+        double eps;
+        int nafill;
+        double tol;
+        double damping;
+        bool verbose;
+        int frequency;
+        bool parallel;
+        int nthreads;
+
+        // Print the class attributes
+        void summary ();
+
+        // Dispersion parameter initialization
+        void init_phi (
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
+
+        // Dispersion parameter update
+        void update_phi (
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & mu, const arma::mat & var, 
+            const std::unique_ptr<Family> & family);
+
+        void update_dstat (
+            dStat & dstat, const arma::mat & Y,
+            const arma::mat & u, const arma::mat & v, 
+            const double & lo, const double & up, 
+            const std::unique_ptr<Family> & family);
+        
+        void update_deta (
+            dEta & deta, 
+            const dStat & dstat, const arma::mat & Y,
+            const std::unique_ptr<Family> & family);
+
+        // Quasi-Newton block update of the parameters (block implementation)
+        void blocked_update (
+            arma::mat & u, const arma::mat & v, 
+            const arma::vec & pen, const arma::uvec & idx,
+            const arma::mat & deta, const arma::mat & ddeta);
+
+        // Quasi-Newton block update of the parameters (parallel implementation)
+        void parallel_update (
+            arma::mat & u, const arma::mat & v, 
+            const arma::vec & pen, const arma::uvec & idx,
+            const arma::mat & deta, const arma::mat & ddeta);
+
+        // Quasi-Newton block update of the parameters
+        void update_par (
+            arma::mat & u, const arma::mat & v, 
+            const arma::vec & pen, const arma::uvec & idx,
+            const arma::mat & deta, const arma::mat & ddeta);
+
+        // Model fitting via quasi-Newton
+        Rcpp::List fit (
+            arma::mat & Y, // to fill NA values we need Y to be non-const
+            const arma::mat & X, const arma::mat & B, 
+            const arma::mat & A, const arma::mat & Z,
+            const arma::mat & U, const arma::mat & V,
+            const std::unique_ptr<Family> & family, 
+            const int & ncomp, const arma::vec & lambda);
+        
+        // Class constructor
+        Newton (
+            const int & maxiter, const double & stepsize, 
+            const double & eps, const int & nafill, 
+            const double & tol, const double & damping,
+            const bool & verbose, const int & frequency,
+            const bool & parallel, const int & nthreads
+        ) {
+            if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 500;}
+            if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}
+            if (eps >= 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
+            if (nafill > 0) {this->nafill = nafill;} else {this->nafill = 1;}
+            if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
+            if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
+            if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 50;}
+            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
+            this->verbose = verbose;
+            this->parallel = parallel;
+        }
+};
+
+// Quasi-Newton optimizer
 class Newton {
     public:
         int maxiter;
