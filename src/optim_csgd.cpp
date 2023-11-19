@@ -277,7 +277,7 @@ Rcpp::List CSGD::fit (
         // Get the minibatch normalization factors
         scaler = n / nc;
         scalec = m / mc;
-        scanned += (nc * mc) / nm; 
+        scanned += (nc * m + mc * n - nc * mc) / nm; 
 
         // Update the linear predictor and the mean matrix
         arma::mat etar = get_eta(ut.rows(idr), vt, etalo, etaup);
