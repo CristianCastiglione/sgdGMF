@@ -46,6 +46,14 @@ void trim (arma::mat & x, const double & a, const double & b, const arma::uvec &
   x(idx, idy) = xt;
 }
 
+arma::mat max0 (const arma::mat & x) {
+  return .5 * (arma::abs(x) + x);
+}
+
+arma::mat max0 (const arma::mat & x, const double & p) {
+  return arma::pow(.5 * (arma::abs(x) + x), p);
+}
+
 arma::mat xlogx (const arma::mat & x){
   arma::mat y = x;
   arma::uvec above = arma::find(x >  0);
