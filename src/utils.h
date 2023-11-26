@@ -41,6 +41,10 @@ void trim (arma::mat & x, const double & a, const double & b, const arma::uvec &
 double norm (const arma::mat & x);
 double norm (const arma::mat & x, const double & p);
 
+// Pointwise maximum between 0 and x (to the power of p)
+arma::mat max0 (const arma::mat & x);
+arma::mat max0 (const arma::mat & x, const double & p);
+
 // Stable calculation of x*log(x), with 0*log(0) = 0;
 arma::mat xlogx (const arma::mat & x);
 
