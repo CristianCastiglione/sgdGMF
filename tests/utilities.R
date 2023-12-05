@@ -9,11 +9,13 @@
 # devtools::load_all()
 
 # Import the needed packages
-require(MASS)
-require(gllvm)
-require(glmpca)
-require(ggplot2)
-require(ggpubr)
+suppressPackageStartupMessages({
+  require(MASS)
+  require(gllvm)
+  require(glmpca)
+  require(ggplot2)
+  require(ggpubr)
+})
 
 ## UTILITIES ----
 
@@ -84,25 +86,26 @@ expdev <- function (y, x, family) {
   # fitdev <- mean(family$dev.resids(y, x, 1), na.rm = TRUE)
   dev0 <- matrix.deviance(m, y, family = family)
   devf <- matrix.deviance(x, y, family = family)
-  return (1 - devf / dev0)
+  return (devf / dev0)
 }
 
 # Summary error matrix
 error.matrix = function (y, ...) {
   object.list = list(...)
-  error = data.frame(Time = c(), ResSumSq = c(), Cosine = c(), Deviance = c())
+  error = data.frame(Model = c(), Time = c(), RSS = c(), Cos = c(), Dev = c())
   for (k in 1:length(object.list)) {
     .object = object.list[[k]]
     .mu = .object$mu
-    .time = .object$time[3]
-    .rss = rss(y, .mu)
-    .cos = cosdist(y, .mu)
-    .dev = expdev(y, .mu, family = poisson())
-    .error = data.frame(Time = .time, ResSumSq = .rss, Cosine = .cos, Deviance = .dev)
+    .model = .object$model
+    .time = round(.object$time[3], 4)
+    .rss = round(rss(y, .mu), 4)
+    .cos = round(cosdist(y, .mu), 4)
+    .dev = round(expdev(y, .mu, family = poisson()), 4)
+    .error = data.frame(Model = .model, Time = .time, RSS = .rss, Cos = .cos, Dev = .dev)
     error = rbind(error, .error)
-    rownames(error)[k] = .object$model
+    rownames(error)[k] = k
   }
-  return (round(error, 4))
+  return (error)
 }
 
 ## POSTPROCESSING AND PLOTTING ----
@@ -170,6 +173,23 @@ train.test.split <- function (y, test = 0.3) {
   yna[!isna] <- NA
 
   list(mask = mask, isna = isna, ycc = ycc, yna = yna, ynn = ynn)
+}
+
+train.test.split <- function (y, test = 0.3) {
+
+  n = nrow(y)
+  m = ncol(y)
+
+  idx = cbind(x = sample.int(n = n, size = floor(test * n * m), replace = TRUE),
+              y = sample.int(n = m, size = floor(test * n * m), replace = TRUE))
+
+  mask = matrix(0, nrow = n, ncol = m)
+  mask[idx] = 1
+
+  train = (mask == 1)
+  test = (mask != 1)
+
+  list(train = train, test = test)
 }
 
 ## Matrix completion for gllvm and glmpca
@@ -299,7 +319,8 @@ fit.gllvm = function (
     y = y, X = x, Z = z,
     formula = ~ .,
     num.lv = ncomp,
-    family = family$family,
+    family = family,
+    method = "EVA",
     reltol = tol) %>%
     suppressWarnings()
   timef = proc.time()
@@ -321,11 +342,10 @@ fit.gllvm = function (
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, mu),  RSS(test, mu)),
-      # rmse = c(RMSE(train, mu), RMSE(test, mu)),
-      cosd = c(COSD(train, mu), COSD(test, mu)),
-      dev  = c(RDEV(train, mu, family = family),
-               RDEV(test, mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -348,7 +368,7 @@ fit.gllvm = function (
 # GLMPCA via AVAGRAD
 fit.glmpca = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
-    maxiter = 1000, stepsize = 0.01, tol = 1e-04,
+    maxiter = 1000, stepsize = 0.01, tol = 1e-06,
     verbose = FALSE, train = NULL, test = NULL) {
 
   n = nrow(y)
@@ -364,7 +384,7 @@ fit.glmpca = function (
     L = ncomp,
     fam = "poi",
     minibatch = "none",
-    optimizer = "avagrad",
+    optimizer = "fisher",
     ctl = list(verbose = verbose,
                maxIter = maxiter,
                tol = tol)) %>%
@@ -374,6 +394,10 @@ fit.glmpca = function (
   # Latent factor normalization
   uv = tcrossprod(as.matrix(fit$loadings), as.matrix(fit$factors))
   uv = svd::propack.svd(uv, neig = ncomp)
+
+  uv = list(d = rep(1, ncomp),
+            u = as.matrix(fit$loadings),
+            v = as.matrix(fit$factors))
 
   # Fitted values
   mu = predict(fit)
@@ -388,11 +412,10 @@ fit.glmpca = function (
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, mu),  RSS(test, mu)),
-      # rmse = c(RMSE(train, mu), RMSE(test, mu)),
-      cosd = c(COSD(train, mu), COSD(test, mu)),
-      dev  = c(RDEV(train, mu, family = family),
-               RDEV(test, mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -418,13 +441,13 @@ fit.nmf = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     verbose = FALSE, train = NULL, test = NULL) {
 
-  require("NMF")
+  suppressPackageStartupMessages(require("NMF"))
 
   time0 = proc.time()
   if (verbose) {
-    fit = NMF::nmf(x = y, rank = ncomp, method = "brunet", nrun = 1, .options = "v")
+    fit = NMF::nmf(x = y, rank = ncomp, method = "brunet", seed = "nndsvd", nrun = 1, .options = "v")
   } else {
-    fit = NMF::nmf(x = y, rank = ncomp, method = "brunet", nrun = 1)
+    fit = NMF::nmf(x = y, rank = ncomp, method = "brunet", seed = "nndsvd", nrun = 1)
   }
   timef = proc.time()
 
@@ -433,10 +456,10 @@ fit.nmf = function (
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, mu),  RSS(test, mu)),
-      cosd = c(COSD(train, mu), COSD(test, mu)),
-      dev  = c(RDEV(train, mu, family = family),
-               RDEV(test, mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -463,7 +486,7 @@ fit.nnlm = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 1000, verbose = FALSE, train = NULL, test = NULL) {
 
-  require("NNLM")
+  suppressPackageStartupMessages(require("NNLM"))
 
   time0 = proc.time()
   fit = NNLM::nnmf(
@@ -476,10 +499,10 @@ fit.nnlm = function (
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, mu),  RSS(test, mu)),
-      cosd = c(COSD(train, mu), COSD(test, mu)),
-      dev  = c(RDEV(train, mu, family = family),
-               RDEV(test, mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -496,6 +519,104 @@ fit.nnlm = function (
     eta = NULL,
     mu = mu,
     dev = fit$nkl,
+    error = error,
+    time = timef - time0)
+}
+
+
+## NNLM
+fit.cmf = function (
+    y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
+    penalty = 1, maxiter = 1000, verbose = FALSE, train = NULL, test = NULL) {
+
+  suppressPackageStartupMessages(require("cmfrec"))
+
+  if (!is.null(x)) if (sd(x[,1]) == 0) x = x[, -1, drop = FALSE]
+  if (!is.null(z)) if (sd(z[,1]) == 0) z = z[, -1, drop = FALSE]
+
+  time0 = proc.time()
+  fit = cmfrec::CMF(
+    X = y, U = x, I = z, k = ncomp, nonneg = TRUE,
+    user_bias = FALSE, item_bias = FALSE, center = FALSE,
+    niter = maxiter, verbose = verbose, print_every = 10)
+  timef = proc.time()
+
+  eta = crossprod(fit$matrices$A, fit$matrices$B) + fit$matrices$glob_mean
+  mu = eta
+
+  error = NULL
+  if (!is.null(train) && !is.null(test)) {
+    error = data.frame(
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
+
+    colnames(error) = c("RSS", "Cos", "Dev")
+    rownames(error) = c("Train", "Test")
+  }
+
+  # Output
+  list(
+    model = "CMF",
+    u = t(fit$matrices$A),
+    v = fit$matrices$B,
+    d = NULL,
+    bx = NULL,
+    bz = NULL,
+    eta = NULL,
+    mu = mu,
+    dev = NULL,
+    error = error,
+    time = timef - time0)
+}
+
+## MODEL FIT (R) ----
+
+## GMF via SVDReg
+fit.svdreg = function (
+    y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
+    penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-04,
+    verbose = FALSE, train = NULL, test = NULL) {
+
+  time0 = proc.time()
+  fit = sgdGMF::gmf.init(
+    y, x, z, d = ncomp, family = family,
+    method = "svd", niter = maxiter, verbose = verbose)
+  timef = proc.time()
+
+  # Latent factor normalization
+  uv = tcrossprod(fit$u, fit$v)
+  uv = svd::propack.svd(uv, neig = ncomp)
+
+  # Fitted values
+  eta = tcrossprod(cbind(x, fit$bz, fit$u), cbind(fit$bx, z, fit$v))
+  mu = family$linkinv(eta)
+
+  # Error matrix
+  error = NULL
+  if (!is.null(train) && !is.null(test)) {
+    error = data.frame(
+      rss  = c( RSS(train, mu),  RSS(test, mu)),
+      cosd = c(COSD(train, mu), COSD(test, mu)),
+      dev  = c(RDEV(train, mu, family = family),
+               RDEV(test, mu, family = family)))
+
+    colnames(error) = c("RSS", "Cos", "Dev")
+    rownames(error) = c("Train", "Test")
+  }
+
+  # Output
+  list(
+    model = "SVDReg",
+    u = uv$u,
+    v = uv$v,
+    d = uv$d,
+    bx = fit$bx,
+    bz = fit$bz,
+    eta = eta,
+    mu = mu,
+    dev = NULL,
     error = error,
     time = timef - time0)
 }
@@ -821,24 +942,7 @@ fit.memo.sgd = function (
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## MODEL FIT C ----
+## MODEL FIT (C++) ----
 
 
 ## GMF via AIRWLS
@@ -861,6 +965,10 @@ fit.C.airwls = function (
 
   familyname = family$family
   linkname = family$link
+
+  if (familyname == "Negative Binomial") {
+    familyname = "negbinom"
+  }
 
   isna = is.na(y)
   r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
@@ -903,12 +1011,13 @@ fit.C.airwls = function (
 
   # model fitting
   time0 = proc.time()
+  lambda = (1 - 1e-04) * c(0, 0, penalty, 0) + 1e-04
   fit = sgdGMF::c_fit_airwls(
     Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
-    lambda = c(0,0,1,0), maxiter = maxiter, nsteps = 1, stepsize = stepsize,
+    lambda = lambda, maxiter = maxiter, nsteps = 1, stepsize = stepsize,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 25, parallel = TRUE)
+    verbose = verbose, frequency = 25, parallel = TRUE, nthreads = 8)
   timef = proc.time()
 
   bz = fit$U[, (p+1):(p+q)]
@@ -920,13 +1029,15 @@ fit.C.airwls = function (
   uv = tcrossprod(u, v)
   uv = svd::propack.svd(uv, neig = ncomp)
 
+  mu = fit$mu
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, fit$mu),  RSS(test, fit$mu)),
-      cosd = c(COSD(train, fit$mu), COSD(test, fit$mu)),
-      dev  = c(RDEV(train, fit$mu, family = family),
-               RDEV(test, fit$mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -942,6 +1053,7 @@ fit.C.airwls = function (
     bz = bz,
     eta = fit$eta,
     mu = fit$mu,
+    phi = fit$phi,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -968,6 +1080,10 @@ fit.C.newton = function (
 
   familyname = family$family
   linkname = family$link
+
+  if (familyname == "Negative Binomial") {
+    familyname = "negbinom"
+  }
 
   isna = is.na(y)
   r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
@@ -1015,7 +1131,7 @@ fit.C.newton = function (
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, stepsize = stepsize,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 25, parallel = TRUE)
+    verbose = verbose, frequency = 25, parallel = TRUE, nthreads = 8)
   timef = proc.time()
 
   bz = fit$U[, (p+1):(p+q)]
@@ -1027,13 +1143,15 @@ fit.C.newton = function (
   uv = tcrossprod(u, v)
   uv = svd::propack.svd(uv, neig = ncomp)
 
+  mu = fit$mu
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, fit$mu),  RSS(test, fit$mu)),
-      cosd = c(COSD(train, fit$mu), COSD(test, fit$mu)),
-      dev  = c(RDEV(train, fit$mu, family = family),
-               RDEV(test, fit$mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -1049,6 +1167,7 @@ fit.C.newton = function (
     bz = bz,
     eta = fit$eta,
     mu = fit$mu,
+    phi = fit$phi,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1056,7 +1175,7 @@ fit.C.newton = function (
 
 
 ## GMF via coordinate SGD
-fit.C.coord.sgd = function (
+fit.C.csgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -1075,6 +1194,10 @@ fit.C.coord.sgd = function (
 
   familyname = family$family
   linkname = family$link
+
+  if (familyname == "Negative Binomial") {
+    familyname = "negbinom"
+  }
 
   isna = is.na(y)
   r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
@@ -1121,9 +1244,9 @@ fit.C.coord.sgd = function (
     Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
-    size1 = 10, size2 = 10,
+    size1 = 20, size2 = 10,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 100)
+    verbose = verbose, frequency = 100, parallel = FALSE)
   timef = proc.time()
 
   bz = fit$U[, (p+1):(p+q)]
@@ -1135,13 +1258,15 @@ fit.C.coord.sgd = function (
   uv = tcrossprod(u, v)
   uv = svd::propack.svd(uv, neig = ncomp)
 
+  mu = fit$mu
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, fit$mu),  RSS(test, fit$mu)),
-      cosd = c(COSD(train, fit$mu), COSD(test, fit$mu)),
-      dev  = c(RDEV(train, fit$mu, family = family),
-               RDEV(test, fit$mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -1157,6 +1282,7 @@ fit.C.coord.sgd = function (
     bz = bz,
     eta = fit$eta,
     mu = fit$mu,
+    phi = fit$phi,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1164,7 +1290,7 @@ fit.C.coord.sgd = function (
 
 
 ## GMF via coordinate SGD
-fit.C.block.sgd = function (
+fit.C.bsgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -1183,6 +1309,10 @@ fit.C.block.sgd = function (
 
   familyname = family$family
   linkname = family$link
+
+  if (familyname == "Negative Binomial") {
+    familyname = "negbinom"
+  }
 
   isna = is.na(y)
   r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
@@ -1225,13 +1355,12 @@ fit.C.block.sgd = function (
 
   # model fitting
   time0 = proc.time()
-  fit = sgdGMF::c_fit_bsgd(
+  fit = sgdGMF::c_fit2_bsgd(
     Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
-    size1 = 100, size2 = 20,
-    eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 250)
+    size1 = 100, size2 = 20, eps = 1e-08, nafill = 1, tol = tol,
+    damping = 1e-03, verbose = verbose, frequency = 100)
   timef = proc.time()
 
   bz = fit$U[, (p+1):(p+q)]
@@ -1243,13 +1372,15 @@ fit.C.block.sgd = function (
   uv = tcrossprod(u, v)
   uv = svd::propack.svd(uv, neig = ncomp)
 
+  mu = fit$mu
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, fit$mu),  RSS(test, fit$mu)),
-      cosd = c(COSD(train, fit$mu), COSD(test, fit$mu)),
-      dev  = c(RDEV(train, fit$mu, family = family),
-               RDEV(test, fit$mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -1265,6 +1396,7 @@ fit.C.block.sgd = function (
     bz = bz,
     eta = fit$eta,
     mu = fit$mu,
+    phi = fit$phi,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1273,7 +1405,7 @@ fit.C.block.sgd = function (
 
 
 ## GMF via coordinate SGD
-fit.C.memo.sgd = function (
+fit.C.msgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -1292,6 +1424,10 @@ fit.C.memo.sgd = function (
 
   familyname = family$family
   linkname = family$link
+
+  if (familyname == "Negative Binomial") {
+    familyname = "negbinom"
+  }
 
   isna = is.na(y)
   r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
@@ -1352,13 +1488,15 @@ fit.C.memo.sgd = function (
   uv = tcrossprod(u, v)
   uv = svd::propack.svd(uv, neig = ncomp)
 
+  mu = fit$mu
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
-      rss  = c( RSS(train, fit$mu),  RSS(test, fit$mu)),
-      cosd = c(COSD(train, fit$mu), COSD(test, fit$mu)),
-      dev  = c(RDEV(train, fit$mu, family = family),
-               RDEV(test, fit$mu, family = family)))
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
 
     colnames(error) = c("RSS", "Cos", "Dev")
     rownames(error) = c("Train", "Test")
@@ -1374,6 +1512,7 @@ fit.C.memo.sgd = function (
     bz = bz,
     eta = fit$eta,
     mu = fit$mu,
+    phi = fit$phi,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
