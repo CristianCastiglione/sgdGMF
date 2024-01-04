@@ -1,5 +1,5 @@
 # sgdGMF
-An R package for efficient estimation of generalized matrix factorization models [[1],[2],[3]](#1,#2,#3) via alternated iterative least squares, quasi-Newton and stochastic gradient descent algorithms.
+An R package for efficient estimation of generalized matrix factorization models [[1,2,3]](#1,#2,#3) via alternated iterative least squares, quasi-Newton and stochastic gradient descent algorithms.
 
 
 ## References
