@@ -436,7 +436,7 @@ fit.glmpca = function (
     time = timef - time0)
 }
 
-## NewWave
+## NBWaVE
 fit.nbwave = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     maxiter = 100, stepsize = 0.01, tol = 1e-05,
@@ -448,7 +448,7 @@ fit.nbwave = function (
   if (is.null(x)) x = matrix(1, nrow = n, ncol = 1)
   if (is.null(z)) z = matrix(1, nrow = m, ncol = 1)
 
-  # glmPCA model fitting
+  # NBWaVE model fitting
   time0 = proc.time()
   fit = NewWave::newFit(
     Y = t(y),
