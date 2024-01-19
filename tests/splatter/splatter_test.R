@@ -41,7 +41,7 @@ suppressPackageStartupMessages({
 })
 
 ## DATA SIMULATION ----
-SETTING = 1
+SETTING = 3
 SAVE = FALSE
 SHOW = TRUE
 
@@ -83,7 +83,6 @@ if (SETTING == 3) { # BRANCHING PATHS
   sim = splatter::splatSimulatePaths(params, verbose = FALSE)
 }
 
-## DIMENSION REDUCTION ----
 sim = scater::logNormCounts(sim)
 
 ## DATA EXTRACTION ----
@@ -147,7 +146,7 @@ if (SAVE) {
 }
 
 
-## LATENT FACTOR ESTIMATION ----
+## TRAIN-TEST SPLIT ----
 X = matrix(1, nrow = n, ncol = 1)
 X = cbind(1, as.numeric(as.factor(cells$Batch))-1)
 Z = matrix(1, nrow = m, ncol = 1)
@@ -169,16 +168,20 @@ test[data$test] = NA
 train = matrix.completion(y = train0, x = X, z = Z,
                           ncomp = ncomp, family = family, niter = 10)
 
-## MODEL ESTIMATION ----
+## MODEL FIT ----
+train = Y
+train0 = Y
+
 model.pearson = fit.pearson(y = train, x = X, z = Z, ncomp = ncomp, family = family)
 model.deviance = fit.deviance(y = train, x = X, z = Z, ncomp = ncomp, family = family)
 # model.gllvm = fit.gllvm(y = train, x = X, z = Z, ncomp = ncomp, family = family) # TOO SLOW!!
-model.glmpca = fit.glmpca(y = Y, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-05)
+model.glmpca = fit.glmpca(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-05)
+model.nbwave = fit.nbwave(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-04)
 model.cmf = fit.cmf(y = train0, x = X, z = NULL, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 500)
-model.nmf = fit.nmf(y = Y, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE)
+model.nmf = fit.nmf(y = train, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE)
 model.nnlm = fit.nnlm(y = train0, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE)
 model.svdreg = fit.svdreg(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 10)
-model.airwls = fit.C.airwls(y = Y, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.1, tol = 1e-05)
+model.airwls = fit.C.airwls(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.1, tol = 1e-05)
 model.newton = fit.C.newton(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.2)
 model.msgd = fit.C.msgd(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 100, stepsize = 0.1)
 model.csgd = fit.C.csgd(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 1000, stepsize = 0.01)
@@ -189,6 +192,7 @@ model.bsgd = fit.C.bsgd(y = train0, x = X, z = Z, ncomp = ncomp, family = family
 # Execution time
 {
 cat("glmPCA: ", model.glmpca$time[3], "s \n")
+cat("NeWaVE: ", model.nbwave$time[3], "s \n")
 cat("NNLM:   ", model.nnlm$time[3], "s \n")
 cat("NMF:    ", model.nmf$time[3], "s \n")
 cat("CMF:    ", model.cmf$time[3], "s \n")
@@ -210,19 +214,19 @@ plot(model.bsgd$dev, type = "b", xlab = "iterations", ylab = "deviance")
 
 ## Reconstruction error
 full.sample.error = error.matrix(
-  Y, model.glmpca, model.nmf, model.nnlm, model.cmf, model.svdreg,
+  Y, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, model.svdreg,
   model.airwls, model.newton, model.msgd, model.csgd, model.bsgd)
 print(full.sample.error)
 
 # Out-of-sample error
 in.sample.error = error.matrix(
-  train0, model.glmpca, model.nmf, model.nnlm, model.cmf, model.svdreg,
+  train0, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, model.svdreg,
   model.airwls, model.newton, model.msgd, model.csgd, model.bsgd)
 print(in.sample.error)
 
 # Out-of-sample error
 out.sample.error = error.matrix(
-  test, model.glmpca, model.nmf, model.nnlm, model.cmf, model.svdreg,
+  test, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, model.svdreg,
   model.airwls, model.newton, model.msgd, model.csgd, model.bsgd)
 print(out.sample.error)
 
@@ -230,6 +234,7 @@ print(out.sample.error)
 tsne.pearson = Rtsne::Rtsne(model.pearson$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
 tsne.deviance = Rtsne::Rtsne(model.deviance$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
 tsne.glmpca = Rtsne::Rtsne(model.glmpca$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
+tsne.nbwave = Rtsne::Rtsne(model.nbwave$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
 tsne.nnlm = Rtsne::Rtsne(model.nnlm$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
 tsne.nmf = Rtsne::Rtsne(model.nmf$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
 tsne.cmf = Rtsne::Rtsne(model.cmf$u, dims = 2, partial_pca = FALSE, num_threads = 7, verbose = TRUE)
@@ -247,6 +252,7 @@ df = rbind(
   data.frame(x = tsne.nmf$Y[,1],      y = tsne.nmf$Y[,2],      group = cells$Group, batch = as.factor(cells$Batch), model = rep("NMF", length = n)),
   data.frame(x = tsne.cmf$Y[,1],      y = tsne.cmf$Y[,2],      group = cells$Group, batch = as.factor(cells$Batch), model = rep("CMF", length = n)),
   data.frame(x = tsne.glmpca$Y[,1],   y = tsne.glmpca$Y[,2],   group = cells$Group, batch = as.factor(cells$Batch), model = rep("glmPCA", length = n)),
+  data.frame(x = tsne.newave$Y[,1],   y = tsne.newave$Y[,2],   group = cells$Group, batch = as.factor(cells$Batch), model = rep("NBWaVE", length = n)),
   # data.frame(x = tsne.svdreg$Y[,1],   y = tsne.svdreg$Y[,2],   group = cells$Group, batch = as.factor(cells$Batch), model = rep("SVDReg", length = n)),
   data.frame(x = tsne.airwls$Y[,1],   y = tsne.airwls$Y[,2],   group = cells$Group, batch = as.factor(cells$Batch), model = rep("AIRWLS", length = n)),
   data.frame(x = tsne.newton$Y[,1],   y = tsne.newton$Y[,2],   group = cells$Group, batch = as.factor(cells$Batch), model = rep("Newton", length = n)),
@@ -254,15 +260,15 @@ df = rbind(
   data.frame(x = tsne.csgd$Y[,1],     y = tsne.csgd$Y[,2],     group = cells$Group, batch = as.factor(cells$Batch), model = rep("C-SGD", length = n)),
   data.frame(x = tsne.bsgd$Y[,1],     y = tsne.bsgd$Y[,2],     group = cells$Group, batch = as.factor(cells$Batch), model = rep("B-SGD", length = n)))
 
-df$model = factor(df$model, levels = c("Pearson", "Deviance", "NNLM", "NMF", "CMF", "glmPCA", "AIRWLS", "Newton", "C-SGD", "B-SGD"))
-levels(df$model) = c("Pearson", "Deviance", "NNLM", "NMF", "CMF", "glmPCA", "AIRWLS", "Newton", "C-SGD", "B-SGD")
+df$model = factor(df$model, levels = c("Pearson", "Deviance", "NNLM", "NMF", "CMF", "glmPCA", "NBWaVE", "AIRWLS", "Newton", "C-SGD", "B-SGD"))
+levels(df$model) = c("Pearson", "Deviance", "NNLM", "NMF", "CMF", "glmPCA", "NBWaVE", "AIRWLS", "Newton", "C-SGD", "B-SGD")
 levels(df$group) = 1:5
 levels(df$batch) = 1:2
 
 # Cell-type clustering
 colors = c("#ff7c04", "#387cbc", "#e81c1c", "#50ac4c", "#a04ca4")
 plt = ggplot(data = df, mapping = aes(x = x, y = y, color = group)) +
-  geom_point(alpha = 0.3) + facet_wrap(vars(model), nrow = 2, ncol = 5) +
+  geom_point(alpha = 0.3) + facet_wrap(vars(model), nrow = 3, ncol = 4) +
   labs(color = "Cell-type") + theme_minimal() +
   guides(colour = guide_legend(override.aes = list(size = 4, alpha = 1.0))) +
   theme(text = element_text(size = 20),
@@ -284,7 +290,7 @@ if (SAVE) {
 
 # Batch effect
 plt = ggplot(data = df, mapping = aes(x = x, y = y, color = batch)) +
-  geom_point(alpha = 0.2) + facet_wrap(vars(model), nrow = 2, ncol = 5) +
+  geom_point(alpha = 0.2) + facet_wrap(vars(model), nrow = 3, ncol = 4) +
   labs(color = "Batch    ") + theme_minimal() +
   guides(colour = guide_legend(override.aes = list(size = 4, alpha = 1.0))) +
   theme(text = element_text(size = 20),
@@ -309,6 +315,7 @@ if (SAVE) {
 sil.pearson = cluster::silhouette(as.numeric(cells$Group), dist(tsne.pearson$Y))
 sil.deviance = cluster::silhouette(as.numeric(cells$Group), dist(tsne.deviance$Y))
 sil.glmpca = cluster::silhouette(as.numeric(cells$Group), dist(tsne.glmpca$Y))
+sil.nbwave = cluster::silhouette(as.numeric(cells$Group), dist(tsne.nbwave$Y))
 sil.nmf = cluster::silhouette(as.numeric(cells$Group), dist(tsne.nmf$Y))
 sil.cmf = cluster::silhouette(as.numeric(cells$Group), dist(tsne.cmf$Y))
 sil.nnlm = cluster::silhouette(as.numeric(cells$Group), dist(tsne.nnlm$Y))
@@ -321,19 +328,21 @@ sil.msgd = cluster::silhouette(as.numeric(cells$Group), dist(tsne.msgd$Y))
 plt.pearson = factoextra::fviz_silhouette(sil.pearson) + ylim(-1,+1) + ggtitle(paste("Pearson (", round(mean(sil.pearson[,3]), 2), ")", sep = ""))
 plt.deviance = factoextra::fviz_silhouette(sil.deviance) + ylim(-1,+1) + ggtitle(paste("Deviance (", round(mean(sil.deviance[,3]), 2), ")", sep = ""))
 plt.glmpca = factoextra::fviz_silhouette(sil.glmpca) + ylim(-1,+1) + ggtitle(paste("glmPCA (", round(mean(sil.glmpca[,3]), 2), ")", sep = ""))
+plt.nbwave = factoextra::fviz_silhouette(sil.nbwave) + ylim(-1,+1) + ggtitle(paste("NBWaVE (", round(mean(sil.glmpca[,3]), 2), ")", sep = ""))
 plt.nmf = factoextra::fviz_silhouette(sil.nmf) + ylim(-1,+1) + ggtitle(paste("NMF (", round(mean(sil.nmf[,3]), 2), ")", sep = ""))
 plt.cmf = factoextra::fviz_silhouette(sil.cmf) + ylim(-1,+1) + ggtitle(paste("CMF (", round(mean(sil.cmf[,3]), 2), ")", sep = ""))
 plt.nnlm = factoextra::fviz_silhouette(sil.nnlm) + ylim(-1,+1) + ggtitle(paste("NNLM (", round(mean(sil.nnlm[,3]), 2), ")", sep = ""))
 plt.airwls = factoextra::fviz_silhouette(sil.airwls) + ylim(-1,+1) + ggtitle(paste("AIRWLS (", round(mean(sil.airwls[,3]), 2), ")", sep = ""))
 plt.newton = factoextra::fviz_silhouette(sil.newton) + ylim(-1,+1) + ggtitle(paste("Newton (", round(mean(sil.newton[,3]), 2), ")", sep = ""))
+plt.msgd = factoextra::fviz_silhouette(sil.msgd) + ylim(-1,+1) + ggtitle(paste("M-SGD (", round(mean(sil.msgd[,3]), 2), ")", sep = ""))
 plt.csgd = factoextra::fviz_silhouette(sil.csgd) + ylim(-1,+1) + ggtitle(paste("C-SGD (", round(mean(sil.csgd[,3]), 2), ")", sep = ""))
 plt.bsgd = factoextra::fviz_silhouette(sil.bsgd) + ylim(-1,+1) + ggtitle(paste("B-SGD (", round(mean(sil.bsgd[,3]), 2), ")", sep = ""))
-plt.msgd = factoextra::fviz_silhouette(sil.msgd) + ylim(-1,+1) + ggtitle(paste("M-SGD (", round(mean(sil.msgd[,3]), 2), ")", sep = ""))
 
-ggpubr::ggarrange(
-  plt.pearson, plt.deviance, plt.glmpca, plt.nmf, plt.cmf, plt.nnlm,
-  plt.airwls, plt.newton, plt.csgd, plt.bsgd, plt.msgd,
+plt = ggpubr::ggarrange(
+  plt.pearson, plt.deviance, plt.glmpca, plt.nbwave, plt.nmf, plt.cmf,
+  plt.nnlm, plt.airwls, plt.newton, plt.msgd, plt.csgd, plt.bsgd,
   nrow = 3, ncol = 4, legend = "bottom", common.legend = TRUE
 )
 
+print(plt)
 
