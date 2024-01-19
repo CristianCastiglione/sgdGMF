@@ -222,7 +222,7 @@ matrix.completion <- function (y, x = NULL, z = NULL, ncomp = 2,
 
   # fill the missing values
   isna = is.na(y)
-  y[isna] = mu[isna]
+  y[isna] = round(mu[isna])
 
   # compute the deviance and Pearson residuals
   dr = family$dev.resids(y, mu, 1)
@@ -432,6 +432,82 @@ fit.glmpca = function (
     eta = eta,
     mu = mu,
     dev = fit$dev,
+    error = error,
+    time = timef - time0)
+}
+
+## NewWave
+fit.nbwave = function (
+    y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
+    maxiter = 100, stepsize = 0.01, tol = 1e-05,
+    verbose = FALSE, train = NULL, test = NULL) {
+
+  n = nrow(y)
+  m = ncol(y)
+
+  if (is.null(x)) x = matrix(1, nrow = n, ncol = 1)
+  if (is.null(z)) z = matrix(1, nrow = m, ncol = 1)
+
+  # glmPCA model fitting
+  time0 = proc.time()
+  fit = NewWave::newFit(
+    Y = t(y),
+    X = x,
+    V = z,
+    K = ncomp,
+    commondispersion = TRUE,
+    verbose = verbose,
+    maxiter_optimize = maxiter,
+    stop_epsilon = tol,
+    children = 8) %>%
+    suppressWarnings()
+  timef = proc.time()
+
+  # Latent factor normalization
+  b = t(fit@beta)
+  xb = tcrossprod(x, b)
+
+  a = t(fit@gamma)
+  az = tcrossprod(a, z)
+
+  uv = fit@W %*% fit@alpha
+
+  # Fitted values
+  eta = xb + az + uv
+  mu = family$linkinv(eta)
+
+  # Orthogonalization
+  uv = svd::propack.svd(uv, neig = ncomp)
+
+  # Explained deviance metrics
+  # rss  =  RSS(y, mu)
+  # rmse = RMSE(y, mu)
+  # cosd = COSD(y, mu)
+  # dev  = RDEV(y, mu, family = family)
+
+  error = NULL
+  if (!is.null(train) && !is.null(test)) {
+    error = data.frame(
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
+
+    colnames(error) = c("RSS", "Cos", "Dev")
+    rownames(error) = c("Train", "Test")
+  }
+
+  # Output
+  list(
+    model = "NBWaVE",
+    u = uv$u,
+    v = uv$v,
+    d = uv$d,
+    bx = b,
+    bz = a,
+    eta = eta,
+    mu = mu,
+    dev = NULL,
     error = error,
     time = timef - time0)
 }
