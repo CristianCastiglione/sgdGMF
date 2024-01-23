@@ -10,12 +10,41 @@
 
 # Import the needed packages
 suppressPackageStartupMessages({
+  # Latent variable modelling
   require(MASS)
-  require(gllvm)
-  require(glmpca)
-  require(ggplot2)
-  require(ggpubr)
+  library(gllvm)
+  library(glmpca)
+  library(NewWave)
+
+  # Matrix factorization
+  library(NMF)
+  library(NNLM)
+  library(cmfrec)
+  library(gmf)
+
+  # Low-dimensional embedding
+  library(Rtsne)
+  library(umap)
+
+  # Omics classes and methods
+  library(scry)
+  library(splatter)
+  library(scater)
+  library(zinbwave)
+
+  # Clustering
+  library(cluster)
+
+  # Visualization
+  library(reshape2)
+  library(ggplot2)
+  library(ggpubr)
+  library(GGally)
+  library(factoextra)
 })
+
+## GLOBAL VARIABLES ----
+NCORES = 4
 
 ## UTILITIES ----
 
@@ -89,6 +118,10 @@ expdev <- function (y, x, family) {
   return (devf / dev0)
 }
 
+avgsil <- function (y, g) {
+  mean(cluster::silhouette(as.numeric(g), dist(y))[,3])
+}
+
 # Summary error matrix
 error.matrix = function (y, ...) {
   object.list = list(...)
@@ -102,6 +135,26 @@ error.matrix = function (y, ...) {
     .cos = round(cosdist(y, .mu), 4)
     .dev = round(expdev(y, .mu, family = poisson()), 4)
     .error = data.frame(Model = .model, Time = .time, RSS = .rss, Cos = .cos, Dev = .dev)
+    error = rbind(error, .error)
+    rownames(error)[k] = k
+  }
+  return (error)
+}
+
+# Summary error matrix + silhouette
+error.summary = function (y, g, ...) {
+  object.list = list(...)
+  error = data.frame(Model = c(), Time = c(), RSS = c(), Cos = c(), Dev = c(), Sil = c())
+  for (k in 1:length(object.list)) {
+    .object = object.list[[k]]
+    .mu = .object$mu
+    .model = .object$model
+    .time = ifelse(is.null(.object$time), NA, round(.object$time[3], 4))
+    .rss = ifelse(is.null(.mu), NA, round(rss(y, .mu), 4))
+    .cos = ifelse(is.null(.mu), NA, round(cosdist(y, .mu), 4))
+    .dev = ifelse(is.null(.mu), NA, round(expdev(y, .mu, family = poisson()), 4))
+    .sil = ifelse(is.null(.object$tsne), NA, round(avgsil(.object$tsne, g), 4))
+    .error = data.frame(Model = .model, Time = .time, RSS = .rss, Cos = .cos, Dev = .dev, Sil = .sil)
     error = rbind(error, .error)
     rownames(error)[k] = k
   }
@@ -239,10 +292,19 @@ matrix.completion <- function (y, x = NULL, z = NULL, ncomp = 2,
   return (y)
 }
 
+naive.completion = function (y) {
+  apply(y, 2, function (x) {
+    m = mean(x, na.rm = TRUE)
+    x[is.na(x)] = round(m)
+    return (x)
+  })
+}
+
 ## MODEL FIT ----
 
 # Latent feature extraction via Pearson residuals
-fit.pearson = function (y, x = NULL, z = NULL, ncomp = 2, family = poisson()) {
+fit.pearson = function (y, x = NULL, z = NULL, ncomp = 2,
+                        family = poisson(), verbose = FALSE) {
 
   # model fitting
   time0 = proc.time()
@@ -255,6 +317,8 @@ fit.pearson = function (y, x = NULL, z = NULL, ncomp = 2, family = poisson()) {
 
   eta = tcrossprod(SVD$u, SVD$v %*% diag(SVD$d))
   mu = family$linkinv(eta)
+  tsne = Rtsne::Rtsne(SVD$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   # Output
   list(
@@ -266,13 +330,15 @@ fit.pearson = function (y, x = NULL, z = NULL, ncomp = 2, family = poisson()) {
     bz = beta.z,
     eta = eta,
     mu = mu,
+    tsne = tsne$Y,
     dev = -1,
     error = -1,
     time = timef - time0)
 }
 
 # Latent feature extraction via deviance residuals
-fit.deviance = function (y, x = NULL, z = NULL, ncomp = 2, family = poisson()) {
+fit.deviance = function (y, x = NULL, z = NULL, ncomp = 2,
+                         family = poisson(), verbose = FALSE) {
 
   # model fitting
   time0 = proc.time()
@@ -285,6 +351,8 @@ fit.deviance = function (y, x = NULL, z = NULL, ncomp = 2, family = poisson()) {
 
   eta = tcrossprod(SVD$u, SVD$v %*% diag(SVD$d))
   mu = family$linkinv(eta)
+  tsne = Rtsne::Rtsne(SVD$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   # Output
   list(
@@ -296,6 +364,7 @@ fit.deviance = function (y, x = NULL, z = NULL, ncomp = 2, family = poisson()) {
     bz = beta.z,
     eta = eta,
     mu = mu,
+    tsne = tsne$Y,
     dev = -1,
     error = -1,
     time = timef - time0)
@@ -333,6 +402,10 @@ fit.gllvm = function (
   eta = residuals(fit)$linpred
   mu = family$linkinv(eta)
 
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
+
   # Explained deviance metrics
   # rss  =  RSS(y, mu)
   # rmse = RMSE(y, mu)
@@ -361,6 +434,7 @@ fit.gllvm = function (
     bz = fit$coefX,
     eta = eta,
     mu = mu,
+    tsne = tsne$Y,
     error = error,
     time = timef - time0)
 }
@@ -384,7 +458,7 @@ fit.glmpca = function (
     L = ncomp,
     fam = "poi",
     minibatch = "none",
-    optimizer = "fisher",
+    optimizer = "avagrad",
     ctl = list(verbose = verbose,
                maxIter = maxiter,
                tol = tol)) %>%
@@ -402,6 +476,10 @@ fit.glmpca = function (
   # Fitted values
   mu = predict(fit)
   eta = family$linkfun(mu)
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   # Explained deviance metrics
   # rss  =  RSS(y, mu)
@@ -431,6 +509,7 @@ fit.glmpca = function (
     bz = fit$coefX,
     eta = eta,
     mu = mu,
+    tsne = tsne$Y,
     dev = fit$dev,
     error = error,
     time = timef - time0)
@@ -448,6 +527,13 @@ fit.nbwave = function (
   if (is.null(x)) x = matrix(1, nrow = n, ncol = 1)
   if (is.null(z)) z = matrix(1, nrow = m, ncol = 1)
 
+  idx = which(apply(y, 2, sd) == 0)
+  if (length(idx) > 0) {
+    for (j in idx) {
+      y[sample(1:n, 1),j] = 1
+    }
+  }
+
   # NBWaVE model fitting
   time0 = proc.time()
   fit = NewWave::newFit(
@@ -459,7 +545,7 @@ fit.nbwave = function (
     verbose = verbose,
     maxiter_optimize = maxiter,
     stop_epsilon = tol,
-    children = 8) %>%
+    children = NCORES) %>%
     suppressWarnings()
   timef = proc.time()
 
@@ -478,6 +564,10 @@ fit.nbwave = function (
 
   # Orthogonalization
   uv = svd::propack.svd(uv, neig = ncomp)
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   # Explained deviance metrics
   # rss  =  RSS(y, mu)
@@ -507,6 +597,7 @@ fit.nbwave = function (
     bz = a,
     eta = eta,
     mu = mu,
+    tsne = tsne$Y,
     dev = NULL,
     error = error,
     time = timef - time0)
@@ -528,6 +619,10 @@ fit.nmf = function (
   timef = proc.time()
 
   mu = fit@fit@W %*% fit@fit@H
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(fit@fit@W, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -551,6 +646,7 @@ fit.nmf = function (
     bz = NULL,
     eta = NULL,
     mu = mu,
+    tsne = tsne$Y,
     dev = NULL,
     error = error,
     time = timef - time0)
@@ -566,11 +662,15 @@ fit.nnlm = function (
 
   time0 = proc.time()
   fit = NNLM::nnmf(
-    A = y, k = ncomp, alpha = penalty, beta = penalty,
+    A = y, k = ncomp, alpha = penalty, beta = penalty, n.threads = NCORES,
     method = "lee", loss = "mkl", max.iter = maxiter, verbose = verbose)
   timef = proc.time()
 
   mu = fit$W %*% fit$H
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(fit$W, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -594,6 +694,7 @@ fit.nnlm = function (
     bz = NULL,
     eta = NULL,
     mu = mu,
+    tsne = tsne$Y,
     dev = fit$nkl,
     error = error,
     time = timef - time0)
@@ -614,11 +715,15 @@ fit.cmf = function (
   fit = cmfrec::CMF(
     X = y, U = x, I = z, k = ncomp, nonneg = TRUE,
     user_bias = FALSE, item_bias = FALSE, center = FALSE,
-    niter = maxiter, verbose = verbose, print_every = 10)
+    nthreads = NCORES, niter = maxiter, verbose = verbose)
   timef = proc.time()
 
   eta = crossprod(fit$matrices$A, fit$matrices$B) + fit$matrices$glob_mean
   mu = eta
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(t(fit$matrices$A), dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -642,6 +747,7 @@ fit.cmf = function (
     bz = NULL,
     eta = NULL,
     mu = mu,
+    tsne = tsne$Y,
     dev = NULL,
     error = error,
     time = timef - time0)
@@ -669,6 +775,10 @@ fit.svdreg = function (
   eta = tcrossprod(cbind(x, fit$bz, fit$u), cbind(fit$bx, z, fit$v))
   mu = family$linkinv(eta)
 
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
+
   # Error matrix
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -692,13 +802,14 @@ fit.svdreg = function (
     bz = fit$bz,
     eta = eta,
     mu = mu,
+    tsne = tsne$Y,
     dev = NULL,
     error = error,
     time = timef - time0)
 }
 
 ## GMF via AIRWLS
-fit.airwls = function (
+fit.R.airwls = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-04,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -761,7 +872,7 @@ fit.airwls = function (
 }
 
 ## GMF via quasi-Newton algorithm
-fit.newton = function (
+fit.R.newton = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 1000, stepsize = 0.01, tol = 1e-05,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -825,7 +936,7 @@ fit.newton = function (
 }
 
 ## Coordinate stochastic gradient descent
-fit.coord.sgd = function (
+fit.R.csgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 1000, stepsize = 0.001, tol = 1e-04,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -889,7 +1000,7 @@ fit.coord.sgd = function (
 }
 
 ## Averaged stochastic gradient descent
-fit.block.sgd = function (
+fit.R.bsgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 5000, stepsize = 0.001, tol = 1e-04,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -954,7 +1065,7 @@ fit.block.sgd = function (
 
 
 ## Averaged stochastic gradient descent
-fit.memo.sgd = function (
+fit.R.msgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 100, stepsize = 0.001, tol = 1e-04,
     verbose = FALSE, train = NULL, test = NULL) {
@@ -1047,9 +1158,18 @@ fit.C.airwls = function (
   }
 
   isna = is.na(y)
-  r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  r[!isna] = log(y[!isna] + 0.1)
-  r[isna] = mean(r[!isna])
+
+  yc = apply(y, 2, function (x) {
+    m = mean(x, na.rm = TRUE)
+    x[is.na(x)] = round(m)
+    return (x)
+  })
+
+  r = log(yc + 0.1)
+
+  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+  # r[!isna] = log(y[!isna] + 0.1)
+  # r[isna] = mean(r[!isna])
 
   # Compute the initial column-specific regression parameters (if any)
   B = t(solve(crossprod(x), crossprod(x, r)))
@@ -1093,7 +1213,7 @@ fit.C.airwls = function (
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = lambda, maxiter = maxiter, nsteps = 1, stepsize = stepsize,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 25, parallel = TRUE, nthreads = 8)
+    verbose = verbose, frequency = 25, parallel = TRUE, nthreads = NCORES)
   timef = proc.time()
 
   bz = fit$U[, (p+1):(p+q)]
@@ -1106,6 +1226,10 @@ fit.C.airwls = function (
   uv = svd::propack.svd(uv, neig = ncomp)
 
   mu = fit$mu
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -1130,6 +1254,7 @@ fit.C.airwls = function (
     eta = fit$eta,
     mu = fit$mu,
     phi = fit$phi,
+    tsne = tsne$Y,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1162,9 +1287,18 @@ fit.C.newton = function (
   }
 
   isna = is.na(y)
-  r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  r[!isna] = log(y[!isna] + 0.1)
-  r[isna] = mean(r[!isna])
+
+  yc = apply(y, 2, function (x) {
+    m = mean(x, na.rm = TRUE)
+    x[is.na(x)] = round(m)
+    return (x)
+  })
+
+  r = log(yc + 0.1)
+
+  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+  # r[!isna] = log(y[!isna] + 0.1)
+  # r[isna] = mean(r[!isna])
 
   # Compute the initial column-specific regression parameters (if any)
   B = t(solve(crossprod(x), crossprod(x, r)))
@@ -1207,7 +1341,7 @@ fit.C.newton = function (
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, stepsize = stepsize,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 25, parallel = TRUE, nthreads = 8)
+    verbose = verbose, frequency = 25, parallel = TRUE, nthreads = NCORES)
   timef = proc.time()
 
   bz = fit$U[, (p+1):(p+q)]
@@ -1220,6 +1354,10 @@ fit.C.newton = function (
   uv = svd::propack.svd(uv, neig = ncomp)
 
   mu = fit$mu
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -1244,6 +1382,7 @@ fit.C.newton = function (
     eta = fit$eta,
     mu = fit$mu,
     phi = fit$phi,
+    tsne = tsne$Y,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1276,9 +1415,18 @@ fit.C.csgd = function (
   }
 
   isna = is.na(y)
-  r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  r[!isna] = log(y[!isna] + 0.1)
-  r[isna] = mean(r[!isna])
+
+  yc = apply(y, 2, function (x) {
+    m = mean(x, na.rm = TRUE)
+    x[is.na(x)] = round(m)
+    return (x)
+  })
+
+  r = log(yc + 0.1)
+
+  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+  # r[!isna] = log(y[!isna] + 0.1)
+  # r[isna] = mean(r[!isna])
 
   # Compute the initial column-specific regression parameters (if any)
   B = t(solve(crossprod(x), crossprod(x, r)))
@@ -1320,7 +1468,7 @@ fit.C.csgd = function (
     Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
-    size1 = 20, size2 = 10,
+    size1 = 100, size2 = 10,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
     verbose = verbose, frequency = 100, parallel = FALSE)
   timef = proc.time()
@@ -1335,6 +1483,10 @@ fit.C.csgd = function (
   uv = svd::propack.svd(uv, neig = ncomp)
 
   mu = fit$mu
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
 
   error = NULL
   if (!is.null(train) && !is.null(test)) {
@@ -1359,6 +1511,7 @@ fit.C.csgd = function (
     eta = fit$eta,
     mu = fit$mu,
     phi = fit$phi,
+    tsne = tsne$Y,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1391,9 +1544,18 @@ fit.C.bsgd = function (
   }
 
   isna = is.na(y)
-  r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  r[!isna] = log(y[!isna] + 0.1)
-  r[isna] = mean(r[!isna])
+
+  yc = apply(y, 2, function (x) {
+    m = mean(x, na.rm = TRUE)
+    x[is.na(x)] = round(m)
+    return (x)
+  })
+
+  r = log(yc + 0.1)
+
+  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+  # r[!isna] = log(y[!isna] + 0.1)
+  # r[isna] = mean(r[!isna])
 
   # Compute the initial column-specific regression parameters (if any)
   B = t(solve(crossprod(x), crossprod(x, r)))
@@ -1450,6 +1612,10 @@ fit.C.bsgd = function (
 
   mu = fit$mu
 
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
@@ -1473,6 +1639,7 @@ fit.C.bsgd = function (
     eta = fit$eta,
     mu = fit$mu,
     phi = fit$phi,
+    tsne = tsne$Y,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
@@ -1506,9 +1673,18 @@ fit.C.msgd = function (
   }
 
   isna = is.na(y)
-  r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  r[!isna] = log(y[!isna] + 0.1)
-  r[isna] = mean(r[!isna])
+
+  yc = apply(y, 2, function (x) {
+    m = mean(x, na.rm = TRUE)
+    x[is.na(x)] = round(m)
+    return (x)
+  })
+
+  r = log(yc + 0.1)
+
+  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+  # r[!isna] = log(y[!isna] + 0.1)
+  # r[isna] = mean(r[!isna])
 
   # Compute the initial column-specific regression parameters (if any)
   B = t(solve(crossprod(x), crossprod(x, r)))
@@ -1566,6 +1742,10 @@ fit.C.msgd = function (
 
   mu = fit$mu
 
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
+
   error = NULL
   if (!is.null(train) && !is.null(test)) {
     error = data.frame(
@@ -1589,6 +1769,7 @@ fit.C.msgd = function (
     eta = fit$eta,
     mu = fit$mu,
     phi = fit$phi,
+    tsne = tsne$Y,
     dev = fit$trace[,2],
     error = error,
     time = timef - time0)
