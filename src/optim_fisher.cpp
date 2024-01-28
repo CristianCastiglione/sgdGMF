@@ -288,7 +288,7 @@ Rcpp::List Fisher::fit (
         // Set up helper matrices for computing differentials
         this->update_deta(deta, dstat, Y, family);
 
-        // Update U and V elementwise via quasi-Newton
+        // Update U and V elementwise via Fisher-scoring
         this->update_par(ut, v, penu, idu, deta.deta, deta.ddeta);
         this->update_par(vt, u, penv, idv, deta.deta.t(), deta.ddeta.t());
         u = ut;
@@ -338,7 +338,7 @@ Rcpp::List Fisher::fit (
     
     // Get the final output
     Rcpp::List output;
-    output["method"] = std::string("Newton");
+    output["method"] = std::string("Fisher");
     output["family"] = family->getfamily();
     output["link"] = family->getlink();
     output["idu"] = idu;
