@@ -442,7 +442,6 @@ class BSGD {
         }
 };
 
-
 // Rowwise-SGD optimizer
 class RSGD {
     public:
