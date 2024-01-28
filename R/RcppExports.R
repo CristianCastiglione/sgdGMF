@@ -237,6 +237,10 @@ c_fit_newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambd
     .Call(`_sgdGMF_c_fit_newton`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
 }
 
+c_fit_rsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_c_fit_rsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+}
+
 c_dabsmax <- function(u, v) {
     .Call(`_sgdGMF_c_dabsmax`, u, v)
 }
