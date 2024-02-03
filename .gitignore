@@ -80,5 +80,10 @@ old
 old/
 old/**
 
+# Sandbox folder
+sandbox
+sandbox/
+sandbox/**
+
 # Compressed files
 *.zip
