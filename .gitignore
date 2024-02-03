@@ -75,5 +75,10 @@ img
 img/
 img/**
 
+# Old folder
+old
+old/
+old/**
+
 # Compressed files
 *.zip
