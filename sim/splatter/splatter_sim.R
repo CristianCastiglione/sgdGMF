@@ -86,7 +86,10 @@ data.simulation = function (
 
 ## MAIN DEFINITION ----
 
-main = function (niter = 10, setting = 1, nrows = 1000, ncols = 100, ncomp = 5, write = FALSE) {
+main = function (
+    niter = 10, setting = 1, nrows = 1000,
+    ncols = 100, ncomp = 5, write = FALSE
+) {
 
   # Data dimensions
   n = nrows
@@ -122,10 +125,10 @@ main = function (niter = 10, setting = 1, nrows = 1000, ncols = 100, ncomp = 5, 
 
     # Train-test split
     train = y
-    train[mask$test] = NA
-
     test = y
-    test[mask$train] = NA
+
+    train[mask$train] = NA
+    test[mask$test] = NA
 
     # Matrix completion
     # ctrain = matrix.completion(y = train, x = X, z = Z, ncomp = ncomp, family = family, niter = 10)
@@ -148,7 +151,6 @@ main = function (niter = 10, setting = 1, nrows = 1000, ncols = 100, ncomp = 5, 
     .newton = init.alg("Newton")
     .csgd = init.alg("C-SGD")
     .bsgd = init.alg("B-SGD")
-    # .svdreg = init.alg("SVDReg")
 
 
     # Model fitting
@@ -159,36 +161,58 @@ main = function (niter = 10, setting = 1, nrows = 1000, ncols = 100, ncomp = 5, 
     cat.alg(iter, "CMF"); try(.cmf <- fit.cmf(y=train, x=X, z=NULL, ncomp=ncomp, family=family, verbose=verbose, maxiter=1000))
     cat.alg(iter, "NMF"); try(.nmf <- fit.nmf(y=ctrain, x=NULL, z=NULL, ncomp=ncomp, family=family, verbose=verbose))
     cat.alg(iter, "NNLM"); try(.nnlm <- fit.nnlm(y=train, x=NULL, z=NULL, ncomp=ncomp, family=family, verbose=verbose, maxiter=2000))
-    cat.alg(iter, "AIRWLS"); try(.airwls <- fit.C.airwls(y=train, x=X, z=Z, ncomp=ncomp, family=family, verbose=verbose, maxiter=200, stepsize=0.1))
+    cat.alg(iter, "AIRWLS"); try(.airwls <- fit.C.airwls(y=train, x=X, z=Z, ncomp=ncomp, family=family, verbose=verbose, maxiter=200, stepsize=0.2))
     cat.alg(iter, "Newton"); try(.newton <- fit.C.newton(y=train, x=X, z=Z, ncomp=ncomp, family=family, verbose=verbose, maxiter=200, stepsize=0.2))
     cat.alg(iter, "C-SGD"); try(.csgd <- fit.C.csgd(y=train, x=X, z=Z, ncomp=ncomp, family=family, verbose=verbose, maxiter=1000, stepsize=0.01))
     cat.alg(iter, "B-SGD"); try(.bsgd <- fit.C.bsgd(y=train, x=X, z=Z, ncomp=ncomp, family=family, verbose=verbose, maxiter=500, stepsize=0.01))
-    # cat.alg(iter, "SVDReg"); try(.svdreg <- fit.svdreg(y=train, x=X, z=Z, ncomp=ncomp, family=family, verbose=verbose, maxiter=10))
     cat("\n", rep("-", 30), sep = "")
 
     # Model summary
-    .err.full = error.summary(train, cells,
-      .glmpca, .nbwave, .cmf, .nmf, .nnlm, # .svdreg,
+    .err.full = error.summary(y, cells,
+      .glmpca, .nbwave, .cmf, .nmf, .nnlm,
       .airwls, .newton, .csgd, .bsgd)
-    .err.full$set = "Full"
-    .err.full$iter = iter
+    .err.full$Set = "Full"
+    .err.full$Iter = iter
 
     .err.train = error.summary(train, cells,
-      .glmpca, .nbwave, .cmf, .nmf, .nnlm, # .svdreg,
+      .glmpca, .nbwave, .cmf, .nmf, .nnlm,
       .airwls, .newton, .csgd, .bsgd)
-    .err.train$set = "Train"
-    .err.train$iter = iter
+    .err.train$Set = "Train"
+    .err.train$Iter = iter
 
     .err.test = error.summary(test, cells,
-      .glmpca, .nbwave, .cmf, .nmf, .nnlm, # .svdreg,
+      .glmpca, .nbwave, .cmf, .nmf, .nnlm,
       .airwls, .newton, .csgd, .bsgd)
-    .err.test$set = "Test"
-    .err.test$iter = iter
+    .err.test$Set = "Test"
+    .err.test$Iter = iter
 
     .error = rbind(.err.full, .err.train, .err.test)
 
     # Append the results to the summary error data-frame
     error = rbind(error, .error)
+
+    # Show the partial results
+    rownames(error) = 1:nrow(error)
+    error$Set = factor(error$Set, levels = c("Full", "Train", "Test"))
+    error$Model = factor(error$Model, levels = c(
+      "glmPCA", "NBWaVE", "NMF", "NNLM", "CMF", "AIRWLS", "Newton", "C-SGD", "B-SGD"))
+
+    plt = ggplot(data = error, mapping = aes(x = Model, color = Set, fill = Set)) +
+      labs(fill = "", color = "") + theme_bw() + theme(axis.title.x = element_blank())
+
+    plt = ggpubr::ggarrange(
+      plt + geom_boxplot(mapping = aes(y = Dev), alpha = 0.5) +
+        labs(x = "Models", y = "Residual deviance"),
+      plt + geom_boxplot(mapping = aes(y = RSS), alpha = 0.5) +
+        labs(x = "Models", y = "Residual sum of squares"),
+      plt + geom_boxplot(mapping = aes(y = Sil), alpha = 0.5) +
+        labs(x = "Models", y = "Average silhouette"),
+      plt + geom_boxplot(mapping = aes(y = log10(Time)), alpha = 0.5) +
+        labs(x = "Models", y = "Execution time") +
+        ylim(log10(min(error$Time)), log10(max(error$Time))),
+      nrow = 4, ncol = 1, legend = "right", common.legend = TRUE)
+
+    print(plt)
 
     # Save all the intemediate results
     if (write) {
@@ -207,27 +231,27 @@ main = function (niter = 10, setting = 1, nrows = 1000, ncols = 100, ncomp = 5, 
 
   cat("\n")
 
-  rownames(error) = 1:nrow(error)
-  error$set = factor(error$set, levels = c("Full", "Train", "Test"))
-  error$Model = factor(error$Model, levels = c(
-    "glmPCA", "NBWaVE", "NMF", "NNLM", "CMF", "AIRWLS", "Newton", "C-SGD", "B-SGD"))
-
-  plt = ggplot(data = error, mapping = aes(x = Model, color = set, fill = set)) +
-    labs(fill = "", color = "") + theme_bw() + theme(axis.title.x = element_blank())
-
-  plt = ggpubr::ggarrange(
-    plt + geom_boxplot(mapping = aes(y = Dev), alpha = 0.5) +
-      labs(x = "Models", y = "Residual deviance"),
-    plt + geom_boxplot(mapping = aes(y = RSS), alpha = 0.5) +
-      labs(x = "Models", y = "Residual sum of squares"),
-    plt + geom_boxplot(mapping = aes(y = Sil), alpha = 0.5) +
-      labs(x = "Models", y = "Average silhouette"),
-    plt + geom_boxplot(mapping = aes(y = log10(Time)), alpha = 0.5) +
-      labs(x = "Models", y = "Execution time") +
-      ylim(log10(min(error$Time)), log10(max(error$Time))),
-    nrow = 4, ncol = 1, legend = "right", common.legend = TRUE)
-
-  print(plt)
+#  rownames(error) = 1:nrow(error)
+#  error$Set = factor(error$Set, levels = c("Full", "Train", "Test"))
+#  error$Model = factor(error$Model, levels = c(
+#    "glmPCA", "NBWaVE", "NMF", "NNLM", "CMF", "AIRWLS", "Newton", "C-SGD", "B-SGD"))
+#
+#  plt = ggplot(data = error, mapping = aes(x = Model, color = Set, fill = Set)) +
+#    labs(fill = "", color = "") + theme_bw() + theme(axis.title.x = element_blank())
+#
+#  plt = ggpubr::ggarrange(
+#    plt + geom_boxplot(mapping = aes(y = Dev), alpha = 0.5) +
+#      labs(x = "Models", y = "Residual deviance"),
+#    plt + geom_boxplot(mapping = aes(y = RSS), alpha = 0.5) +
+#      labs(x = "Models", y = "Residual sum of squares"),
+#    plt + geom_boxplot(mapping = aes(y = Sil), alpha = 0.5) +
+#      labs(x = "Models", y = "Average silhouette"),
+#    plt + geom_boxplot(mapping = aes(y = log10(Time)), alpha = 0.5) +
+#      labs(x = "Models", y = "Execution time") +
+#      ylim(log10(min(error$Time)), log10(max(error$Time))),
+#    nrow = 4, ncol = 1, legend = "right", common.legend = TRUE)
+#
+#  print(plt)
 
   return (error)
 }

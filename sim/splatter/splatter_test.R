@@ -5,8 +5,10 @@
 rm(list = ls())
 graphics.off()
 
-## Load our functions
+## Load the package
 devtools::load_all()
+
+## Load the utility functions
 source("sim/utilities.R")
 
 ## DATA SIMULATION ----
@@ -14,13 +16,15 @@ SETTING = 3
 SAVE = FALSE
 SHOW = TRUE
 
-
-n = 100 * 10
-m = 100
+a = 200
+b = 10
+n = a * b
+m = a
 sim = NULL
 if (SETTING == 1) { # ELLIPTIC GROUPS
+  nn = floor(n/3)
   params = splatter::newSplatParams()
-  params = splatter::setParam(params, "batchCells", c(n/2, n/2))
+  params = splatter::setParam(params, "batchCells", c(nn, nn, n - 2 * nn))
   params = splatter::setParam(params, "nGenes", m)
   params = splatter::setParam(params, "group.prob", c(0.1, 0.2, 0.2, 0.2, 0.3))
   params = splatter::setParam(params, "de.prob", c(0.3, 0.1, 0.2, 0.01, 0.1))
@@ -78,8 +82,7 @@ plot(log.umap$layout, col = cells$Group)
 plot(log.umap$layout, col = as.factor(cells$Batch))
 
 ## TRAIN-TEST SPLIT ----
-X = matrix(1, nrow = n, ncol = 1)
-X = cbind(1, as.numeric(as.factor(cells$Batch))-1)
+X = model.matrix(~ Batch, data = cells)
 Z = matrix(1, nrow = m, ncol = 1)
 Y = matrix(NA, nrow = n, ncol = m)
 Y[] = t(counts)
@@ -88,41 +91,32 @@ ncomp = 5
 family = poisson()
 
 # Sparsification and matrix completion
-na.freq = 0.3
-data = train.test.split(Y, test = na.freq)
-train0 = data$ynn
-test = data$yna
+data = train.test.split(Y, test = 0.3)
 
-train0 = test = Y
-train0[data$train] = NA
+test = Y
+train = Y
+ctrain = Y
+
 test[data$test] = NA
-train = naive.completion(train0)
+train[data$train] = NA
+ctrain = naive.completion(train)
 # train = matrix.completion(y = train0, x = X, z = Z, ncomp = ncomp, family = family, niter = 10)
 
-# train = apply(train0, 2, function (x) {
-#   m = mean(x, na.rm = TRUE)
-#   x[is.na(x)] = round(m)
-#   return (x)
-# })
-
 ## MODEL FIT ----
-# train = Y
-# train0 = Y
-
-model.pearson = fit.pearson(y = train, x = X, z = Z, ncomp = ncomp, family = family)
-model.deviance = fit.deviance(y = train, x = X, z = Z, ncomp = ncomp, family = family)
-# model.gllvm = fit.gllvm(y = train, x = X, z = Z, ncomp = ncomp, family = family) # TOO SLOW!!
-model.glmpca = fit.glmpca(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-05)
-model.nbwave = fit.nbwave(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-04)
-model.cmf = fit.cmf(y = train0, x = X, z = NULL, ncomp = ncomp, family = family, verbose = FALSE, maxiter = 500)
-model.nmf = fit.nmf(y = train, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE)
-model.nnlm = fit.nnlm(y = train0, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE)
-model.svdreg = fit.svdreg(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 10)
-model.airwls = fit.C.airwls(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.1, tol = 1e-05)
-model.newton = fit.C.newton(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.2)
-model.msgd = fit.C.msgd(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 100, stepsize = 0.1)
-model.csgd = fit.C.csgd(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 1000, stepsize = 0.01)
-model.bsgd = fit.C.bsgd(y = train0, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 500, stepsize = 0.01)
+model.pearson = fit.pearson(y = ctrain, x = X, z = Z, ncomp = ncomp, family = family)
+model.deviance = fit.deviance(y = ctrain, x = X, z = Z, ncomp = ncomp, family = family)
+model.glmpca = fit.glmpca(y = ctrain, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-05)
+model.nbwave = fit.nbwave(y = ctrain, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, tol = 1e-04)
+model.cmf = fit.cmf(y = train, x = X, z = NULL, ncomp = ncomp, family = family, verbose = FALSE, maxiter = 500)
+model.nmf = fit.nmf(y = ctrain, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE)
+model.nnlm = fit.nnlm(y = train, x = NULL, z = NULL, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 2000)
+model.svdreg = fit.svdreg(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 10)
+model.airwls = fit.C.airwls(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.9)
+model.newton = fit.C.newton(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 200, stepsize = 0.2)
+model.msgd = fit.C.msgd(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 100, stepsize = 0.1)
+model.csgd = fit.C.csgd(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 1000, stepsize = 0.01)
+model.rsgd = fit.C.rsgd(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 1500, stepsize = 0.1)
+model.bsgd = fit.C.bsgd(y = train, x = X, z = Z, ncomp = ncomp, family = family, verbose = TRUE, maxiter = 1000, stepsize = 0.01)
 
 ## MODEL CHECK ----
 
@@ -138,6 +132,7 @@ cat("AIRWLS: ", model.airwls$time[3], "s \n")
 cat("Newton: ", model.newton$time[3], "s \n")
 cat("M-SGD:  ", model.msgd$time[3], "s \n")
 cat("C-SGD:  ", model.csgd$time[3], "s \n")
+cat("R-SGD:  ", model.rsgd$time[3], "s \n")
 cat("B-SGD:  ", model.bsgd$time[3], "s \n")
 }
 
@@ -147,29 +142,30 @@ plot(model.airwls$dev, type = "b", xlab = "iterations", ylab = "deviance")
 plot(model.newton$dev, type = "b", xlab = "iterations", ylab = "deviance")
 plot(model.msgd$dev, type = "b", xlab = "iterations", ylab = "deviance")
 plot(model.csgd$dev, type = "b", xlab = "iterations", ylab = "deviance")
+plot(model.rsgd$dev, type = "b", xlab = "iterations", ylab = "deviance")
 plot(model.bsgd$dev, type = "b", xlab = "iterations", ylab = "deviance")
 
 ## Reconstruction error
 full.sample.error = error.summary(
   Y, cells$Group, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, # model.svdreg,
-  model.airwls, model.newton, model.msgd, model.csgd, model.bsgd)
+  model.airwls, model.newton, model.msgd, model.csgd, model.rsgd, model.bsgd)
 print(full.sample.error)
 
 # Out-of-sample error
 in.sample.error = error.summary(
-  train0, cells$Group, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, # model.svdreg,
-  model.airwls, model.newton, model.msgd, model.csgd, model.bsgd)
+  train, cells$Group, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, # model.svdreg,
+  model.airwls, model.newton, model.msgd, model.csgd, model.rsgd, model.bsgd)
 print(in.sample.error)
 
 # Out-of-sample error
 out.sample.error = error.summary(
   test, cells$Group, model.glmpca, model.nbwave, model.nmf, model.nnlm, model.cmf, # model.svdreg,
-  model.airwls, model.newton, model.msgd, model.csgd, model.bsgd)
+  model.airwls, model.newton, model.msgd, model.csgd, model.rsgd, model.bsgd)
 print(out.sample.error)
 
 df = data.frame(rbind(full.sample.error, in.sample.error, out.sample.error))
-df$Sample = rep(c("full", "train", "test"), each = 10)
-df$Model = factor(df$Model, levels = c("glmPCA", "NBWaVE", "NMF", "NNLM", "CMF", "SVDReg", "AIRWLS", "Newton", "M-SGD", "C-SGD", "B-SGD"))
+df$Sample = rep(c("full", "train", "test"), each = 11)
+df$Model = factor(df$Model, levels = c("glmPCA", "NBWaVE", "NMF", "NNLM", "CMF", "SVDReg", "AIRWLS", "Newton", "M-SGD", "C-SGD", "R-SGD", "B-SGD"))
 df$Sample = as.factor(df$Sample)
 df$Time = as.numeric(df$Time)
 df$RSS = as.numeric(df$RSS)
@@ -180,7 +176,7 @@ ggplot(data = df, map = aes(x = Model, y = Time, color = Sample, pch = Sample)) 
 ggplot(data = df, map = aes(x = Model, y = RSS, color = Sample, pch = Sample)) + geom_point(size = 4) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ggplot(data = df, map = aes(x = Model, y = Dev, color = Sample, pch = Sample)) + geom_point(size = 4) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ggplot(data = df, map = aes(x = Model, y = Sil, color = Sample, pch = Sample)) + geom_point(size = 4) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-ggplot(data = df, map = aes(x = Time, y = Dev, color = Model, pch = Sample)) + geom_point(size = 4) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+ggplot(data = df, map = aes(x = log10(Time), y = Dev, color = Model, pch = Sample)) + geom_point(size = 4) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 
 ## TSNE PROJECTION ----
@@ -241,6 +237,7 @@ plt = plot.tsne.grid(list(
   list(model = "Newton", tsne = model.newton$tsne, group = cells$Group, batch = cells$Batch),
   list(model = "M-SGD", tsne = model.msgd$tsne, group = cells$Group, batch = cells$Batch),
   list(model = "C-SGD", tsne = model.csgd$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "R-SGD", tsne = model.rsgd$tsne, group = cells$Group, batch = cells$Batch),
   list(model = "B-SGD", tsne = model.bsgd$tsne, group = cells$Group, batch = cells$Batch)
 ), by = 5)
 
@@ -335,6 +332,7 @@ plot.sil.grid = function (sil, by = 1) {
   return(plt)
 }
 
+{
 sil.pearson = cluster::silhouette(as.numeric(cells$Group), dist(model.pearson$tsne))
 sil.deviance = cluster::silhouette(as.numeric(cells$Group), dist(model.deviance$tsne))
 sil.glmpca = cluster::silhouette(as.numeric(cells$Group), dist(model.glmpca$tsne))
@@ -345,9 +343,11 @@ sil.nnlm = cluster::silhouette(as.numeric(cells$Group), dist(model.nnlm$tsne))
 sil.svdreg = cluster::silhouette(as.numeric(cells$Group), dist(model.svdreg$tsne))
 sil.airwls = cluster::silhouette(as.numeric(cells$Group), dist(model.airwls$tsne))
 sil.newton = cluster::silhouette(as.numeric(cells$Group), dist(model.newton$tsne))
-sil.csgd = cluster::silhouette(as.numeric(cells$Group), dist(model.csgd$tsne))
-sil.bsgd = cluster::silhouette(as.numeric(cells$Group), dist(model.bsgd$tsne))
 sil.msgd = cluster::silhouette(as.numeric(cells$Group), dist(model.msgd$tsne))
+sil.csgd = cluster::silhouette(as.numeric(cells$Group), dist(model.csgd$tsne))
+sil.rsgd = cluster::silhouette(as.numeric(cells$Group), dist(model.rsgd$tsne))
+sil.bsgd = cluster::silhouette(as.numeric(cells$Group), dist(model.bsgd$tsne))
+}
 
 plt = plot.sil.grid(
   list(
@@ -361,9 +361,10 @@ plt = plot.sil.grid(
     list(model = "SVDreg", sil = sil.svdreg),
     list(model = "AIRWLS", sil = sil.airwls),
     list(model = "Newton", sil = sil.newton),
-    list(model = "M-SGD", sil = sil.csgd),
-    list(model = "C-SGD", sil = sil.bsgd),
-    list(model = "B-SGD", sil = sil.msgd)
+    list(model = "M-SGD", sil = sil.msgd),
+    list(model = "C-SGD", sil = sil.csgd),
+    list(model = "R-SGD", sil = sil.rsgd),
+    list(model = "B-SGD", sil = sil.bsgd)
   ),
   by = 5
 )
