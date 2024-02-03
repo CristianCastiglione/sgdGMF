@@ -237,28 +237,28 @@ c_fit_airwls <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambd
     .Call(`_sgdGMF_c_fit_airwls`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
 }
 
-c_fit_bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
-}
-
-c_fit2_bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit2_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
-}
-
-c_fit_csgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit_csgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+c_fit_newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
+    .Call(`_sgdGMF_c_fit_newton`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
 }
 
 c_fit_msgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
     .Call(`_sgdGMF_c_fit_msgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 
-c_fit_newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_c_fit_newton`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
+c_fit_csgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_c_fit_csgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 
 c_fit_rsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
     .Call(`_sgdGMF_c_fit_rsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+}
+
+c_fit_bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_c_fit_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+}
+
+c_fit2_bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_c_fit2_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 
 c_dabsmax <- function(u, v) {
