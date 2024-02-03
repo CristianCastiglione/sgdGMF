@@ -124,7 +124,7 @@ plot.summary = function (error) {
     if (SAVE) {
       filepath = join.path("img", "splatter")
       filename = join.string("summary", errorh$str, ".pdf")
-      zoom = 7
+      zoom = 8
       width = 1
       height = 0.8
       ggplot2::ggsave(
