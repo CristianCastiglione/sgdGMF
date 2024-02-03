@@ -3,28 +3,30 @@
 #' @description ...
 #' @import svd
 #' @keywords internal
-gmf.init = function (Y,
-                     X = NULL,
-                     Z = NULL,
-                     d = min(dim(Y)),
-                     family = gaussian(),
-                     method = "svd",
-                     niter = 0,
-                     values = list(),
-                     verbose = FALSE) {
+gmf.init = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    d = min(dim(Y)),
+    family = gaussian(),
+    method = "svd",
+    niter = 0,
+    values = list(),
+    verbose = FALSE
+) {
 
   # Initialize U, V and beta using the selected method
   init = NULL
   if (method == "glm-svd") {
-    init = glm.svd.init(Y, X, Z, d, family, verbose)
+    init = gmf.init.glm(Y, X, Z, d, family, verbose)
   } else if (method == "ls-svd") {
-    init = ls.svd.init(Y, X, Z, d, family, niter, verbose)
+    init = gmf.init.svd(Y, X, Z, d, family, niter, verbose)
   } else if (method == "svd") {
-    init = ls.svd.init(Y, X, Z, d, family, niter, verbose)
+    init = gmf.init.svd(Y, X, Z, d, family, niter, verbose)
   } else if (method == "random") {
-    init = random.init(Y, X, Z, d)
+    init = gmf.init.random(Y, X, Z, d)
   } else if (method == "values") {
-    init = custom.init(Y, X, Z, d, family, values, verbose)
+    init = gmf.init.custom(Y, X, Z, d, family, values, verbose)
   } else {
     stop("Not allowed initialization method.")
   }
@@ -35,11 +37,13 @@ gmf.init = function (Y,
 #' @title Random initialization
 #' @description ...
 #' @keywords internal
-random.init = function (Y,
-                        X = NULL,
-                        Z = NULL,
-                        d = min(dim(Y)),
-                        family = poisson()) {
+gmf.init.random = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    d = min(dim(Y)),
+    family = poisson()
+) {
 
   # Derive data dimensions
   n = nrow(Y)
@@ -73,13 +77,15 @@ random.init = function (Y,
 #' @description ...
 #' @import svd
 #' @keywords internal
-ls.svd.init = function (Y,
-                        X = NULL,
-                        Z = NULL,
-                        d = min(dim(Y)),
-                        family = poisson(),
-                        niter = 0,
-                        verbose = FALSE) {
+gmf.init.svd = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    d = min(dim(Y)),
+    family = poisson(),
+    niter = 0,
+    verbose = FALSE
+) {
 
   # Select the data transformation to use for
   # the initialization of the working data
@@ -89,13 +95,19 @@ ls.svd.init = function (Y,
   if (verbose) cat(" Initialization: working data \n")
   isna = is.na(Y)
   y = matrix(NA, nrow = nrow(Y), ncol = ncol(Y))
-  y[!isna] = f(Y[!isna])
-  y[isna] = mean(y[!isna])
+  # y[!isna] = f(Y[!isna])
+  # y[isna] = mean(y[!isna])
+
+  y[] = apply(Y, 2, function (x) {
+    x[is.na(x)] = mean(x, na.rm = TRUE)
+    return (f(x))
+  })
 
   # Initialize the parameters and sufficient statistics
   # to NULL and zero, respectively
   a = b = u = v = NULL
-  xtx = ztz = xty = zty = NULL
+  xtx = ztz = NULL
+  xty = zty = NULL
   xb = az = uv = 0
 
   # Compute the initial column-specific regression parameters (if any)
@@ -131,7 +143,7 @@ ls.svd.init = function (Y,
       if (verbose) cat("=")
 
       # Refine the initial matrix completion
-      y[isna] = (xb + az + uv)[isna]
+      y[isna] = xb[isna] + az[isna] + uv[isna]
 
       # Refine the initial column-specific regression parameters (if any)
       if (!is.null(X)) {
@@ -161,7 +173,7 @@ ls.svd.init = function (Y,
   var = family$variance(mu)
   phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
 
-  # covariate matrices initialization when there are no covariates
+  # Covariate matrices initialization when there are no covariates
   if (is.null(X)) bv = matrix(0, nrow = ncol(Y), ncol = 0)
   if (is.null(Z)) bu = matrix(0, nrow = nrow(Y), ncol = 0)
 
@@ -174,12 +186,14 @@ ls.svd.init = function (Y,
 #' @description ...
 #' @import svd
 #' @keywords internal
-glm.svd.init = function (Y,
-                         X = NULL,
-                         Z = NULL,
-                         d = min(dim(Y)),
-                         family = poisson(),
-                         verbose = FALSE) {
+gmf.init.glm = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    d = min(dim(Y)),
+    family = poisson(),
+    verbose = FALSE
+) {
 
   # column-specific covariate vector initialization
   if (verbose) cat(" Initialization: column-specific covariates \n")
@@ -264,13 +278,15 @@ glm.svd.init = function (Y,
 #' @description ...
 #' @import svd
 #' @keywords internal
-custom.init = function (Y,
-                        X = NULL,
-                        Z = NULL,
-                        d = min(dim(Y)),
-                        family = poisson(),
-                        values = list(),
-                        verbose = FALSE) {
+gmf.init.custom = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    d = min(dim(Y)),
+    family = poisson(),
+    values = list(),
+    verbose = FALSE
+) {
 
   # Safety checks
   check = function (object, n, m) {
@@ -292,16 +308,22 @@ custom.init = function (Y,
   # the initialization of the working data
   f = set.jitter(family)
 
-  # Compute the transformed data
+  # Compute the transformed data and fill the NA values with the column means
   if (verbose) cat(" Initialization: working data \n")
   isna = is.na(Y)
   y = matrix(NA, nrow = nrow(Y), ncol = ncol(Y))
-  y[!isna] = f(Y[!isna])
-  y[isna] = mean(y[!isna])
+  # y[!isna] = f(Y[!isna])
+  # y[isna] = mean(y[!isna])
+
+  y[] = apply(Y, 2, function (x) {
+    x[is.na(x)] = mean(x, na.rm = TRUE)
+    return (f(x))
+  })
 
   # Initialize the parameters and sufficient statistics
   a = b = u = v = NULL
-  xtx = ztz = xty = zty = NULL
+  xtx = ztz = NULL
+  xty = zty = NULL
   xb = az = uv = 0
 
   # Safety checks and parameter assignement
