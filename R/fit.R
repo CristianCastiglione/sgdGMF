@@ -46,11 +46,15 @@ sgdgmf.fit = function (
   familyname = family$family
   linkname = family$link
 
+  # Set the covariate matrices
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 0)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 0)
+
   # Select the correct estimation method
   if (method == "airwls") {
     # AIRWLS algorithm
     fit = cpp.fit.airwls(
-      Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, nstep = ctr$nstep, stepsize = ctr$stepsize,
       eps = ctr$eps, nafill = ctr$nafill, tol = control$tol,
@@ -62,7 +66,7 @@ sgdgmf.fit = function (
   if (method == "newton") {
     # Quasi-Newton algorithm
     fit = cpp.fit.newton(
-      Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, stepsize = ctr$stepsize, eps = ctr$eps,
       nafill = ctr$nafill, tol = ctr$tol, damping = ctr$damping,
@@ -73,7 +77,7 @@ sgdgmf.fit = function (
   if (method == "msgd") {
     # Memoized SGD algorithm
     fit = cpp.fit.msgd(
-      Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size = ctr$size, burn = ctr$burn, rate0 = ctr$rate0, decay = ctr$decay,
@@ -85,7 +89,7 @@ sgdgmf.fit = function (
   if (method == "csgd") {
     # Coordinatewise SGD algorithm
     fit = cpp.fit.csgd(
-      Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
@@ -97,7 +101,7 @@ sgdgmf.fit = function (
   if (method == "rsgd") {
     # Rowwise SGD algorithm
     fit = cpp.fit.rsgd(
-      Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
@@ -109,7 +113,7 @@ sgdgmf.fit = function (
   if (method == "bsgd") {
     # Blockwise SGD algorithm
     fit = cpp.fit.bsgd(
-      Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
