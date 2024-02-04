@@ -3,11 +3,11 @@
 #' @description ...
 #' @import svd
 #' @keywords internal
-gmf.init = function (
+init.param = function (
     Y,
     X = NULL,
     Z = NULL,
-    d = min(dim(Y)),
+    d = 2,
     family = gaussian(),
     method = "svd",
     niter = 0,
@@ -35,11 +35,11 @@ gmf.init = function (
 #' @title Random initialization
 #' @description ...
 #' @keywords internal
-gmf.init.random = function (
+init.param.random = function (
     Y,
     X = NULL,
     Z = NULL,
-    d = min(dim(Y)),
+    d = 2,
     family = poisson()
 ) {
 
@@ -75,11 +75,11 @@ gmf.init.random = function (
 #' @description ...
 #' @import svd
 #' @keywords internal
-gmf.init.svd = function (
+init.param.svd = function (
     Y,
     X = NULL,
     Z = NULL,
-    d = min(dim(Y)),
+    d = 2,
     family = poisson(),
     niter = 0,
     verbose = FALSE
@@ -184,11 +184,11 @@ gmf.init.svd = function (
 #' @description ...
 #' @import svd
 #' @keywords internal
-gmf.init.glm = function (
+init.param.glm = function (
     Y,
     X = NULL,
     Z = NULL,
-    d = min(dim(Y)),
+    d = 2,
     family = poisson(),
     verbose = FALSE
 ) {
@@ -276,11 +276,11 @@ gmf.init.glm = function (
 #' @description ...
 #' @import svd
 #' @keywords internal
-gmf.init.custom = function (
+init.param.custom = function (
     Y,
     X = NULL,
     Z = NULL,
-    d = min(dim(Y)),
+    d = 2,
     family = poisson(),
     values = list(),
     verbose = FALSE
