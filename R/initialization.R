@@ -68,7 +68,7 @@ gmf.init.random = function (
   phi = rep(1, length = m)
 
   # output
-  list(u = u, v = v, bz = bz, bx = bx, phi = phi)
+  list(U = u, V = v, A = bz, B = bx, phi = phi)
 }
 
 #' @title OLS-SVD initialization
@@ -176,7 +176,7 @@ gmf.init.svd = function (
   if (is.null(Z)) bu = matrix(0, nrow = nrow(Y), ncol = 0)
 
   # Return the obtained initial values
-  list(u = u, v = v, bz = a, bx = b, phi = phi)
+  list(U = u, V = v, A = a, B = b, phi = phi)
 }
 
 
@@ -268,7 +268,7 @@ gmf.init.glm = function (
   if (is.null(Z)) bz = matrix(0, nrow = nrow(Y), ncol = 0)
 
   # output
-  list(u = u, v = v, bz = bz, bx = bx, phi = phi)
+  list(U = u, V = v, A = bz, B = bx, phi = phi)
 }
 
 
@@ -411,6 +411,6 @@ gmf.init.custom = function (
   if (is.null(Z)) bu = matrix(0, nrow = nrow(Y), ncol = 0)
 
   # Return the obtained initial values
-  list(u = u, v = v, bz = a, bx = b, phi = phi)
+  list(U = u, V = v, A = a, B = b, phi = phi)
 }
 
