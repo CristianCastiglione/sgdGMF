@@ -17,10 +17,8 @@ gmf.init = function (
 
   # Initialize U, V and beta using the selected method
   init = NULL
-  if (method == "glm-svd") {
+  if (method == "glm") {
     init = gmf.init.glm(Y, X, Z, d, family, verbose)
-  } else if (method == "ls-svd") {
-    init = gmf.init.svd(Y, X, Z, d, family, niter, verbose)
   } else if (method == "svd") {
     init = gmf.init.svd(Y, X, Z, d, family, niter, verbose)
   } else if (method == "random") {
