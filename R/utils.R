@@ -27,8 +27,13 @@ soft.threshold = function (x, a) {
 
 
 #' @title Rotate the matrices U and V
-#' @description ...
-#' @importFrom  whitening whiteningMatrix
+#'
+#' @description
+#' Rotate U and V in such a way that the transformed matrices
+#' are such that U is orthogonal and V is lower triangular
+#'
+#' @importFrom whitening whiteningMatrix
+#'
 #' @keywords internal
 correct.uv = function (U, V) {
   S = cov(U)
