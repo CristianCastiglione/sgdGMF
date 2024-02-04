@@ -460,7 +460,7 @@ set.control.bsgd = function (control) {
 set.control = function (method, control) {
 
   if (!(method %in% c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"))) {
-    stop("The specified optimization method is not implemented.")
+    stop("The specified optimization method is not implemented yet.")
   }
 
   # Set the input values for the control parameters, check whether the
