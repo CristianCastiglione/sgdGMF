@@ -39,15 +39,8 @@ sgdgmf.fit = function (
     init = list(),
     control = list()) {
 
-  # Set and check the estimation method
-  methods = c("airwls", "newton", "csgd", "rsgd", "bsgd")
-
-  if (!(method %in% methods)) {
-    stop("Not allowed estimation method.")
-  }
-
   # Set and check the control parameters
-  control = set.control(method, control)
+  ctr = set.control(method, control)
   lambda = set.penalty(penalty)
   init = set.init(init)
   familyname = family$family
@@ -55,76 +48,74 @@ sgdgmf.fit = function (
 
   # Select the correct estimation method
   if (method == "airwls") {
+    # AIRWLS algorithm
     fit = cpp.fit.airwls(
       Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = control$maxiter, nstep = control$nstep, stepsize = control$stepsize,
-      eps = control$eps, nafill = control$nafill, tol = control$tol,
-      damping = control$damping, verbose = control$verbose,
-      frequency = control$frequency, parallel = control$parallel,
-      nthreads = control$nthreads
+      maxiter = ctr$maxiter, nstep = ctr$nstep, stepsize = ctr$stepsize,
+      eps = ctr$eps, nafill = ctr$nafill, tol = control$tol,
+      damping = ctr$damping, verbose = ctr$verbose,
+      frequency = ctr$frequency, parallel = ctr$parallel,
+      nthreads = ctr$nthreads
     )
   }
   if (method == "newton") {
+    # Quasi-Newton algorithm
     fit = cpp.fit.newton(
       Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = control$maxiter, stepsize = control$stepsize, eps = control$eps,
-      nafill = control$nafill, tol = control$tol, damping = control$damping,
-      verbose = control$verbose, frequency = control$frequency,
-      parallel = control$parallel, nthreads = control$nthreads
+      maxiter = ctr$maxiter, stepsize = ctr$stepsize, eps = ctr$eps,
+      nafill = ctr$nafill, tol = ctr$tol, damping = ctr$damping,
+      verbose = ctr$verbose, frequency = ctr$frequency,
+      parallel = ctr$parallel, nthreads = ctr$nthreads
     )
   }
   if (method == "msgd") {
+    # Memoized SGD algorithm
     fit = cpp.fit.msgd(
       Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = control$maxiter, eps = control$eps, nafill = control$nafill,
-      tol = control$tol, size = control$size,
-      burn = control$burn, rate0 = control$rate0, decay = control$decay,
-      damping = control$damping, rate1 = control$rate[1], rate2 = control$rate[2],
-      parallel = control$parallel, nthreads = control$nthreads,
-      verbose = control$verbose, frequency = control$frequency,
-      progress = control$progress
+      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
+      size = ctr$size, burn = ctr$burn, rate0 = ctr$rate0, decay = ctr$decay,
+      damping = ctr$damping, rate1 = control$rate[1], rate2 = ctr$rate[2],
+      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
+      frequency = ctr$frequency, progress = ctr$progress
     )
   }
   if (method == "csgd") {
+    # Coordinatewise SGD algorithm
     fit = cpp.fit.csgd(
       Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = control$maxiter, eps = control$eps, nafill = control$nafill,
-      tol = control$tol, size1 = control$size[1], size2 = control$size[2],
-      burn = control$burn, rate0 = control$rate0, decay = control$decay,
-      damping = control$damping, rate1 = control$rate[1], rate2 = control$rate[2],
-      parallel = control$parallel, nthreads = control$nthreads,
-      verbose = control$verbose, frequency = control$frequency,
-      progress = control$progress
+      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
+      size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
+      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate[1], rate2 = ctr$rate[2],
+      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
+      frequency = ctr$frequency, progress = ctr$progress
     )
   }
   if (method == "rsgd") {
+    # Rowwise SGD algorithm
     fit = cpp.fit.rsgd(
       Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = control$maxiter, eps = control$eps, nafill = control$nafill,
-      tol = control$tol, size1 = control$size[1], size2 = control$size[2],
-      burn = control$burn, rate0 = control$rate0, decay = control$decay,
-      damping = control$damping, rate1 = control$rate[1], rate2 = control$rate[2],
-      parallel = control$parallel, nthreads = control$nthreads,
-      verbose = control$verbose, frequency = control$frequency,
-      progress = control$progress
+      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
+      size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
+      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate[1], rate2 = ctr$rate[2],
+      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
+      frequency = ctr$frequency, progress = ctr$progress
     )
   }
   if (method == "bsgd") {
+    # Blockwise SGD algorithm
     fit = cpp.fit.bsgd(
       Y = Y, X = init$X, B = init$B, A = init$A, Z = init$Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = control$maxiter, eps = control$eps, nafill = control$nafill,
-      tol = control$tol, size1 = control$size[1], size2 = control$size[2],
-      burn = control$burn, rate0 = control$rate0, decay = control$decay,
-      damping = control$damping, rate1 = control$rate[1], rate2 = control$rate[2],
-      parallel = control$parallel, nthreads = control$nthreads,
-      verbose = control$verbose, frequency = control$frequency,
-      progress = control$progress
+      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
+      size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
+      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate[1], rate2 = ctr$rate[2],
+      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
+      frequency = ctr$frequency, progress = ctr$progress
     )
   }
 
