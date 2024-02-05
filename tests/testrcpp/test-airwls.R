@@ -59,7 +59,7 @@ plot.coef.path = function (
 ) {
   result = matrix(NA, nrow = maxsteps+1, ncol = p)
   for (nsteps in 0:maxsteps) {
-    result[nsteps+1,] = drop(sgdGMF::c_airwls_glmfit(
+    result[nsteps+1,] = drop(sgdGMF::cpp.airwls.glmfit(
       beta = beta0, y = y, X = X,
       familyname = familyname, linkname = linkname,
       offset = offset, penalty = penalty, nsteps = nsteps,
@@ -87,7 +87,7 @@ eta = X %*% beta
   linkname = "identity"
 
   glm.coef = glm.fit(X, y, family = get.glm.family(familyname, linkname))$coef
-  gmf.coef = drop(sgdGMF::c_airwls_glmfit(
+  gmf.coef = drop(sgdGMF::cpp.airwls.glmfit(
     beta = beta0, y = y, X = X, familyname = familyname, linkname = linkname,
     offset = offset, penalty = penalty, nsteps = 50, stepsize = 0.99, print = FALSE))
 
@@ -105,7 +105,7 @@ eta = X %*% beta
   linkname = "logit"
 
   glm.coef = glm.fit(X, y, family = get.glm.family(familyname, linkname))$coef
-  gmf.coef = drop(sgdGMF::c_airwls_glmfit(
+  gmf.coef = drop(sgdGMF::cpp.airwls.glmfit(
     beta = beta0, y = y, X = X, familyname = familyname, linkname = linkname,
     offset = offset, penalty = penalty, nsteps = 50, stepsize = 0.99, print = FALSE))
 
@@ -124,7 +124,7 @@ eta = X %*% beta
   linkname = "probit"
 
   glm.coef = glm.fit(X, y, family = get.glm.family(familyname, linkname))$coef
-  gmf.coef = drop(sgdGMF::c_airwls_glmfit(
+  gmf.coef = drop(sgdGMF::cpp.airwls.glmfit(
     beta = beta0, y = y, X = X, familyname = familyname, linkname = linkname,
     offset = offset, penalty = penalty, nsteps = 100, stepsize = 0.99, print = FALSE))
 
@@ -143,7 +143,7 @@ eta = X %*% beta
   linkname = "cauchit"
 
   glm.coef = glm.fit(X, y, family = get.glm.family(familyname, linkname))$coef
-  gmf.coef = drop(sgdGMF::c_airwls_glmfit(
+  gmf.coef = drop(sgdGMF::cpp.airwls.glmfit(
     beta = beta0, y = y, X = X, familyname = familyname, linkname = linkname,
     offset = offset, penalty = penalty, nsteps = 50, stepsize = 0.99, print = FALSE))
 
@@ -162,7 +162,7 @@ eta = X %*% beta
   linkname = "log"
 
   glm.coef = glm.fit(X, y, family = get.glm.family(familyname, linkname))$coef
-  gmf.coef = drop(sgdGMF::c_airwls_glmfit(
+  gmf.coef = drop(sgdGMF::cpp.airwls.glmfit(
     beta = beta0, y = y, X = X, familyname = familyname, linkname = linkname,
     offset = offset, penalty = penalty, nsteps = 50, stepsize = 0.99, print = FALSE))
 
@@ -181,7 +181,7 @@ eta = X %*% beta
   linkname = "log"
 
   glm.coef = glm.fit(X, y, family = get.glm.family(familyname, linkname))$coef
-  gmf.coef = drop(sgdGMF::c_airwls_glmfit(
+  gmf.coef = drop(sgdGMF::cpp.airwls.glmfit(
     beta = beta0, y = y, X = X, familyname = familyname, linkname = linkname,
     offset = offset, penalty = penalty, nsteps = 50, stepsize = 0.99, print = FALSE))
 
@@ -215,14 +215,14 @@ eta = X %*% beta
   print((proc.time() - t0)[3])
 
   t0 = proc.time()
-  c.coef.v = sgdGMF::c_airwls_update(
+  c.coef.v = sgdGMF::cpp.airwls.update(
     beta = V, Y = Y, X = U, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = FALSE,
     nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE, nthreads = 4)
   print((proc.time() - t0)[3])
 
   t0 = proc.time()
-  c.coef.u = sgdGMF::c_airwls_update(
+  c.coef.u = sgdGMF::cpp.airwls.update(
     beta = U, Y = Y, X = V, familyname = familyname, linkname = linkname,
     idx = 1:d-1, offset = offset, penalty = penalty, transp = TRUE,
     nsteps = 100, stepsize = 0.99, print = FALSE, parallel = TRUE, nthreads = 4)
@@ -272,13 +272,13 @@ eta = X %*% beta
     control = list(maxiter = 500, stepsize = 0.9, eps = 1e-08, tol = 1e-05,
                    damping = 1e-03, verbose = TRUE, frequency = 10))
 
-  c.gmffit = sgdGMF::c_fit_airwls(
+  c.gmffit = sgdGMF::cpp.fit.airwls(
     Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
     ncomp = d, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
     eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
     frequency = 10, parallel = FALSE)
 
-  c.gmffit = sgdGMF::c_fit_airwls(
+  c.gmffit = sgdGMF::cpp.fit.airwls(
     Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
     ncomp = d, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
     eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
@@ -359,13 +359,13 @@ eta = X %*% beta
     control = list(maxiter = 500, stepsize = 0.9, eps = 1e-08, tol = 1e-05,
                    damping = 1e-03, verbose = TRUE, frequency = 10))
 
-  c.gmffit = sgdGMF::c_fit_airwls(
+  c.gmffit = sgdGMF::cpp.fit.airwls(
     Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
     ncomp = ncomp, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
     eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
     frequency = 10, parallel = FALSE)
 
-  c.gmffit = sgdGMF::c_fit_airwls(
+  c.gmffit = sgdGMF::cpp.fit.airwls(
     Y, X, B0, A0, Z, U0, V0, familyname = familyname, linkname = linkname,
     ncomp = ncomp, lambda = c(0,0,1,0), maxiter = 500, nsteps = 1, stepsize = 0.9,
     eps = 1e-08, nafill = 1, tol = 1e-05, damping = 1e-03, verbose = TRUE,
