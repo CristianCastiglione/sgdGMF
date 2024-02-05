@@ -36,7 +36,7 @@ check.pos = function (object) {
 #' @title Non-negative real check
 #' @description Check whether an object is a positive number
 #' @keywords internal
-check.nneg = function (object) {
+check.neg = function (object) {
   flag = FALSE
   if (check.class(object, "numeric")) {
     if (all(object >= 0)) {
@@ -62,6 +62,88 @@ check.int = function (object) {
   return (flag)
 }
 
+#' @title Matrix dimension check
+#'
+#' @description
+#' Check whether an object is a matrix with the expected dimensions
+#'
+#' @keywords internal
+check.dim = function (object, n, m) {
+  flag = FALSE
+  # check if object exists
+  if (!is.null(object)) {
+    # check if object is a numeric matrix
+    if (is.numeric(object) & is.matrix(object)) {
+      # check is object is a matrix of appropriate dimensions
+      if (nrow(object) == n & ncol(object) == m) {
+        flag = TRUE
+      }
+    }
+  }
+  return (flag)
+}
+
+
+check.data = function (Y, X = NULL, Z = NULL) {
+  # Check Y
+  if (!is.numeric(Y)) stop("Y is not numeric.")
+  if (!is.matrix(Y)) stop("Y is not a matrix.")
+  n = nrow(Y)
+  m = ncol(Y)
+
+  # Check X
+  if (!is.null(X)) {
+    if (!is.numeric(X)) stop("X is not numeric.")
+    if (!is.matrix(X)) stop("X is not a matrix.")
+    if (nrow(X) != n) stop("The dimensions of X are not compatible with Y.")
+    if (anyNA(X)) stop("X contains some NA.")
+    if (sum(apply(X, 2, sd) == 0) > 1) stop("X has too many constant columns.")
+  }
+
+  # Check Z
+  if (!is.null(Z)) {
+    if (!is.numeric(Z)) stop("Z is not numeric.")
+    if (!is.matrix(Z)) stop("Z is not a matrix.")
+    if (nrow(Z) != m) stop("The dimensions of Z are not compatible with Y.")
+    if (anyNA(Z)) stop("Z contains some NA.")
+    if (sum(apply(Z, 2, sd) == 0) > 1) stop("Z has too many constant columns.")
+  }
+}
+
+#' @title Check and set the response matrix Y
+#'
+#' @description
+#' Check if the input response matrix is well-defined and return the same
+#' matrix without attributes such as row and column names.
+#'
+#' @keywords internal
+set.mat.Y = function (Y) {
+  if (!is.numeric(Y)) stop("Y is not numeric.")
+  if (!is.matrix(Y)) stop("Y is not a matrix.")
+  Y = matrix(c(Y), nrow = nrow(Y), ncol = ncol(Y))
+  return (Y)
+}
+
+#' @title Check and set the covariate matrix X
+#'
+#' @description
+#' Check if the input covariate matrix X is well-defined and return the same
+#' matrix without attributes such as row and column names.
+#'
+#' @keywords internal
+set.mat.X = function (X, n, mat = "X") {
+  if (!is.null(X)) {
+    if (!is.numeric(X)) stop(paste(mat, "is not numeric."))
+    if (!is.matrix(X)) stop(paste(mat, "is not a matrix."))
+    if (nrow(X) != n) stop(paste("The dimensions of", mat, "are not compatible with Y."))
+    if (anyNA(X)) stop(paste(mat, "contains some NA."))
+    if (sum(apply(X, 2, sd) == 0) > 1) stop(paste(mat, "has too many constant columns."))
+    X = matrix(c(X), nrow = nrow(X), ncol = ncol(X))
+  } else {
+    X = matrix(1, nrow = n, ncol = 1)
+  }
+  return (X)
+}
 
 #' @title Check and set the penalty parameters
 #'
@@ -75,10 +157,10 @@ set.penalty = function (penalty) {
   default = list(u = 1, v = 0, b = 0, a = 0)
 
   if (check.class(penalty, "list")) {
-    if (check.nneg(penalty$u)) default$u = penalty$u
-    if (check.nneg(penalty$v)) default$v = penalty$v
-    if (check.nneg(penalty$b)) default$b = penalty$b
-    if (check.nneg(penalty$a)) default$a = penalty$a
+    if (check.neg(penalty$u)) default$u = penalty$u
+    if (check.neg(penalty$v)) default$v = penalty$v
+    if (check.neg(penalty$b)) default$b = penalty$b
+    if (check.neg(penalty$a)) default$a = penalty$a
     if (default$u == 0 & default$v == 0) default$u = 1
   }
 
