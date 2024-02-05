@@ -4,7 +4,7 @@
 \alias{predict.sgdgmf}
 \title{Predict method for GMF fits}
 \usage{
-\method{predict}{sgdgmf}(
+predict.sgdgmf(
   object,
   newdata = NULL,
   idx = NULL,

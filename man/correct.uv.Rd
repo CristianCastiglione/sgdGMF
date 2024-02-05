@@ -7,6 +7,7 @@
 correct.uv(U, V)
 }
 \description{
-...
+Rotate U and V in such a way that the transformed matrices
+are such that U is orthogonal and V is lower triangular
 }
 \keyword{internal}
