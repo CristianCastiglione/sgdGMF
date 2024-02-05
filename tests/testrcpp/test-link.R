@@ -23,56 +23,57 @@ par(mfrow = c(1, 3))
 
 ## Test: identity ----
 {
-  plot.link(x, sgdGMF::c_link_identity_linkfun(x), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_identity_linkinv(x), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_identity_mueta(x), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.identity.linkfun(x), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.identity.linkinv(x), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.identity.mueta(x), main = "linkmueta")
 }
 
 ## Test: logit ----
 {
-  plot.link(x, sgdGMF::c_link_logit_linkfun(z), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_logit_linkinv(x), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_logit_mueta(x), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.logit.linkfun(z), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.logit.linkinv(x), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.logit.mueta(x), main = "linkmueta")
 }
 
 ## Test: probit ----
 {
-  plot.link(x, sgdGMF::c_link_probit_linkfun(z), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_probit_linkinv(x), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_probit_mueta(x), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.probit.linkfun(z), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.probit.linkinv(x), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.probit.mueta(x), main = "linkmueta")
 }
 
 ## Test: cauchy ----
 {
-  plot.link(x, sgdGMF::c_link_cauchy_linkfun(z), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_cauchy_linkinv(x), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_cauchy_mueta(x), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.cauchy.linkfun(z), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.cauchy.linkinv(x), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.cauchy.mueta(x), main = "linkmueta")
 }
 
 ## Test: cloglog ----
 {
-  plot.link(x, sgdGMF::c_link_cloglog_linkfun(z), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_cloglog_linkinv(x), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_cloglog_mueta(x), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.cloglog.linkfun(z), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.cloglog.linkinv(x), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.cloglog.mueta(x), main = "linkmueta")
 }
 
 ## Test: log ----
 {
-  plot.link(x, sgdGMF::c_link_log_linkfun(y), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_log_linkinv(x), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_log_mueta(x), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.log.linkfun(y), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.log.linkinv(x), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.log.mueta(x), main = "linkmueta")
 }
 
 ## Test: inverse ----
 {
-  plot.link(x, sgdGMF::c_link_inverse_linkfun(z), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_inverse_linkinv(z), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_inverse_mueta(z), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.inverse.linkfun(z), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.inverse.linkinv(z), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.inverse.mueta(z), main = "linkmueta")
 }
 
 ## Test: sqrt ----
 {
-  plot.link(x, sgdGMF::c_link_sqrt_linkfun(z), main = "linkfun")
-  plot.link(x, sgdGMF::c_link_sqrt_linkinv(z), main = "linkinv")
-  plot.link(x, sgdGMF::c_link_sqrt_mueta(z), main = "linkmueta")
+  plot.link(x, sgdGMF::cpp.link.sqrt.linkfun(z), main = "linkfun")
+  plot.link(x, sgdGMF::cpp.link.sqrt.linkinv(z), main = "linkinv")
+  plot.link(x, sgdGMF::cpp.link.sqrt.mueta(z), main = "linkmueta")
 }
+
