@@ -1,8 +1,5 @@
 
 #' @keywords internal
-norm_vec = function (x) sqrt(sum(x^2))
-
-#' @keywords internal
 qrrange = function (X, q = c(0.05, 0.95)) {
   range = quantile(c(X),q)
   X[X > range[2]] = range[2]
@@ -11,8 +8,17 @@ qrrange = function (X, q = c(0.05, 0.95)) {
 }
 
 #' @keywords internal
-l2norm = function (x) {
-  sqrt(sum(x^2))
+normx = function (x, p = 2) {
+  n = 0
+  if (p >= 0) {
+    if (p == 0) n = max(x)
+    if (p == 1) n = sum(abs(x))
+    if (p == 2) n = sqrt(sum(x^2))
+    if (!(p %in% c(0, 1, 2))) n = sum(x^p)^(1/p)
+  } else {
+    stop("p must be non-negative.")
+  }
+  return (n)
 }
 
 #' @keywords internal
