@@ -39,16 +39,17 @@ sgdgmf.fit = function (
     init = list(),
     control = list()) {
 
-  # Set and check the control parameters
+  # Check and set the covariate matrices
+  Y = set.mat.Y(Y)
+  X = set.mat.X(X, nrow(Y), "X")
+  Z = set.mat.X(Z, ncol(Y), "Z")
+
+  # Check and set the control parameters
   ctr = set.control(method, control)
   lambda = set.penalty(penalty)
   init = set.init(init)
   familyname = family$family
   linkname = family$link
-
-  # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 0)
-  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 0)
 
   # Select the correct estimation method
   if (method == "airwls") {
