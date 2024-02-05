@@ -5,8 +5,8 @@
 
 #include "minibatch.h"
 
-// [[Rcpp::export]]
-arma::uvec c_get_chunk (
+// [[Rcpp::export("cpp.get.chunk")]]
+arma::uvec cpp_get_chunk (
     const int & iter, const int & n, 
     const int & size, const bool & randomize
 ) {
@@ -15,8 +15,8 @@ arma::uvec c_get_chunk (
     return chunks.get_chunk(iter);
 }
 
-// [[Rcpp::export]]
-std::list<arma::uvec> c_get_chunks (
+// [[Rcpp::export("cpp.get.chunks")]]
+std::list<arma::uvec> cpp_get_chunks (
     const arma::uvec & iters, const int & n, 
     const int & size, const bool & randomize
 ) {
@@ -25,8 +25,8 @@ std::list<arma::uvec> c_get_chunks (
     return chunks.get_chunks(iters);
 }
 
-// [[Rcpp::export]]
-Rcpp::List c_get_next (
+// [[Rcpp::export("cpp.get.next")]]
+Rcpp::List cpp_get_next (
     const int & iter, const int & n, const bool & rnd
 ) {
     ChunkPile pile(n, rnd);

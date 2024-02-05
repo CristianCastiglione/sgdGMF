@@ -37,363 +37,323 @@ cpp.fit.bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambd
     .Call(`_sgdGMF_cpp_fit_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 
-c_deviance <- function(y, mu, familyname) {
-    .Call(`_sgdGMF_c_deviance`, y, mu, familyname)
+cpp.deviance <- function(y, mu, familyname) {
+    .Call(`_sgdGMF_cpp_deviance`, y, mu, familyname)
 }
 
-c_penalty <- function(u, p) {
-    .Call(`_sgdGMF_c_penalty`, u, p)
+cpp.penalty <- function(u, p) {
+    .Call(`_sgdGMF_cpp_penalty`, u, p)
 }
 
-c_gaussian_variance <- function(mu) {
-    .Call(`_sgdGMF_c_gaussian_variance`, mu)
+pcc.gaussian.variance <- function(mu) {
+    .Call(`_sgdGMF_cpp_gaussian_variance`, mu)
 }
 
-c_gaussian_initialize <- function(y) {
-    .Call(`_sgdGMF_c_gaussian_initialize`, y)
+pcc.gaussian.initialize <- function(y) {
+    .Call(`_sgdGMF_cpp_gaussian_initialize`, y)
 }
 
-c_gaussian_devresid <- function(y, mu) {
-    .Call(`_sgdGMF_c_gaussian_devresid`, y, mu)
+pcc.gaussian.devresid <- function(y, mu) {
+    .Call(`_sgdGMF_cpp_gaussian_devresid`, y, mu)
 }
 
-c_binomial_variance <- function(mu) {
-    .Call(`_sgdGMF_c_binomial_variance`, mu)
+pcc.binomial.variance <- function(mu) {
+    .Call(`_sgdGMF_cpp_binomial_variance`, mu)
 }
 
-c_binomial_initialize <- function(y) {
-    .Call(`_sgdGMF_c_binomial_initialize`, y)
+pcc.binomial.initialize <- function(y) {
+    .Call(`_sgdGMF_cpp_binomial_initialize`, y)
 }
 
-c_binomial_devresid <- function(y, mu) {
-    .Call(`_sgdGMF_c_binomial_devresid`, y, mu)
+pcc.binomial.devresid <- function(y, mu) {
+    .Call(`_sgdGMF_cpp_binomial_devresid`, y, mu)
 }
 
-c_poisson_variance <- function(mu) {
-    .Call(`_sgdGMF_c_poisson_variance`, mu)
+pcc.poisson.variance <- function(mu) {
+    .Call(`_sgdGMF_cpp_poisson_variance`, mu)
 }
 
-c_poisson_initialize <- function(y) {
-    .Call(`_sgdGMF_c_poisson_initialize`, y)
+pcc.poisson.initialize <- function(y) {
+    .Call(`_sgdGMF_cpp_poisson_initialize`, y)
 }
 
-c_poisson_devresid <- function(y, mu) {
-    .Call(`_sgdGMF_c_poisson_devresid`, y, mu)
+pcc.poisson.devresid <- function(y, mu) {
+    .Call(`_sgdGMF_cpp_poisson_devresid`, y, mu)
 }
 
-c_gamma_variance <- function(mu) {
-    .Call(`_sgdGMF_c_gamma_variance`, mu)
+pcc.gamma.variance <- function(mu) {
+    .Call(`_sgdGMF_cpp_gamma_variance`, mu)
 }
 
-c_gamma_initialize <- function(y) {
-    .Call(`_sgdGMF_c_gamma_initialize`, y)
+pcc.gamma.initialize <- function(y) {
+    .Call(`_sgdGMF_cpp_gamma_initialize`, y)
 }
 
-c_gamma_devresid <- function(y, mu) {
-    .Call(`_sgdGMF_c_gamma_devresid`, y, mu)
+pcc.gamma.devresid <- function(y, mu) {
+    .Call(`_sgdGMF_cpp_gamma_devresid`, y, mu)
 }
 
-c_negbinom_variance <- function(mu) {
-    .Call(`_sgdGMF_c_negbinom_variance`, mu)
+pcc.negbinom.variance <- function(mu) {
+    .Call(`_sgdGMF_cpp_negbinom_variance`, mu)
 }
 
-c_negbinom_initialize <- function(y) {
-    .Call(`_sgdGMF_c_negbinom_initialize`, y)
+pcc.negbinom.initialize <- function(y) {
+    .Call(`_sgdGMF_cpp_negbinom_initialize`, y)
 }
 
-c_negbinom_devresid <- function(y, mu) {
-    .Call(`_sgdGMF_c_negbinom_devresid`, y, mu)
+pcc.negbinom.devresid <- function(y, mu) {
+    .Call(`_sgdGMF_cpp_negbinom_devresid`, y, mu)
 }
 
-c_link_identity_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_identity_linkfun`, mu)
+cpp.link.identity.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_identity_linkfun`, mu)
 }
 
-c_link_identity_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_identity_linkinv`, eta)
+cpp.link.identity.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_identity_linkinv`, eta)
 }
 
-c_link_identity_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_identity_mueta`, eta)
+cpp.link.identity.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_identity_mueta`, eta)
 }
 
-c_link_logit_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_logit_linkfun`, mu)
+cpp.link.logit.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_logit_linkfun`, mu)
 }
 
-c_link_logit_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_logit_linkinv`, eta)
+cpp.link.logit.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_logit_linkinv`, eta)
 }
 
-c_link_logit_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_logit_mueta`, eta)
+cpp.link.logit.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_logit_mueta`, eta)
 }
 
-c_link_probit_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_probit_linkfun`, mu)
+cpp.link.probit.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_probit_linkfun`, mu)
 }
 
-c_link_probit_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_probit_linkinv`, eta)
+cpp.link.probit.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_probit_linkinv`, eta)
 }
 
-c_link_probit_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_probit_mueta`, eta)
+cpp.link.probit.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_probit_mueta`, eta)
 }
 
-c_link_cauchy_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_cauchy_linkfun`, mu)
+cpp.link.cauchy.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_cauchy_linkfun`, mu)
 }
 
-c_link_cauchy_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_cauchy_linkinv`, eta)
+cpp.link.cauchy.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_cauchy_linkinv`, eta)
 }
 
-c_link_cauchy_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_cauchy_mueta`, eta)
+cpp.link.cauchy.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_cauchy_mueta`, eta)
 }
 
-c_link_cloglog_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_cloglog_linkfun`, mu)
+cpp.link.cloglog.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_cloglog_linkfun`, mu)
 }
 
-c_link_cloglog_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_cloglog_linkinv`, eta)
+cpp.link.cloglog.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_cloglog_linkinv`, eta)
 }
 
-c_link_cloglog_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_cloglog_mueta`, eta)
+cpp.link.cloglog.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_cloglog_mueta`, eta)
 }
 
-c_link_log_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_log_linkfun`, mu)
+cpp.link.log.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_log_linkfun`, mu)
 }
 
-c_link_log_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_log_linkinv`, eta)
+cpp.link.log.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_log_linkinv`, eta)
 }
 
-c_link_log_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_log_mueta`, eta)
+cpp.link.log.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_log_mueta`, eta)
 }
 
-c_link_inverse_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_inverse_linkfun`, mu)
+cpp.link.inverse.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_inverse_linkfun`, mu)
 }
 
-c_link_inverse_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_inverse_linkinv`, eta)
+cpp.link.inverse.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_inverse_linkinv`, eta)
 }
 
-c_link_inverse_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_inverse_mueta`, eta)
+cpp.link.inverse.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_inverse_mueta`, eta)
 }
 
-c_link_sqrt_linkfun <- function(mu) {
-    .Call(`_sgdGMF_c_link_sqrt_linkfun`, mu)
+cpp.link.sqrt.linkfun <- function(mu) {
+    .Call(`_sgdGMF_cpp_link_sqrt_linkfun`, mu)
 }
 
-c_link_sqrt_linkinv <- function(eta) {
-    .Call(`_sgdGMF_c_link_sqrt_linkinv`, eta)
+cpp.link.sqrt.linkinv <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_sqrt_linkinv`, eta)
 }
 
-c_link_sqrt_mueta <- function(eta) {
-    .Call(`_sgdGMF_c_link_sqrt_mueta`, eta)
+cpp.link.sqrt.mueta <- function(eta) {
+    .Call(`_sgdGMF_cpp_link_sqrt_mueta`, eta)
 }
 
-c_get_chunk <- function(iter, n, size, randomize) {
-    .Call(`_sgdGMF_c_get_chunk`, iter, n, size, randomize)
+cpp.get.chunk <- function(iter, n, size, randomize) {
+    .Call(`_sgdGMF_cpp_get_chunk`, iter, n, size, randomize)
 }
 
-c_get_chunks <- function(iters, n, size, randomize) {
-    .Call(`_sgdGMF_c_get_chunks`, iters, n, size, randomize)
+cpp.get.chunks <- function(iters, n, size, randomize) {
+    .Call(`_sgdGMF_cpp_get_chunks`, iters, n, size, randomize)
 }
 
-c_get_next <- function(iter, n, rnd) {
-    .Call(`_sgdGMF_c_get_next`, iter, n, rnd)
+cpp.get.next <- function(iter, n, rnd) {
+    .Call(`_sgdGMF_cpp_get_next`, iter, n, rnd)
 }
 
-c_make_link_family <- function(familyname, linkname) {
-    invisible(.Call(`_sgdGMF_c_make_link_family`, familyname, linkname))
+cpp.make.link.family <- function(familyname, linkname) {
+    invisible(.Call(`_sgdGMF_cpp_make_link_family`, familyname, linkname))
 }
 
-c_get_data_bounds <- function(eps, ymin, ymax, familyname, linkname) {
-    .Call(`_sgdGMF_c_get_data_bounds`, eps, ymin, ymax, familyname, linkname)
+cpp.get.data.bounds <- function(eps, ymin, ymax, familyname, linkname) {
+    .Call(`_sgdGMF_cpp_get_data_bounds`, eps, ymin, ymax, familyname, linkname)
 }
 
-c_get_uv_penalty <- function(pen, p, q, d) {
-    .Call(`_sgdGMF_c_get_uv_penalty`, pen, p, q, d)
+cpp.get.uv.penalty <- function(pen, p, q, d) {
+    .Call(`_sgdGMF_cpp_get_uv_penalty`, pen, p, q, d)
 }
 
-c_get_uv_indices <- function(p, q, d) {
-    .Call(`_sgdGMF_c_get_uv_indices`, p, q, d)
+cpp.get.uv.indices <- function(p, q, d) {
+    .Call(`_sgdGMF_cpp_get_uv_indices`, p, q, d)
 }
 
-c_sample_minibatch <- function(n, size, randomize) {
-    .Call(`_sgdGMF_c_sample_minibatch`, n, size, randomize)
+cpp.sample.minibatch <- function(n, size, randomize) {
+    .Call(`_sgdGMF_cpp_sample_minibatch`, n, size, randomize)
 }
 
-c_select_minibatch <- function(iter, nchunks) {
-    .Call(`_sgdGMF_c_select_minibatch`, iter, nchunks)
+cpp.select.minibatch <- function(iter, nchunks) {
+    .Call(`_sgdGMF_cpp_select_minibatch`, iter, nchunks)
 }
 
-c_airwls_glmstep <- function(beta, y, X, familyname, linkname, offset, penalty) {
-    .Call(`_sgdGMF_c_airwls_glmstep`, beta, y, X, familyname, linkname, offset, penalty)
+cpp.dabsmax <- function(u, v) {
+    .Call(`_sgdGMF_cpp_dabsmax`, u, v)
 }
 
-c_airwls_glmfit <- function(beta, y, X, familyname, linkname, offset, penalty, nsteps = 100L, stepsize = 0.1, print = FALSE) {
-    .Call(`_sgdGMF_c_airwls_glmfit`, beta, y, X, familyname, linkname, offset, penalty, nsteps, stepsize, print)
+cpp.vabsmax <- function(u, v) {
+    .Call(`_sgdGMF_cpp_vabsmax`, u, v)
 }
 
-c_airwls_update <- function(beta, Y, X, familyname, linkname, idx, offset, penalty, transp = FALSE, nsteps = 100L, stepsize = 0.1, print = FALSE, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_c_airwls_update`, beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print, parallel, nthreads)
+cpp.trim <- function(x, a, b) {
+    .Call(`_sgdGMF_cpp_trim`, x, a, b)
 }
 
-c_fit_airwls <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, nsteps = 1L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_c_fit_airwls`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
+cpp.xlogx <- function(x) {
+    .Call(`_sgdGMF_cpp_xlogx`, x)
 }
 
-c_fit_newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_c_fit_newton`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
+cpp.log1pexp <- function(x) {
+    .Call(`_sgdGMF_cpp_log1pexp`, x)
 }
 
-c_fit_msgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit_msgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.log1mexp <- function(x) {
+    .Call(`_sgdGMF_cpp_log1mexp`, x)
 }
 
-c_fit_csgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit_csgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.logit <- function(x) {
+    .Call(`_sgdGMF_cpp_logit`, x)
 }
 
-c_fit_rsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit_rsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.expit <- function(x) {
+    .Call(`_sgdGMF_cpp_expit`, x)
 }
 
-c_fit_bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.expit2 <- function(x) {
+    .Call(`_sgdGMF_cpp_expit2`, x)
 }
 
-c_fit2_bsgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_c_fit2_bsgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.expitn <- function(x, n = 1) {
+    .Call(`_sgdGMF_cpp_expitn`, x, n)
 }
 
-c_dabsmax <- function(u, v) {
-    .Call(`_sgdGMF_c_dabsmax`, u, v)
+cpp.cloglog <- function(x) {
+    .Call(`_sgdGMF_cpp_cloglog`, x)
 }
 
-c_vabsmax <- function(u, v) {
-    .Call(`_sgdGMF_c_vabsmax`, u, v)
+cpp.cexpexp <- function(x) {
+    .Call(`_sgdGMF_cpp_cexpexp`, x)
 }
 
-c_trim <- function(x, a, b) {
-    .Call(`_sgdGMF_c_trim`, x, a, b)
+cpp.loglog <- function(x) {
+    .Call(`_sgdGMF_cpp_loglog`, x)
 }
 
-c_xlogx <- function(x) {
-    .Call(`_sgdGMF_c_xlogx`, x)
+cpp.expexp <- function(x) {
+    .Call(`_sgdGMF_cpp_expexp`, x)
 }
 
-c_log1pexp <- function(x) {
-    .Call(`_sgdGMF_c_log1pexp`, x)
+cpp.pdfn <- function(x) {
+    .Call(`_sgdGMF_cpp_pdfn`, x)
 }
 
-c_log1mexp <- function(x) {
-    .Call(`_sgdGMF_c_log1mexp`, x)
+cpp.cdfn <- function(x) {
+    .Call(`_sgdGMF_cpp_cdfn`, x)
 }
 
-c_logit <- function(x) {
-    .Call(`_sgdGMF_c_logit`, x)
+cpp.logpdfn <- function(x) {
+    .Call(`_sgdGMF_cpp_logpdfn`, x)
 }
 
-c_expit <- function(x) {
-    .Call(`_sgdGMF_c_expit`, x)
+cpp.logcdfn <- function(x) {
+    .Call(`_sgdGMF_cpp_logcdfn`, x)
 }
 
-c_expit2 <- function(x) {
-    .Call(`_sgdGMF_c_expit2`, x)
+cpp.gamma <- function(x) {
+    .Call(`_sgdGMF_cpp_gamma`, x)
 }
 
-c_expitn <- function(x, n = 1) {
-    .Call(`_sgdGMF_c_expitn`, x, n)
+cpp.loggamma <- function(x) {
+    .Call(`_sgdGMF_cpp_loggamma`, x)
 }
 
-c_cloglog <- function(x) {
-    .Call(`_sgdGMF_c_cloglog`, x)
+cpp.digamma <- function(x) {
+    .Call(`_sgdGMF_cpp_digamma`, x)
 }
 
-c_cexpexp <- function(x) {
-    .Call(`_sgdGMF_c_cexpexp`, x)
+cpp.trigamma <- function(x) {
+    .Call(`_sgdGMF_cpp_trigamma`, x)
 }
 
-c_loglog <- function(x) {
-    .Call(`_sgdGMF_c_loglog`, x)
+cpp.beta <- function(x, y) {
+    .Call(`_sgdGMF_cpp_beta`, x, y)
 }
 
-c_expexp <- function(x) {
-    .Call(`_sgdGMF_c_expexp`, x)
+cpp.logbeta <- function(x, y) {
+    .Call(`_sgdGMF_cpp_logbeta`, x, y)
 }
 
-c_pdfn <- function(x) {
-    .Call(`_sgdGMF_c_pdfn`, x)
+cpp.dibeta <- function(x, y) {
+    .Call(`_sgdGMF_cpp_dibeta`, x, y)
 }
 
-c_cdfn <- function(x) {
-    .Call(`_sgdGMF_c_cdfn`, x)
+cpp.tribeta <- function(x, y) {
+    .Call(`_sgdGMF_cpp_tribeta`, x, y)
 }
 
-c_logpdfn <- function(x) {
-    .Call(`_sgdGMF_c_logpdfn`, x)
+cpp.hinge <- function(x) {
+    .Call(`_sgdGMF_cpp_hinge`, x)
 }
 
-c_logcdfn <- function(x) {
-    .Call(`_sgdGMF_c_logcdfn`, x)
+cpp.dirac <- function(x, a = 0) {
+    .Call(`_sgdGMF_cpp_dirac`, x, a)
 }
 
-c_gamma <- function(x) {
-    .Call(`_sgdGMF_c_gamma`, x)
+cpp.step <- function(x, a = 0, lower = TRUE) {
+    .Call(`_sgdGMF_cpp_step`, x, a, lower)
 }
 
-c_loggamma <- function(x) {
-    .Call(`_sgdGMF_c_loggamma`, x)
-}
-
-c_digamma <- function(x) {
-    .Call(`_sgdGMF_c_digamma`, x)
-}
-
-c_trigamma <- function(x) {
-    .Call(`_sgdGMF_c_trigamma`, x)
-}
-
-c_beta <- function(x, y) {
-    .Call(`_sgdGMF_c_beta`, x, y)
-}
-
-c_logbeta <- function(x, y) {
-    .Call(`_sgdGMF_c_logbeta`, x, y)
-}
-
-c_dibeta <- function(x, y) {
-    .Call(`_sgdGMF_c_dibeta`, x, y)
-}
-
-c_tribeta <- function(x, y) {
-    .Call(`_sgdGMF_c_tribeta`, x, y)
-}
-
-c_hinge <- function(x) {
-    .Call(`_sgdGMF_c_hinge`, x)
-}
-
-c_dirac <- function(x, a = 0) {
-    .Call(`_sgdGMF_c_dirac`, x, a)
-}
-
-c_step <- function(x, a = 0, lower = TRUE) {
-    .Call(`_sgdGMF_c_step`, x, a, lower)
-}
-
-c_vech <- function(A) {
-    .Call(`_sgdGMF_c_vech`, A)
+cpp.vech <- function(A) {
+    .Call(`_sgdGMF_cpp_vech`, A)
 }
 

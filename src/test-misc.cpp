@@ -7,21 +7,21 @@
 
 using namespace glm;
 
-void c_print_link_family (const std::unique_ptr<Family> & family) {
+void cpp_print_link_family (const std::unique_ptr<Family> & family) {
     Rcpp::Rcout << "Family: " << family->getfamily() << "\n";
     Rcpp::Rcout << "Link: " << family->getlink() << "\n";
     Rcpp::Rcout << "Mu: " << arma::vec{0.25, 0.5, 0.75} << "\n";
     Rcpp::Rcout << "Eta: " << family->linkfun(arma::vec{0.25, 0.5, 0.75}) << "\n";
 }
 
-// [[Rcpp::export]]
-void c_make_link_family (const std::string & familyname, const std::string & linkname) {
+// [[Rcpp::export("cpp.make.link.family")]]
+void cpp_make_link_family (const std::string & familyname, const std::string & linkname) {
     std::unique_ptr<Family> family = make_family(familyname, linkname);
-    c_print_link_family(family);
+    cpp_print_link_family(family);
 }
 
-// [[Rcpp::export]]
-Rcpp::List c_get_data_bounds (
+// [[Rcpp::export("cpp.get.data.bounds")]]
+Rcpp::List cpp_get_data_bounds (
     const double & eps, const double & ymin, const double & ymax, 
     const std::string & familyname, const std::string & linkname
 ) {
@@ -40,8 +40,8 @@ Rcpp::List c_get_data_bounds (
     return out;
 }
 
-// [[Rcpp::export]]
-Rcpp::List c_get_uv_penalty (
+// [[Rcpp::export("cpp.get.uv.penalty")]]
+Rcpp::List cpp_get_uv_penalty (
     const arma::vec & pen, 
     const int & p, const int & q, const int & d
 ) {
@@ -55,8 +55,8 @@ Rcpp::List c_get_uv_penalty (
     return out;
 }
 
-// [[Rcpp::export]]
-Rcpp::List c_get_uv_indices (
+// [[Rcpp::export("cpp.get.uv.indices")]]
+Rcpp::List cpp_get_uv_indices (
     const int & p, const int & q, const int & d
 ) {
     arma::uvec idu, idv;
@@ -69,14 +69,14 @@ Rcpp::List c_get_uv_indices (
     return out;
 }
 
-// [[Rcpp::export]]
-std::list<arma::uvec> c_sample_minibatch (
+// [[Rcpp::export("cpp.sample.minibatch")]]
+std::list<arma::uvec> cpp_sample_minibatch (
     const int & n, const int & size, const bool & randomize
 ) {
     return sample_chunks(n, size, randomize);
 }
 
-// [[Rcpp::export]]
-int c_select_minibatch (const int & iter, const int & nchunks) {
+// [[Rcpp::export("cpp.select.minibatch")]]
+int cpp_select_minibatch (const int & iter, const int & nchunks) {
     return select_chunk(iter, nchunks);
 }
