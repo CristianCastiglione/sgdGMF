@@ -18,13 +18,13 @@ init.param = function (
   # Initialize U, V and beta using the selected method
   init = NULL
   if (method == "glm") {
-    init = gmf.init.glm(Y, X, Z, ncomp, family, verbose)
+    init = init.param.glm(Y, X, Z, ncomp, family, verbose)
   } else if (method == "svd") {
-    init = gmf.init.svd(Y, X, Z, ncomp, family, niter, verbose)
+    init = init.param.svd(Y, X, Z, ncomp, family, niter, verbose)
   } else if (method == "random") {
-    init = gmf.init.random(Y, X, Z, ncomp)
+    init = init.param.random(Y, X, Z, ncomp)
   } else if (method == "values") {
-    init = gmf.init.custom(Y, X, Z, ncomp, family, values, verbose)
+    init = init.param.custom(Y, X, Z, ncomp, family, values, verbose)
   } else {
     stop("Not allowed initialization method.")
   }
