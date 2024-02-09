@@ -85,6 +85,13 @@ ssqrt <- function (x) {
   sign(x) * sqrt(abs(x) + 1e-03)
 }
 
+rdirichlet = function (n, m = 2, alpha = 1) {
+  x = rgamma(n*m, shape = alpha, rate = 1)
+  x = matrix(x, nrow = m, ncol = n)
+  y = t(apply(x, 2, function(x) x / sum(x)))
+  return (y)
+}
+
 ## ERROR MEASURES ----
 
 # Residual sum of squares
@@ -762,17 +769,17 @@ fit.svdreg = function (
     verbose = FALSE, train = NULL, test = NULL) {
 
   time0 = proc.time()
-  fit = sgdGMF::gmf.init(
-    y, x, z, d = ncomp, family = family,
+  fit = sgdGMF::init.param(
+    y, x, z, ncomp = ncomp, family = family,
     method = "svd", niter = maxiter, verbose = verbose)
   timef = proc.time()
 
   # Latent factor normalization
-  uv = tcrossprod(fit$u, fit$v)
+  uv = tcrossprod(fit$U, fit$V)
   uv = svd::propack.svd(uv, neig = ncomp)
 
   # Fitted values
-  eta = tcrossprod(cbind(x, fit$bz, fit$u), cbind(fit$bx, z, fit$v))
+  eta = tcrossprod(cbind(x, fit$A, fit$U), cbind(fit$B, z, fit$V))
   mu = family$linkinv(eta)
 
   # tSNE low dimensional embedding
@@ -1147,9 +1154,6 @@ fit.C.airwls = function (
   p = ncol(x)
   q = ncol(z)
 
-  # init = gmf.init(y, x, z, d = ncomp, method = "svd",
-  #                 niter = 10, verbose = FALSE)
-
   familyname = family$family
   linkname = family$link
 
@@ -1157,59 +1161,63 @@ fit.C.airwls = function (
     familyname = "negbinom"
   }
 
-  isna = is.na(y)
+##   isna = is.na(y)
+##
+##   yc = apply(y, 2, function (x) {
+##     m = mean(x, na.rm = TRUE)
+##     x[is.na(x)] = round(m)
+##     return (x)
+##   })
+##
+##   r = log(yc + 0.1)
+##
+##   # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+##   # r[!isna] = log(y[!isna] + 0.1)
+##   # r[isna] = mean(r[!isna])
+##
+##   # Compute the initial column-specific regression parameters (if any)
+##   B = t(solve(crossprod(x), crossprod(x, r)))
+##   XB = tcrossprod(x, B)
+##
+##   # Compute the initial row-specific regression parameter (if any)
+##   A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
+##   AZ = tcrossprod(A, z)
+##
+##   # Compute the initial latent factors via incomplete SVD
+##   s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##   U = s$u %*% diag(sqrt(s$d))
+##   V = s$v %*% diag(sqrt(s$d))
+##   UV = tcrossprod(U, V)
+##
+##   niter = 10
+##   for (iter in 1:niter) {
+##     r[isna] = (XB + AZ + UV)[isna]
+##
+##     XtX = crossprod(x)
+##     Xty = crossprod(x, r - AZ - UV)
+##     B = t(solve(XtX, Xty))
+##     XB = tcrossprod(x, B)
+##
+##     ZtZ = crossprod(z)
+##     Zty = crossprod(z, t(r - XB - UV))
+##     A = t(solve(ZtZ, Zty))
+##     AZ = tcrossprod(A, z)
+##
+##     s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##     U = s$u %*% diag(sqrt(s$d))
+##     V = s$v %*% diag(sqrt(s$d))
+##     UV = tcrossprod(U, V)
+##   }
 
-  yc = apply(y, 2, function (x) {
-    m = mean(x, na.rm = TRUE)
-    x[is.na(x)] = round(m)
-    return (x)
-  })
-
-  r = log(yc + 0.1)
-
-  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  # r[!isna] = log(y[!isna] + 0.1)
-  # r[isna] = mean(r[!isna])
-
-  # Compute the initial column-specific regression parameters (if any)
-  B = t(solve(crossprod(x), crossprod(x, r)))
-  XB = tcrossprod(x, B)
-
-  # Compute the initial row-specific regression parameter (if any)
-  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-  AZ = tcrossprod(A, z)
-
-  # Compute the initial latent factors via incomplete SVD
-  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
-  UV = tcrossprod(U, V)
-
-  niter = 10
-  for (iter in 1:niter) {
-    r[isna] = (XB + AZ + UV)[isna]
-
-    XtX = crossprod(x)
-    Xty = crossprod(x, r - AZ - UV)
-    B = t(solve(XtX, Xty))
-    XB = tcrossprod(x, B)
-
-    ZtZ = crossprod(z)
-    Zty = crossprod(z, t(r - XB - UV))
-    A = t(solve(ZtZ, Zty))
-    AZ = tcrossprod(A, z)
-
-    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    UV = tcrossprod(U, V)
-  }
+  init = sgdGMF::init.param.svd(
+    Y = y, X = x, Z = z, ncomp = ncomp,
+    family = family, niter = 10, FALSE)
 
   # model fitting
   time0 = proc.time()
   lambda = (1 - 1e-04) * c(0, 0, penalty, 0) + 1e-04
-  fit = sgdGMF::c_fit_airwls(
-    Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
+  fit = sgdGMF::cpp.fit.airwls(
+    Y = y, X = x, B = init$B, A = init$A, Z = z, U = init$U, V = init$V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = lambda, maxiter = maxiter, nsteps = 1, stepsize = stepsize,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
@@ -1286,58 +1294,62 @@ fit.C.newton = function (
     familyname = "negbinom"
   }
 
-  isna = is.na(y)
+##  isna = is.na(y)
+##
+##  yc = apply(y, 2, function (x) {
+##    m = mean(x, na.rm = TRUE)
+##    x[is.na(x)] = round(m)
+##    return (x)
+##  })
+##
+##  r = log(yc + 0.1)
+##
+##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+##  # r[!isna] = log(y[!isna] + 0.1)
+##  # r[isna] = mean(r[!isna])
+##
+##  # Compute the initial column-specific regression parameters (if any)
+##  B = t(solve(crossprod(x), crossprod(x, r)))
+##  XB = tcrossprod(x, B)
+##
+##  # Compute the initial row-specific regression parameter (if any)
+##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
+##  AZ = tcrossprod(A, z)
+##
+##  # Compute the initial latent factors via incomplete SVD
+##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##  U = s$u %*% diag(sqrt(s$d))
+##  V = s$v %*% diag(sqrt(s$d))
+##  UV = tcrossprod(U, V)
+##
+##  niter = 10
+##  for (iter in 1:niter) {
+##    r[isna] = (XB + AZ + UV)[isna]
+##
+##    XtX = crossprod(x)
+##    Xty = crossprod(x, r - AZ - UV)
+##    B = t(solve(XtX, Xty))
+##    XB = tcrossprod(x, B)
+##
+##    ZtZ = crossprod(z)
+##    Zty = crossprod(z, t(r - XB - UV))
+##    A = t(solve(ZtZ, Zty))
+##    AZ = tcrossprod(A, z)
+##
+##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##    U = s$u %*% diag(sqrt(s$d))
+##    V = s$v %*% diag(sqrt(s$d))
+##    UV = tcrossprod(U, V)
+##  }
 
-  yc = apply(y, 2, function (x) {
-    m = mean(x, na.rm = TRUE)
-    x[is.na(x)] = round(m)
-    return (x)
-  })
-
-  r = log(yc + 0.1)
-
-  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  # r[!isna] = log(y[!isna] + 0.1)
-  # r[isna] = mean(r[!isna])
-
-  # Compute the initial column-specific regression parameters (if any)
-  B = t(solve(crossprod(x), crossprod(x, r)))
-  XB = tcrossprod(x, B)
-
-  # Compute the initial row-specific regression parameter (if any)
-  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-  AZ = tcrossprod(A, z)
-
-  # Compute the initial latent factors via incomplete SVD
-  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
-  UV = tcrossprod(U, V)
-
-  niter = 10
-  for (iter in 1:niter) {
-    r[isna] = (XB + AZ + UV)[isna]
-
-    XtX = crossprod(x)
-    Xty = crossprod(x, r - AZ - UV)
-    B = t(solve(XtX, Xty))
-    XB = tcrossprod(x, B)
-
-    ZtZ = crossprod(z)
-    Zty = crossprod(z, t(r - XB - UV))
-    A = t(solve(ZtZ, Zty))
-    AZ = tcrossprod(A, z)
-
-    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    UV = tcrossprod(U, V)
-  }
+  init = sgdGMF::init.param.svd(
+    Y = y, X = x, Z = z, ncomp = ncomp,
+    family = family, niter = 10, FALSE)
 
   # model fitting
   time0 = proc.time()
-  fit = sgdGMF::c_fit_newton(
-    Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
+  fit = sgdGMF::cpp.fit.newton(
+    Y = y, X = x, B = init$B, A = init$A, Z = z, U = init$U, V = init$V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, stepsize = stepsize,
     eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
@@ -1389,6 +1401,138 @@ fit.C.newton = function (
 }
 
 
+## GMF via memoized SGD
+fit.C.msgd = function (
+    y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
+    penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
+    verbose = FALSE, train = NULL, test = NULL) {
+
+  n = nrow(y)
+  m = ncol(y)
+
+  if (is.null(x)) x = matrix(1, nrow = n, ncol = 1)
+  if (is.null(z)) z = matrix(1, nrow = m, ncol = 1)
+
+  p = ncol(x)
+  q = ncol(z)
+
+  # init = gmf.init(y, x, z, d = ncomp, method = "svd",
+  #                 niter = 0, verbose = FALSE)
+
+  familyname = family$family
+  linkname = family$link
+
+  if (familyname == "Negative Binomial") {
+    familyname = "negbinom"
+  }
+
+##  isna = is.na(y)
+##
+##  yc = apply(y, 2, function (x) {
+##    m = mean(x, na.rm = TRUE)
+##    x[is.na(x)] = round(m)
+##    return (x)
+##  })
+##
+##  r = log(yc + 0.1)
+##
+##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+##  # r[!isna] = log(y[!isna] + 0.1)
+##  # r[isna] = mean(r[!isna])
+##
+##  # Compute the initial column-specific regression parameters (if any)
+##  B = t(solve(crossprod(x), crossprod(x, r)))
+##  XB = tcrossprod(x, B)
+##
+##  # Compute the initial row-specific regression parameter (if any)
+##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
+##  AZ = tcrossprod(A, z)
+##
+##  # Compute the initial latent factors via incomplete SVD
+##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##  U = s$u %*% diag(sqrt(s$d))
+##  V = s$v %*% diag(sqrt(s$d))
+##  UV = tcrossprod(U, V)
+##
+##  niter = 10
+##  for (iter in 1:niter) {
+##    r[isna] = (XB + AZ + UV)[isna]
+##
+##    XtX = crossprod(x)
+##    Xty = crossprod(x, r - AZ - UV)
+##    B = t(solve(XtX, Xty))
+##    XB = tcrossprod(x, B)
+##
+##    ZtZ = crossprod(z)
+##    Zty = crossprod(z, t(r - XB - UV))
+##    A = t(solve(ZtZ, Zty))
+##    AZ = tcrossprod(A, z)
+##
+##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##    U = s$u %*% diag(sqrt(s$d))
+##    V = s$v %*% diag(sqrt(s$d))
+##    UV = tcrossprod(U, V)
+##  }
+
+  init = sgdGMF::init.param.svd(
+    Y = y, X = x, Z = z, ncomp = ncomp,
+    family = family, niter = 10, FALSE)
+
+  # model fitting
+  time0 = proc.time()
+  fit = sgdGMF::cpp.fit.msgd(
+    Y = y, X = x, B = init$B, A = init$A, Z = z, U = init$U, V = init$V,
+    ncomp = ncomp, familyname = familyname, linkname = linkname,
+    lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
+    size = 100, burn = .9,
+    eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
+    verbose = verbose, frequency = 10)
+  timef = proc.time()
+
+  bz = fit$U[, (p+1):(p+q)]
+  bx = fit$V[, 1:p]
+  u = fit$U[, (p+q+1):(p+q+ncomp)]
+  v = fit$V[, (p+q+1):(p+q+ncomp)]
+
+  # Latent factor normalization
+  uv = tcrossprod(u, v)
+  uv = svd::propack.svd(uv, neig = ncomp)
+
+  mu = fit$mu
+
+  # tSNE low dimensional embedding
+  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
+                      num_threads = NCORES, verbose = verbose)
+
+  error = NULL
+  if (!is.null(train) && !is.null(test)) {
+    error = data.frame(
+      rss  = c(rss(train, mu), rss(test, mu)),
+      cosd = c(cosdist(train, mu), cosdist(test, mu)),
+      dev  = c(expdev(train, mu, family = family),
+               expdev(test, mu, family = family)))
+
+    colnames(error) = c("RSS", "Cos", "Dev")
+    rownames(error) = c("Train", "Test")
+  }
+
+  # Output
+  list(
+    model = "M-SGD",
+    u = uv$u,
+    v = uv$v,
+    d = uv$d,
+    bx = bx,
+    bz = bz,
+    eta = fit$eta,
+    mu = fit$mu,
+    phi = fit$phi,
+    tsne = tsne$Y,
+    dev = fit$trace[,2],
+    error = error,
+    time = timef - time0)
+}
+
 ## GMF via coordinate SGD
 fit.C.csgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
@@ -1414,58 +1558,62 @@ fit.C.csgd = function (
     familyname = "negbinom"
   }
 
-  isna = is.na(y)
+##  isna = is.na(y)
+##
+##  yc = apply(y, 2, function (x) {
+##    m = mean(x, na.rm = TRUE)
+##    x[is.na(x)] = round(m)
+##    return (x)
+##  })
+##
+##  r = log(yc + 0.1)
+##
+##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+##  # r[!isna] = log(y[!isna] + 0.1)
+##  # r[isna] = mean(r[!isna])
+##
+##  # Compute the initial column-specific regression parameters (if any)
+##  B = t(solve(crossprod(x), crossprod(x, r)))
+##  XB = tcrossprod(x, B)
+##
+##  # Compute the initial row-specific regression parameter (if any)
+##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
+##  AZ = tcrossprod(A, z)
+##
+##  # Compute the initial latent factors via incomplete SVD
+##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##  U = s$u %*% diag(sqrt(s$d))
+##  V = s$v %*% diag(sqrt(s$d))
+##  UV = tcrossprod(U, V)
+##
+##  niter = 10
+##  for (iter in 1:niter) {
+##    r[isna] = (XB + AZ + UV)[isna]
+##
+##    XtX = crossprod(x)
+##    Xty = crossprod(x, r - AZ - UV)
+##    B = t(solve(XtX, Xty))
+##    XB = tcrossprod(x, B)
+##
+##    ZtZ = crossprod(z)
+##    Zty = crossprod(z, t(r - XB - UV))
+##    A = t(solve(ZtZ, Zty))
+##    AZ = tcrossprod(A, z)
+##
+##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##    U = s$u %*% diag(sqrt(s$d))
+##    V = s$v %*% diag(sqrt(s$d))
+##    UV = tcrossprod(U, V)
+##  }
 
-  yc = apply(y, 2, function (x) {
-    m = mean(x, na.rm = TRUE)
-    x[is.na(x)] = round(m)
-    return (x)
-  })
-
-  r = log(yc + 0.1)
-
-  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  # r[!isna] = log(y[!isna] + 0.1)
-  # r[isna] = mean(r[!isna])
-
-  # Compute the initial column-specific regression parameters (if any)
-  B = t(solve(crossprod(x), crossprod(x, r)))
-  XB = tcrossprod(x, B)
-
-  # Compute the initial row-specific regression parameter (if any)
-  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-  AZ = tcrossprod(A, z)
-
-  # Compute the initial latent factors via incomplete SVD
-  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
-  UV = tcrossprod(U, V)
-
-  niter = 10
-  for (iter in 1:niter) {
-    r[isna] = (XB + AZ + UV)[isna]
-
-    XtX = crossprod(x)
-    Xty = crossprod(x, r - AZ - UV)
-    B = t(solve(XtX, Xty))
-    XB = tcrossprod(x, B)
-
-    ZtZ = crossprod(z)
-    Zty = crossprod(z, t(r - XB - UV))
-    A = t(solve(ZtZ, Zty))
-    AZ = tcrossprod(A, z)
-
-    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    UV = tcrossprod(U, V)
-  }
+  init = sgdGMF::init.param.svd(
+    Y = y, X = x, Z = z, ncomp = ncomp,
+    family = family, niter = 10, FALSE)
 
   # model fitting
   time0 = proc.time()
-  fit = sgdGMF::c_fit_csgd(
-    Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
+  fit = sgdGMF::cpp.fit.csgd(
+    Y = y, X = x, B = init$B, A = init$A, Z = z, U = init$U, V = init$V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
     size1 = 100, size2 = 10,
@@ -1518,7 +1666,7 @@ fit.C.csgd = function (
 }
 
 
-## GMF via coordinate SGD
+## GMF via row-wise SGD
 fit.C.rsgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
@@ -1543,58 +1691,62 @@ fit.C.rsgd = function (
     familyname = "negbinom"
   }
 
-  isna = is.na(y)
+##  isna = is.na(y)
+##
+##  yc = apply(y, 2, function (x) {
+##    m = mean(x, na.rm = TRUE)
+##    x[is.na(x)] = round(m)
+##    return (x)
+##  })
+##
+##  r = log(yc + 0.1)
+##
+##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+##  # r[!isna] = log(y[!isna] + 0.1)
+##  # r[isna] = mean(r[!isna])
+##
+##  # Compute the initial column-specific regression parameters (if any)
+##  B = t(solve(crossprod(x), crossprod(x, r)))
+##  XB = tcrossprod(x, B)
+##
+##  # Compute the initial row-specific regression parameter (if any)
+##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
+##  AZ = tcrossprod(A, z)
+##
+##  # Compute the initial latent factors via incomplete SVD
+##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##  U = s$u %*% diag(sqrt(s$d))
+##  V = s$v %*% diag(sqrt(s$d))
+##  UV = tcrossprod(U, V)
+##
+##  niter = 10
+##  for (iter in 1:niter) {
+##    r[isna] = (XB + AZ + UV)[isna]
+##
+##    XtX = crossprod(x)
+##    Xty = crossprod(x, r - AZ - UV)
+##    B = t(solve(XtX, Xty))
+##    XB = tcrossprod(x, B)
+##
+##    ZtZ = crossprod(z)
+##    Zty = crossprod(z, t(r - XB - UV))
+##    A = t(solve(ZtZ, Zty))
+##    AZ = tcrossprod(A, z)
+##
+##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##    U = s$u %*% diag(sqrt(s$d))
+##    V = s$v %*% diag(sqrt(s$d))
+##    UV = tcrossprod(U, V)
+##  }
 
-  yc = apply(y, 2, function (x) {
-    m = mean(x, na.rm = TRUE)
-    x[is.na(x)] = round(m)
-    return (x)
-  })
-
-  r = log(yc + 0.1)
-
-  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  # r[!isna] = log(y[!isna] + 0.1)
-  # r[isna] = mean(r[!isna])
-
-  # Compute the initial column-specific regression parameters (if any)
-  B = t(solve(crossprod(x), crossprod(x, r)))
-  XB = tcrossprod(x, B)
-
-  # Compute the initial row-specific regression parameter (if any)
-  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-  AZ = tcrossprod(A, z)
-
-  # Compute the initial latent factors via incomplete SVD
-  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
-  UV = tcrossprod(U, V)
-
-  niter = 10
-  for (iter in 1:niter) {
-    r[isna] = (XB + AZ + UV)[isna]
-
-    XtX = crossprod(x)
-    Xty = crossprod(x, r - AZ - UV)
-    B = t(solve(XtX, Xty))
-    XB = tcrossprod(x, B)
-
-    ZtZ = crossprod(z)
-    Zty = crossprod(z, t(r - XB - UV))
-    A = t(solve(ZtZ, Zty))
-    AZ = tcrossprod(A, z)
-
-    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    UV = tcrossprod(U, V)
-  }
+  init = sgdGMF::init.param.svd(
+    Y = y, X = x, Z = z, ncomp = ncomp,
+    family = family, niter = 10, FALSE)
 
   # model fitting
   time0 = proc.time()
-  fit = sgdGMF::c_fit_rsgd(
-    Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
+  fit = sgdGMF::cpp.fit.rsgd(
+    Y = y, X = x, B = init$B, A = init$A, Z = z, U = init$U, V = init$V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, burn = 1, rate0 = stepsize,
     size1 = 100, size2 = m, eps = 1e-08, nafill = 1, tol = tol,
@@ -1646,7 +1798,7 @@ fit.C.rsgd = function (
 }
 
 
-## GMF via coordinate SGD
+## GMF via block-wise SGD
 fit.C.bsgd = function (
     y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
     penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
@@ -1671,58 +1823,62 @@ fit.C.bsgd = function (
     familyname = "negbinom"
   }
 
-  isna = is.na(y)
+##  isna = is.na(y)
+##
+##  yc = apply(y, 2, function (x) {
+##    m = mean(x, na.rm = TRUE)
+##    x[is.na(x)] = round(m)
+##    return (x)
+##  })
+##
+##  r = log(yc + 0.1)
+##
+##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
+##  # r[!isna] = log(y[!isna] + 0.1)
+##  # r[isna] = mean(r[!isna])
+##
+##  # Compute the initial column-specific regression parameters (if any)
+##  B = t(solve(crossprod(x), crossprod(x, r)))
+##  XB = tcrossprod(x, B)
+##
+##  # Compute the initial row-specific regression parameter (if any)
+##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
+##  AZ = tcrossprod(A, z)
+##
+##  # Compute the initial latent factors via incomplete SVD
+##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##  U = s$u %*% diag(sqrt(s$d))
+##  V = s$v %*% diag(sqrt(s$d))
+##  UV = tcrossprod(U, V)
+##
+##  niter = 10
+##  for (iter in 1:niter) {
+##    r[isna] = (XB + AZ + UV)[isna]
+##
+##    XtX = crossprod(x)
+##    Xty = crossprod(x, r - AZ - UV)
+##    B = t(solve(XtX, Xty))
+##    XB = tcrossprod(x, B)
+##
+##    ZtZ = crossprod(z)
+##    Zty = crossprod(z, t(r - XB - UV))
+##    A = t(solve(ZtZ, Zty))
+##    AZ = tcrossprod(A, z)
+##
+##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
+##    U = s$u %*% diag(sqrt(s$d))
+##    V = s$v %*% diag(sqrt(s$d))
+##    UV = tcrossprod(U, V)
+##  }
 
-  yc = apply(y, 2, function (x) {
-    m = mean(x, na.rm = TRUE)
-    x[is.na(x)] = round(m)
-    return (x)
-  })
-
-  r = log(yc + 0.1)
-
-  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  # r[!isna] = log(y[!isna] + 0.1)
-  # r[isna] = mean(r[!isna])
-
-  # Compute the initial column-specific regression parameters (if any)
-  B = t(solve(crossprod(x), crossprod(x, r)))
-  XB = tcrossprod(x, B)
-
-  # Compute the initial row-specific regression parameter (if any)
-  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-  AZ = tcrossprod(A, z)
-
-  # Compute the initial latent factors via incomplete SVD
-  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
-  UV = tcrossprod(U, V)
-
-  niter = 10
-  for (iter in 1:niter) {
-    r[isna] = (XB + AZ + UV)[isna]
-
-    XtX = crossprod(x)
-    Xty = crossprod(x, r - AZ - UV)
-    B = t(solve(XtX, Xty))
-    XB = tcrossprod(x, B)
-
-    ZtZ = crossprod(z)
-    Zty = crossprod(z, t(r - XB - UV))
-    A = t(solve(ZtZ, Zty))
-    AZ = tcrossprod(A, z)
-
-    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    UV = tcrossprod(U, V)
-  }
+  init = sgdGMF::init.param.svd(
+    Y = y, X = x, Z = z, ncomp = ncomp,
+    family = family, niter = 10, FALSE)
 
   # model fitting
   time0 = proc.time()
-  fit = sgdGMF::c_fit2_bsgd(
-    Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
+  fit = sgdGMF::cpp.fit.bsgd(
+    Y = y, X = x, B = init$B, A = init$A, Z = z, U = init$U, V = init$V,
     ncomp = ncomp, familyname = familyname, linkname = linkname,
     lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
     size1 = 100, size2 = 20, eps = 1e-08, nafill = 1, tol = tol,
@@ -1774,133 +1930,5 @@ fit.C.bsgd = function (
 }
 
 
-
-## GMF via coordinate SGD
-fit.C.msgd = function (
-    y, x = NULL, z = NULL, ncomp = 2, family = poisson(),
-    penalty = 1, maxiter = 200, stepsize = 0.01, tol = 1e-05,
-    verbose = FALSE, train = NULL, test = NULL) {
-
-  n = nrow(y)
-  m = ncol(y)
-
-  if (is.null(x)) x = matrix(1, nrow = n, ncol = 1)
-  if (is.null(z)) z = matrix(1, nrow = m, ncol = 1)
-
-  p = ncol(x)
-  q = ncol(z)
-
-  # init = gmf.init(y, x, z, d = ncomp, method = "svd",
-  #                 niter = 0, verbose = FALSE)
-
-  familyname = family$family
-  linkname = family$link
-
-  if (familyname == "Negative Binomial") {
-    familyname = "negbinom"
-  }
-
-  isna = is.na(y)
-
-  yc = apply(y, 2, function (x) {
-    m = mean(x, na.rm = TRUE)
-    x[is.na(x)] = round(m)
-    return (x)
-  })
-
-  r = log(yc + 0.1)
-
-  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-  # r[!isna] = log(y[!isna] + 0.1)
-  # r[isna] = mean(r[!isna])
-
-  # Compute the initial column-specific regression parameters (if any)
-  B = t(solve(crossprod(x), crossprod(x, r)))
-  XB = tcrossprod(x, B)
-
-  # Compute the initial row-specific regression parameter (if any)
-  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-  AZ = tcrossprod(A, z)
-
-  # Compute the initial latent factors via incomplete SVD
-  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
-  UV = tcrossprod(U, V)
-
-  niter = 10
-  for (iter in 1:niter) {
-    r[isna] = (XB + AZ + UV)[isna]
-
-    XtX = crossprod(x)
-    Xty = crossprod(x, r - AZ - UV)
-    B = t(solve(XtX, Xty))
-    XB = tcrossprod(x, B)
-
-    ZtZ = crossprod(z)
-    Zty = crossprod(z, t(r - XB - UV))
-    A = t(solve(ZtZ, Zty))
-    AZ = tcrossprod(A, z)
-
-    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    UV = tcrossprod(U, V)
-  }
-
-  # model fitting
-  time0 = proc.time()
-  fit = sgdGMF::c_fit_msgd(
-    Y = y, X = x, B = B, A = A, Z = z, U = U, V = V,
-    ncomp = ncomp, familyname = familyname, linkname = linkname,
-    lambda = c(0,0,1,0), maxiter = maxiter, rate0 = stepsize,
-    size = 100, burn = .9,
-    eps = 1e-08, nafill = 1, tol = tol, damping = 1e-03,
-    verbose = verbose, frequency = 10)
-  timef = proc.time()
-
-  bz = fit$U[, (p+1):(p+q)]
-  bx = fit$V[, 1:p]
-  u = fit$U[, (p+q+1):(p+q+ncomp)]
-  v = fit$V[, (p+q+1):(p+q+ncomp)]
-
-  # Latent factor normalization
-  uv = tcrossprod(u, v)
-  uv = svd::propack.svd(uv, neig = ncomp)
-
-  mu = fit$mu
-
-  # tSNE low dimensional embedding
-  tsne = Rtsne::Rtsne(uv$u, dims = 2, partial_pca = FALSE,
-                      num_threads = NCORES, verbose = verbose)
-
-  error = NULL
-  if (!is.null(train) && !is.null(test)) {
-    error = data.frame(
-      rss  = c(rss(train, mu), rss(test, mu)),
-      cosd = c(cosdist(train, mu), cosdist(test, mu)),
-      dev  = c(expdev(train, mu, family = family),
-               expdev(test, mu, family = family)))
-
-    colnames(error) = c("RSS", "Cos", "Dev")
-    rownames(error) = c("Train", "Test")
-  }
-
-  # Output
-  list(
-    model = "M-SGD",
-    u = uv$u,
-    v = uv$v,
-    d = uv$d,
-    bx = bx,
-    bz = bz,
-    eta = fit$eta,
-    mu = fit$mu,
-    phi = fit$phi,
-    tsne = tsne$Y,
-    dev = fit$trace[,2],
-    error = error,
-    time = timef - time0)
-}
 
 
