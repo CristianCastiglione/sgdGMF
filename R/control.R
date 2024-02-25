@@ -74,7 +74,7 @@ set.init = function (init) {
   default$normalize = TRUE
   default$verbose = FALSE
 
-  if (check(init$method, "character")) {
+  if (check.class(init$method, "character")) {
     if (init$method %in% c("glm", "svd", "random", "values")) {
       default$method = init$method
     }
