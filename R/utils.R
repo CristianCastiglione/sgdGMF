@@ -63,7 +63,7 @@ correct.uv = function (U, V) {
   V = t(sign(D) * t(V))
   U = t(sign(D) * t(U))
 
-  list(u = U, v = V)
+  list(U = U, V = V)
 }
 
 #' @title Procrustes distance
