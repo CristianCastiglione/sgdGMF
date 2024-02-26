@@ -12,11 +12,11 @@ devtools::load_all()
 source("sim/utilities.R")
 
 ## DATA SIMULATION ----
-SETTING = 3
+SETTING = 1
 SAVE = FALSE
 SHOW = TRUE
 
-a = 200
+a = 500
 b = 10
 n = a * b
 m = a
@@ -55,9 +55,21 @@ if (SETTING == 3) { # BRANCHING PATHS
   params = splatter::setParam(params, "de.facLoc", 0.2)
   params = splatter::setParam(params, "path.from", c(0, 1, 1, 3))
   sim = splatter::splatSimulatePaths(params, verbose = FALSE)
+
+  params = splatter::newSplatParams()
+  params = splatter::setParam(params, "batchCells", c(n/4, n/4, n/4, n/4))
+  params = splatter::setParam(params, "nGenes", m)
+  params = splatter::setParam(params, "group.prob", c(0.1, 0.2, 0.3, 0.3, 0.1))
+  params = splatter::setParam(params, "de.prob", 0.5)
+  params = splatter::setParam(params, "de.facLoc", 0.2)
+  params = splatter::setParam(params, "batch.facLoc", 0.15)
+  params = splatter::setParam(params, "path.from", c(0, 1, 1, 3, 3))
+  sim = splatter::splatSimulatePaths(params, verbose = FALSE)
 }
 
 sim = scater::logNormCounts(sim)
+
+
 
 ## DATA EXTRACTION ----
 logcounts = as.data.frame(logcounts(sim))
@@ -254,6 +266,23 @@ if (SAVE) {
 }
 
 
+plot.tsne.grid(list(
+  list(model = "Pearson", tsne = model.pearson$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "Deviance", tsne = model.deviance$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "NNLM", tsne = model.nnlm$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "NMF", tsne = model.nmf$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "CMF", tsne = model.cmf$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "glmPCA", tsne = model.glmpca$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "NBWaVE", tsne = model.nbwave$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "SVDreg", tsne = model.svdreg$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "AIRWLS", tsne = model.airwls$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "Newton", tsne = model.newton$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "M-SGD", tsne = model.msgd$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "C-SGD", tsne = model.csgd$tsne, group = cells$Group, batch = cells$Batch),
+  # list(model = "R-SGD", tsne = model.rsgd$tsne, group = cells$Group, batch = cells$Batch),
+  list(model = "B-SGD", tsne = model.bsgd$tsne, group = cells$Group, batch = cells$Batch)
+), by = 5)
+
 ## SILHOUETTE SCORES ----
 plot.silhouette = function (sil, main = "Silhouette plot", by = 1) {
   n = nrow(sil)
@@ -349,25 +378,22 @@ sil.rsgd = cluster::silhouette(as.numeric(cells$Group), dist(model.rsgd$tsne))
 sil.bsgd = cluster::silhouette(as.numeric(cells$Group), dist(model.bsgd$tsne))
 }
 
-plt = plot.sil.grid(
-  list(
-    list(model = "Pearson", sil = sil.pearson),
-    list(model = "Deviance", sil = sil.deviance),
-    list(model = "glmPCA", sil = sil.glmpca),
-    list(model = "NBWaVE", sil = sil.nbwave),
-    list(model = "NMF", sil = sil.nmf),
-    list(model = "CMF", sil = sil.cmf),
-    list(model = "NNLM", sil = sil.nnlm),
-    list(model = "SVDreg", sil = sil.svdreg),
-    list(model = "AIRWLS", sil = sil.airwls),
-    list(model = "Newton", sil = sil.newton),
-    list(model = "M-SGD", sil = sil.msgd),
-    list(model = "C-SGD", sil = sil.csgd),
-    list(model = "R-SGD", sil = sil.rsgd),
-    list(model = "B-SGD", sil = sil.bsgd)
-  ),
-  by = 5
-)
+plt = plot.sil.grid(list(
+  list(model = "Pearson", sil = sil.pearson),
+  list(model = "Deviance", sil = sil.deviance),
+  # list(model = "glmPCA", sil = sil.glmpca),
+  list(model = "NBWaVE", sil = sil.nbwave),
+  # list(model = "NMF", sil = sil.nmf),
+  # list(model = "CMF", sil = sil.cmf),
+  # list(model = "NNLM", sil = sil.nnlm),
+  # list(model = "SVDreg", sil = sil.svdreg),
+  list(model = "AIRWLS", sil = sil.airwls),
+  list(model = "Newton", sil = sil.newton),
+  # list(model = "M-SGD", sil = sil.msgd),
+  list(model = "C-SGD", sil = sil.csgd),
+  # list(model = "R-SGD", sil = sil.rsgd),
+  list(model = "B-SGD", sil = sil.bsgd)
+), by = 5)
 
 print(plt)
 
