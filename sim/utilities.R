@@ -316,6 +316,7 @@ fit.pearson = function (y, x = NULL, z = NULL, ncomp = 2,
   # model fitting
   time0 = proc.time()
   res = scry::nullResiduals(object = as.matrix(y), fam = "poisson", type = "pearson")
+  res = res - x %*% solve(crossprod(x), crossprod(x, res))
   SVD = svd::propack.svd(res, neig = ncomp)
   timef = proc.time()
 
@@ -350,6 +351,7 @@ fit.deviance = function (y, x = NULL, z = NULL, ncomp = 2,
   # model fitting
   time0 = proc.time()
   res = scry::nullResiduals(object = as.matrix(y), fam = "poisson", type = "deviance")
+  res = res - x %*% solve(crossprod(x), crossprod(x, res))
   SVD = svd::propack.svd(res, neig = ncomp)
   timef = proc.time()
 
