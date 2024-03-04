@@ -44,7 +44,7 @@ suppressPackageStartupMessages({
 })
 
 ## GLOBAL VARIABLES ----
-NCORES = 4
+NCORES = 8
 
 ## UTILITIES ----
 
@@ -305,6 +305,39 @@ naive.completion = function (y) {
     x[is.na(x)] = round(m)
     return (x)
   })
+}
+
+## PREPROCESSING ----
+
+null.residuals = function (
+    y, x = NULL, z = NULL,
+    family = poisson(), type = "deviance"
+) {
+  n = nrow(y); m = ncol(y)
+  y = as.matrix(y)
+  yr = rowMeans(y) # row-average
+  yc = colMeans(y) # col-average
+  yt = mean(yr) # total average
+  mu = tcrossprod(yr, yc) / yt
+
+  res = matrix(NA, nrow = n, ncol = m)
+  if (type == "deviance") {
+    res[] = sign(y - mu) * sqrt(family$dev.resids(y, mu, 1))
+  }
+  if (type == "pearson") {
+    res[] = (y - mu) / sqrt(family$variance(mu))
+  }
+  if (!is.null(x)) {
+    beta = matrix(NA, nrow = m, ncol = ncol(x))
+    beta[] = t(solve(crossprod(x, x), crossprod(x, res)))
+    res[] = res - tcrossprod(x, beta)
+  }
+  if (!is.null(z)) {
+    gamma = matrix(NA, nrow = n, ncol = ncol(z))
+    gamma[] = t(solve(crossprod(z, z), crossprod(z, t(res))))
+    res[] = res - tcrossprod(gamma, z)
+  }
+  return (res)
 }
 
 ## MODEL FIT ----
