@@ -1,7 +1,56 @@
 
-#' @title  Initialization of the generalized matrix factorization model
-#' @description ...
-#' @import svd
+#' @title Initialize the parameters of a generalized matrix factorization model
+#'
+#' @description
+#' Provide four initialization methods to set the initial values of the parameters of
+#' a generalized matrix factorization (GMF) model identified by a \code{\link{glm}} family
+#' and a linear predictor of the form \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top},
+#' with bijective link function \eqn{g(\cdot)}.
+#' See \code{\link{sgdgmf}} for more details on the model specification.
+#'
+#' @param Y matrix of responses (\eqn{n \times m})
+#' @param X matrix of row fixed effects (\eqn{n \times p})
+#' @param Z matrix of column fixed effects (\eqn{q \times m})
+#' @param ncomp rank of the latent matrix factorization (default 2)
+#' @param family a family as in the \code{\link{glm}} interface (default \code{gaussian()})
+#' @param method optimization method:  \code{"svd"} (default), \code{"glm"}, \code{"random"}, \code{"values"}
+#' @param niter number of iterations to refine the initial estimate (defult 0)
+#' @param values a list of custom initial values for \code{B}, \code{A}, \code{U} and \code{V}, or a subset of them
+#' @param verbose print the status of the initialization process
+#'
+#' @return
+#' A list containing the initial values of \code{B}, \code{A}, \code{U}, \code{V} and \code{phi}.
+#'
+#' @details
+#' \code{method="svd"}: the initialization is performed fitting a sequence of linear
+#' regressions followed by a residual SVD decomposition.
+#' To account for the non-Gaussian distribution of the data, regression and
+#' decomposition are applied on the transformed response matrix \eqn{Y_h = g(h(Y))},
+#' where \eqn{h(\cdot)} is a function which prevent \eqn{Y_h} to take infinite values.
+#' For instance, in the Binomial case \eqn{h(y) = 2 (1-\epsilon) y + \epsilon},
+#' while in the Poisson case \eqn{h(y) = y + \epsilon}, where \eqn{\epsilon} is a small
+#' positive constant, typically \code{0.1} or \code{0.01}.
+#'
+#' \code{method="glm"}: the initialization is performed by fitting a sequence of
+#' generalized linear models followed by a residual SVD decomposition.
+#' In particular, we use independent GLM fit \eqn{y_j \sim X \beta_j} to set \eqn{\beta_j}.
+#' Similarly, we fit the model \eqn{y_i \sim Z \gamma_i + o_i} with offset \eqn{o_i = B x_i}
+#' to set \eqn{\gamma_j}. Then, \eqn{U} and \eqn{V} are obtained via SVD on the final
+#' working residuals.
+#'
+#' \code{method="random"}: the initialization is performed using independent Gaussian
+#' random values for all the parameters in the model
+#'
+#' \code{method="values"}: the initialization is performed using the user-specified
+#' values provided as an input. The parameters not provided by the user are set
+#' using the same strategy described in \code{method="svd"}.
+#'
+#'
+#' @importFrom svd propack.svd
+#'
+#' @examples
+#' ...
+#'
 #' @keywords internal
 init.param = function (
     Y,
@@ -9,18 +58,20 @@ init.param = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
-    method = "svd",
+    method = c("svd", "glm", "random", "values"),
     niter = 0,
     values = list(),
     verbose = FALSE
 ) {
 
+  method = match.arg(method)
+
   # Initialize U, V and beta using the selected method
   init = NULL
-  if (method == "glm") {
-    init = init.param.glm(Y, X, Z, ncomp, family, verbose)
-  } else if (method == "svd") {
+  if (method == "svd") {
     init = init.param.svd(Y, X, Z, ncomp, family, niter, verbose)
+  } else if (method == "glm") {
+    init = init.param.glm(Y, X, Z, ncomp, family, verbose)
   } else if (method == "random") {
     init = init.param.random(Y, X, Z, ncomp)
   } else if (method == "values") {
@@ -33,7 +84,11 @@ init.param = function (
 }
 
 #' @title Random initialization
-#' @description ...
+#'
+#' @description
+#' Initialize the parameters of a GMF model sampling them from an independent
+#' Gaussian distribution (see \code{\link{init.param}} for more details)
+#'
 #' @keywords internal
 init.param.random = function (
     Y,
@@ -73,8 +128,15 @@ init.param.random = function (
 }
 
 #' @title OLS-SVD initialization
-#' @description ...
+#'
+#' @description
+#' Initialize the parameters of a GMF model fitting a sequence of multivariate
+#' linear regression followed by a residual SVD decomposition. It allows to
+#' recursively refine the initial estimate by repeating the process a pre-specified
+#' number of times. See \code{\link{init.param}} for more details.
+#'
 #' @import svd
+#'
 #' @keywords internal
 init.param.svd = function (
     Y,
@@ -192,8 +254,13 @@ init.param.svd = function (
 
 
 #' @title GLM-SVD initialization
-#' @description ...
+#'
+#' @description
+#' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
+#' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
+#'
 #' @import svd
+#'
 #' @keywords internal
 init.param.glm = function (
     Y,
@@ -203,93 +270,115 @@ init.param.glm = function (
     family = poisson(),
     verbose = FALSE
 ) {
+  # We still have to implement parallel computation for
+  # independent row- and column-specific calculations
 
   n = nrow(Y)
   m = ncol(Y)
   d = ncomp
 
+  # Initialize the mean and variance matrices
+  eta = matrix(0, nrow = n, ncol = m)
+  mu = matrix(NA, nrow = n, ncol = m)
+  var = matrix(NA, nrow = n, ncol = m)
+
   # column-specific covariate vector initialization
   if (verbose) cat(" Initialization: column-specific covariates \n")
   res = c()
-  bx = c()
-  for (j in 1:ncol(Y)) {
+  B = c()
+  for (j in 1:m) {
     yj = Y[,j]
-    if (family$family == "binomial") {
-      isnaj = is.na(yj)
-      mj = mean(yj, na.rm = TRUE)
-      yj[isnaj] = rbinom(n = sum(isnaj), size = 1, prob = mj)
-      yj = as.factor(yj)
+    mj = mean(yj, na.rm = TRUE)
+    naj = is.na(yj)
+
+    if (any(naj)) {
+      if (family$family == "binomial") {
+        yj[naj] = rbinom(n = sum(naj), size = 1, prob = mj)
+        yj = as.factor(yj)
+      } else {
+        yj[naj] = mj
+      }
     }
 
-    if (!is.null(X)) {
-      m = glm(yj ~ X - 1, family = family)
-      bx = rbind(bx, m$coefficients)
-      res = cbind(res, m$residuals)
-    } else {
+    if (is.null(X)) {
       res = cbind(res, yj)
+    } else {
+      m = glm(yj ~ X - 1, family = family)
+      B = rbind(B, m$coefficients)
+      res = cbind(res, m$residuals)
     }
   }
 
   # partial linear predictor
-  eta = NULL
   if (!is.null(X)) {
-    eta = tcrossprod(X, bx)
+    eta[] = eta + tcrossprod(X, B)
   }
 
   # row-specific covariate vector initialization
   if (verbose) cat(" Initialization: row-specific covariates \n")
   res = c()
-  bz = c()
-  for (i in 1:nrow(Y)) {
+  A = c()
+  for (i in 1:n) {
     yi = Y[i,]
-    if (family$family == "binomial") {
-      isnai = is.na(yi)
-      mi = mean(yi, na.rm = TRUE)
-      yi[isnai] = rbinom(n = sum(isnai), size = 1, prob = mi)
-      yi = as.factor(yi)
+    mi = mean(yi, na.rm = TRUE)
+    nai = is.na(yi)
+
+    if (any(nai)) {
+      if (family$family == "binomial") {
+        yi[nai] = rbinom(n = sum(nai), size = 1, prob = mi)
+        yi = as.factor(yi)
+      } else {
+        yi[nai] = mi
+      }
     }
 
-    if (!is.null(Z)) {
-      m = glm(yi ~ Z - 1, family = family, offset = eta[i,])
-      bz = rbind(bz, m$coefficients)
-      res = rbind(res, m$residuals)
-    } else {
+    if (is.null(Z)) {
       res = rbind(res, yi)
+    } else {
+      m = glm(yi ~ Z - 1, family = family, offset = eta[i,])
+      A = rbind(A, m$coefficients)
+      res = rbind(res, m$residuals)
     }
   }
 
   # partial linear predictor
-  eta = NULL
   if (!is.null(Z)) {
-    eta = tcrossprod(bz, Z)
+    eta[] = eta + tcrossprod(A, Z)
   }
 
   # residual matrix factorization for initializing the latent components U * Vt
   if (verbose) cat(" Initialization: latent scores and loadings \n")
   s = svd(res, nu = d, nv = d)
-  u = s$u %*% diag(sqrt(s$d[1:d]))
-  v = s$v %*% diag(sqrt(s$d[1:d]))
+  U = s$u %*% diag(sqrt(s$d[1:d]))
+  V = s$v %*% diag(sqrt(s$d[1:d]))
 
   # Compute the initial vector of dispersion parameters
-  eta = tcrossprod(u, v)
-  if (!is.null(X)) eta = eta + tcrossprod(X, bx)
-  if (!is.null(Z)) eta = eta + tcrossprod(bz, Z)
-  mu = family$linkinv(eta)
-  var = family$variance(mu)
+  # eta[] = eta + tcrossprod(U, V)
+  # if (!is.null(X)) eta = eta + tcrossprod(X, B)
+  # if (!is.null(Z)) eta = eta + tcrossprod(A, Z)
+  eta[] = eta + tcrossprod(U, V)
+  mu[] = family$linkinv(eta)
+  var[] = family$variance(mu)
   phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
 
   # covariate matrices initialization when there are no covariates
-  if (is.null(X)) bx = matrix(0, nrow = ncol(Y), ncol = 0)
-  if (is.null(Z)) bz = matrix(0, nrow = nrow(Y), ncol = 0)
+  if (is.null(X)) B = matrix(0, nrow = ncol(Y), ncol = 0)
+  if (is.null(Z)) A = matrix(0, nrow = nrow(Y), ncol = 0)
 
   # output
-  list(U = u, V = v, A = bz, B = bx, phi = phi)
+  list(U = U, V = V, A = A, B = B, phi = phi)
 }
 
 
 #' @title SVD initialization
-#' @description ...
+#'
+#' @description
+#' Initialize the parameters of a GMF model using custom values provided by the user
+#' and estimating the unspecified parameters using the same procedure described in
+#' \code{\link{init.param.svd}}. See \code{\link{init.param}} for more details.
+#'
 #' @import svd
+#'
 #' @keywords internal
 init.param.custom = function (
     Y,
