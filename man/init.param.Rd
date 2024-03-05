@@ -2,7 +2,7 @@
 % Please edit documentation in R/init.R
 \name{init.param}
 \alias{init.param}
-\title{Initialization of the generalized matrix factorization model}
+\title{Initialize the parameters of a generalized matrix factorization model}
 \usage{
 init.param(
   Y,
@@ -10,13 +10,67 @@ init.param(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
-  method = "svd",
+  method = c("svd", "glm", "random", "values"),
   niter = 0,
   values = list(),
   verbose = FALSE
 )
 }
+\arguments{
+\item{Y}{matrix of responses (\eqn{n \times m})}
+
+\item{X}{matrix of row fixed effects (\eqn{n \times p})}
+
+\item{Z}{matrix of column fixed effects (\eqn{q \times m})}
+
+\item{ncomp}{rank of the latent matrix factorization (default 2)}
+
+\item{family}{a family as in the \code{\link{glm}} interface (default \code{gaussian()})}
+
+\item{method}{optimization method:  \code{"svd"} (default), \code{"glm"}, \code{"random"}, \code{"values"}}
+
+\item{niter}{number of iterations to refine the initial estimate (defult 0)}
+
+\item{values}{a list of custom initial values for \code{B}, \code{A}, \code{U} and \code{V}, or a subset of them}
+
+\item{verbose}{print the status of the initialization process}
+}
+\value{
+A list containing the initial values of \code{B}, \code{A}, \code{U}, \code{V} and \code{phi}.
+}
 \description{
+Provide four initialization methods to set the initial values of the parameters of
+a generalized matrix factorization (GMF) model identified by a \code{\link{glm}} family
+and a linear predictor of the form \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top},
+with bijective link function \eqn{g(\cdot)}.
+See \code{\link{sgdgmf}} for more details on the model specification.
+}
+\details{
+\code{method="svd"}: the initialization is performed fitting a sequence of linear
+regressions followed by a residual SVD decomposition.
+To account for the non-Gaussian distribution of the data, regression and
+decomposition are applied on the transformed response matrix \eqn{Y_h = g(h(Y))},
+where \eqn{h(\cdot)} is a function which prevent \eqn{Y_h} to take infinite values.
+For instance, in the Binomial case \eqn{h(y) = 2 (1-\epsilon) y + \epsilon},
+while in the Poisson case \eqn{h(y) = y + \epsilon}, where \eqn{\epsilon} is a small
+positive constant, typically \code{0.1} or \code{0.01}.
+
+\code{method="glm"}: the initialization is performed by fitting a sequence of
+generalized linear models followed by a residual SVD decomposition.
+In particular, we use independent GLM fit \eqn{y_j \sim X \beta_j} to set \eqn{\beta_j}.
+Similarly, we fit the model \eqn{y_i \sim Z \gamma_i + o_i} with offset \eqn{o_i = B x_i}
+to set \eqn{\gamma_j}. Then, \eqn{U} and \eqn{V} are obtained via SVD on the final
+working residuals.
+
+\code{method="random"}: the initialization is performed using independent Gaussian
+random values for all the parameters in the model
+
+\code{method="values"}: the initialization is performed using the user-specified
+values provided as an input. The parameters not provided by the user are set
+using the same strategy described in \code{method="svd"}.
+}
+\examples{
 ...
+
 }
 \keyword{internal}
