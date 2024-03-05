@@ -15,6 +15,9 @@ init.param.svd(
 )
 }
 \description{
-...
+Initialize the parameters of a GMF model fitting a sequence of multivariate
+linear regression followed by a residual SVD decomposition. It allows to
+recursively refine the initial estimate by repeating the process a pre-specified
+number of times. See \code{\link{init.param}} for more details.
 }
 \keyword{internal}
