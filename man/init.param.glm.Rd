@@ -14,6 +14,7 @@ init.param.glm(
 )
 }
 \description{
-...
+Initialize the parameters of a GMF model fitting a sequence of GLMs followed
+by a residual SVD decomposition. See \code{\link{init.param}} for more details.
 }
 \keyword{internal}
