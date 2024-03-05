@@ -80,6 +80,12 @@ Let \eqn{Y = (y_{ij})} be a matrix of observed data of dimension \eqn{n \times m
 We assume for the \eqn{(i,j)}th observation in the matrix a dispersion exponential family law
 \eqn{(y_{ij} \mid \theta_{ij}) \sim EF(\theta_{ij}, \phi)}, where \eqn{\theta_{ij}} is the
 natural parameter and \eqn{\phi} is the dispersion parameter.
+Recall that the conditional probability density function of \eqn{y_{ij}} is given by
+\deqn{f (y_{ij}; \psi) = \exp \big[ \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi) \big],}
+where \eqn{\psi} is the vector of unknown parameters to be estimated,
+\eqn{b(\cdot)} is a convex twice differentiable log-partition function,
+and \eqn{c(\cdot,\cdot)} is the cumulant function of the family.
+
 The conditional mean of \eqn{y_{ij}}, say \eqn{\mu_{ij}}, is then modeled as
 \deqn{g(\mu_{ij}) = \eta_{ij} = x_i^\top \beta_j + \gamma_i^\top z_j + u_i^\top v_j,}
 where \eqn{g(\cdot)} is a bijective twice differentiable link function, \eqn{\eta_{ij}} is
@@ -87,15 +93,11 @@ a linear predictor, \eqn{x_i} and \eqn{z_j} are observed covariate vectors,
 \eqn{\beta_j} and \eqn{\gamma_j} are unknown regression parameters and, finally,
 \eqn{u_i} and \eqn{v_j} are latent vector explaining the residual varibility not
 captured by the regression effects.
-Equivalently, in matrix form, we have the generalized latent matrix factorization model
+Equivalently, in matrix form, we have
 \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top.}
 
 
-Recall that the conditional probability density function of \eqn{y_{ij}} is given by
-\deqn{f (y_{ij}; \psi) = \exp \big[ \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi) \big],}
-where \eqn{\psi} is the vector of unknown parameters, \eqn{b(\cdot)} is a convex twice
-differentiable log-partition function, and \eqn{c(\cdot,\cdot)} is the cumulant function
-of the family.
+
 The natural parameter \eqn{\theta_{ij}} is linked to the conditional mean of \eqn{y_{ij}}
 through the equation \eqn{E(y_{ij}) = \mu_{ij} = b'(\theta_{ij})}.
 Similarly, the variance of \eqn{y_{ij}} is given by
@@ -105,6 +107,10 @@ is the so-called variance function of the family.
 The estimation of the model parameters is performed by minimizing the penalized negative log-likelihood function
 \deqn{\ell_\lambda (\psi; y) = - 2 \sum_{i,j = 1}^{n,m} \log f(y_{ij}; \psi) + \lambda \| U \|_F^2 + \lambda \| V \|_F^2,}
 where \eqn{\lambda > 0} is a regularization parameter and \eqn{\|\cdot\|} is the Frobenious norm.
+Quasi-likelihood models, where \eqn{f(y; \psi)} is substituted by
+\eqn{Q(y, \mu) = \exp \big[ \int_y^\mu \{(y - t) / \phi \nu(t)\} \,dt \big] / \phi},
+can also be considered.
+
 To obtain the penalized maximum likelihood estimate, we here employs
 six different algorithms
 \itemize{
