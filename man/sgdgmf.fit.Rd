@@ -10,7 +10,7 @@ sgdgmf.fit(
   Z = NULL,
   family = poisson(),
   ncomp = 2,
-  method = "airwls",
+  method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
   penalty = list(),
   init = list(),
   control = list()
@@ -23,7 +23,7 @@ sgdgmf.fit(
 
 \item{Z}{matrix of column fixed effects (\eqn{q \times m})}
 
-\item{family}{a family as in the \code{\link{glm}} interface}
+\item{family}{a family as in the \code{\link{glm}} interface (default \code{gaussian()})}
 
 \item{ncomp}{rank of the latent matrix factorization (default 2)}
 
@@ -37,16 +37,18 @@ sgdgmf.fit(
 \item{control}{list of optimization options}
 }
 \value{
-An \code{sgdgmf} object containing the estimated parameters of the GMF model.
+An \code{sgdgmf} object, namely a list, containing the estimated parameters of the GMF model.
 In particular, the returned object collects the following information:
 \itemize{
   \item \code{method}: the selected estimation method
   \item \code{family}: the model family name
   \item \code{link}: the link function name
-  \item \code{idu}:
-  \item \code{idv}:
-  \item \code{U}: the estimated factor matrix
-  \item \code{V}: the estimated loading matrix
+  \item \code{idu}: a vector of indices identify the columns of the augmented
+    matrix \eqn{U_* = [X, \Gamma, U]} corresponding to \eqn{\Gamma} and \eqn{U}
+  \item \code{idv}: a vector of indices identify the columns of the augmented
+    matrix \eqn{V_* = [B, Z, V]} corresponding to \eqn{B} and \eqn{V}
+  \item \code{U}: the estimated factor matrix \eqn{\hat{U}_* = [X, \hat{\Gamma}, \hat{U}]}
+  \item \code{V}: the estimated loading matrix \eqn{\hat{V}_* = [\hat{B}, Z, \hat{V}]}
   \item \code{eta}: the estimated linear predictor
   \item \code{mu}: the estimated mean matrix
   \item \code{var}: the estimated variance matrix
@@ -89,14 +91,13 @@ and \eqn{c(\cdot,\cdot)} is the cumulant function of the family.
 The conditional mean of \eqn{y_{ij}}, say \eqn{\mu_{ij}}, is then modeled as
 \deqn{g(\mu_{ij}) = \eta_{ij} = x_i^\top \beta_j + \gamma_i^\top z_j + u_i^\top v_j,}
 where \eqn{g(\cdot)} is a bijective twice differentiable link function, \eqn{\eta_{ij}} is
-a linear predictor, \eqn{x_i} and \eqn{z_j} are observed covariate vectors,
-\eqn{\beta_j} and \eqn{\gamma_j} are unknown regression parameters and, finally,
-\eqn{u_i} and \eqn{v_j} are latent vector explaining the residual varibility not
-captured by the regression effects.
+a linear predictor, \eqn{x_i \in \mathbb{R}^p} and \eqn{z_j \in \mathbb{R}^q} are
+observed covariate vectors, \eqn{\beta_j \in \mathbb{R}^p} and \eqn{\gamma_j \in \mathbb{R}^q}
+are unknown regression parameters and, finally, \eqn{u_i \in \mathbb{R}^d} and
+\eqn{v_j \in \mathbb{R}^d} are latent vector explaining the residual varibility
+not captured by the regression effects.
 Equivalently, in matrix form, we have
 \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top.}
-
-
 
 The natural parameter \eqn{\theta_{ij}} is linked to the conditional mean of \eqn{y_{ij}}
 through the equation \eqn{E(y_{ij}) = \mu_{ij} = b'(\theta_{ij})}.
@@ -110,6 +111,8 @@ where \eqn{\lambda > 0} is a regularization parameter and \eqn{\|\cdot\|} is the
 Quasi-likelihood models, where \eqn{f(y; \psi)} is substituted by
 \eqn{Q(y, \mu) = \exp \big[ \int_y^\mu \{(y - t) / \phi \nu(t)\} \,dt \big] / \phi},
 can also be considered.
+The regularization parameters for \eqn{U} and \eqn{V} do not have necessary the same value.
+Additional \eqn{\ell_2} penalization terms can be introduced to regularize \eqn{B} and \eqn{\Gamma}.
 
 To obtain the penalized maximum likelihood estimate, we here employs
 six different algorithms
