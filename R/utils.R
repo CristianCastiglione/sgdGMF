@@ -31,41 +31,6 @@ soft.threshold = function (x, a) {
   sign(x) * max0(abs(x) - a)
 }
 
-
-#' @title Rotate the matrices U and V
-#'
-#' @description
-#' Rotate U and V in such a way that the transformed matrices
-#' are such that U is orthogonal and V is lower triangular
-#'
-#' @importFrom whitening whiteningMatrix
-#'
-#' @keywords internal
-correct.uv = function (U, V) {
-  S = cov(U)
-
-  if (ncol(U) == 1){
-    return(list(u = U / sqrt(c(S)), v = V * sqrt(c(S))))
-  }
-
-  # Make cov of U identity
-  W = whitening::whiteningMatrix(S)
-  U = U %*% W
-  V = V %*% t(solve(W))
-
-  # Make V lower triangular
-  V.qr = qr(t(V))
-  U = U %*% qr.Q(V.qr)
-  V = t(qr.R(V.qr))
-
-  # Positive diagonal of V
-  D = diag(V)
-  V = t(sign(D) * t(V))
-  U = t(sign(D) * t(U))
-
-  list(U = U, V = V)
-}
-
 #' @title Procrustes distance
 #' @description ...
 #' @importFrom vegan procrustes
@@ -74,6 +39,65 @@ norm.procrustes = function(A, B){
   A = A / norm(A, type = "F")
   B = B / norm(B, type = "F")
   vegan::procrustes(A, B)
+}
+
+#' @title Normalize the matrices U and V
+#'
+#' @description
+#' Rotate U and V in such a way that the transformed matrices
+#' are such that U is orthogonal and V is lower triangular
+#'
+#' @importFrom whitening whiteningMatrix
+#'
+#' @keywords internal
+normalize.uv = function(U, V, method = c("svd", "qr")){
+
+  method = match.arg(method)
+
+  if (method == "svd") {
+    try({
+      ncomp = ncol(U)
+      uv = tcrossprod(U, V)
+      s = RSpectra::svds(uv, ncomp)
+      if (ncomp == 1) {
+        U = s$u
+        V = s$v *s$d
+      } else {
+        U = s$u
+        V = s$v %*% diag(s$d)
+      }
+    })
+  }
+  if (method == "qr") {
+    if (is.vector(U)){
+      S = sd(c(U))
+      U = U / sqrt(S)
+      V = V * sqrt(S)
+    } else {
+      try({
+        # Computet the cov of U
+        S = cov(U)
+
+        # Make cov of U identity
+        W = whitening::whiteningMatrix(S)
+        U = U %*% W
+        V = V %*% t(solve(W))
+
+        # Make V lower triangular
+        V.qr = qr(t(V))
+        U = U %*% qr.Q(V.qr)
+        V = t(qr.R(V.qr))
+
+        # Positive diagonal of V
+        D = diag(V)
+        V = t(sign(D) * t(V))
+        U = t(sign(D) * t(U))
+      })
+    }
+  }
+
+  # Output
+  list(U = U, V = V)
 }
 
 #' @title Split the data matrix in train and test sets
