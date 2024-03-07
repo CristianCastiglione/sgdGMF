@@ -114,6 +114,13 @@ train[data$train] = NA
 ctrain = naive.completion(train)
 # train = matrix.completion(y = train0, x = X, z = Z, ncomp = ncomp, family = family, niter = 10)
 
+if (SAVE) {
+  setting = ifelse(SETTING == 1, "bubble", ifelse(SETTING == 2, "linear", "branch"))
+  filename = join.string("example_s", setting, "_n", n, "_m", m, "_d", ncomp, "_i25.RData")
+  filepath = join.path("data", "splatter", filename)
+  save(n, m, ncomp, family, sim, data, file = filename)
+}
+
 ## MODEL FIT ----
 model.pearson = fit.pearson(y = ctrain, x = X, z = Z, ncomp = ncomp, family = family)
 model.deviance = fit.deviance(y = ctrain, x = X, z = Z, ncomp = ncomp, family = family)
