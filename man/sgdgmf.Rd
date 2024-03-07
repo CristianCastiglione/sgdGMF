@@ -10,9 +10,7 @@ sgdgmf(
   Z = NULL,
   family = poisson(),
   ncomp = 2,
-  method = "newton",
-  intercept = c(FALSE, FALSE),
-  dispersion = FALSE,
+  method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
   selection = FALSE,
   penalty = list(),
   init = list(),
@@ -30,9 +28,7 @@ sgdgmf(
 
 \item{ncomp}{number of random effects to estimate (default 2)}
 
-\item{intercept}{should the model include a row/col intercept? (default FALSE)}
-
-\item{dispersion}{should the method estimate column-specific disperssion parameters? (default FALSE)}
+\item{selection}{...}
 
 \item{penalty}{list of penalty parameters corresponding to u, v, a and b}
 
