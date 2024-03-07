@@ -34,6 +34,26 @@ set.mat.X = function (X, n, mat = "X") {
   return (X)
 }
 
+#' @title Check and set the cross-validation parameters
+#'
+#' @description
+#' Check if the input cross-validation parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined cross-validation parameters.
+#'
+#' @keywords internal
+set.cvopt = function (cvopt) {
+
+  default = list(nfolds = 5, parallel = FALSE, nthreads = 1)
+
+  if (check.class(cvopt, "list")) {
+    if (check.pos(cvopt$nfolds)) default$nfolds = cvopt$nfolds
+    if (check.bool(cvopt$parallel)) default$parallel = cvopt$parallel
+    if (check.pos(cvopt$nthreads)) default$nthreads = cvopt$nthreads
+  }
+
+  return (default)
+}
+
 #' @title Check and set the penalty parameters
 #'
 #' @description
