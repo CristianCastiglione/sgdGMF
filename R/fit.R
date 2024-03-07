@@ -215,5 +215,35 @@ sgdgmf.fit = function (
     )
   }
 
-  return (fit)
+  # Model dimensions
+  n = nrow(Y); m = ncol(Y)
+  p = ncol(X); q = ncol(Z)
+
+  # Output list
+  out = list()
+  out$method = fit$method
+  out$family = family
+  out$control = ctr
+  out$B = fit$U[, (p+1):(p+q)]
+  out$A = fit$V[, 1:p]
+  out$U = fit$U[, (p+q+1):(p+q+ncomp)]
+  out$V = fit$V[, (p+q+1):(p+q+ncomp)]
+  out$eta = fit$eta
+  out$mu = fit$mu
+  out$var = fit$var
+  out$phi = fit$phi
+  out$penalty = fit$penalty
+  out$deviance = fit$deviance
+  out$objective = fit$objective
+  out$exe.time = fit$exe.time
+  out$trace = as.data.frame(fit$trace)
+
+  # Normalize the latent factors
+  if (ctr$normalize) {
+    uv = normalize.uv(out$U, out$V, method = "qr")
+    out$U = uv$U
+    out$V = uv$V
+  }
+
+  return (out)
 }
