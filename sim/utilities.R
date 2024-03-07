@@ -349,12 +349,27 @@ fit.pearson = function (y, x = NULL, z = NULL, ncomp = 2,
   # model fitting
   time0 = proc.time()
   res = scry::nullResiduals(object = as.matrix(y), fam = "poisson", type = "pearson")
-  res = res - x %*% solve(crossprod(x), crossprod(x, res))
+
+  if (is.null(x)) {
+    beta.x = 0
+  } else {
+    beta.x = t(solve(crossprod(x), crossprod(x, res)))
+    res = res - res - crossprod(x, beta.x)
+  }
+
+  if (is.null(z)) {
+    beta.z = 0
+  } else {
+    beta.z = t(solve(crossprod(z), crossprod(z, t(res))))
+    res = res - crossprod(beta.z, z)
+  }
+
+  # if (!is.null(x)) res = res - x %*% solve(crossprod(x), crossprod(x, res))
   SVD = svd::propack.svd(res, neig = ncomp)
   timef = proc.time()
 
-  if (!is.null(X)) beta.x = matrix(0, nrow = ncol(y), ncol = ncol(x))
-  if (!is.null(z)) beta.z = matrix(0, nrow = nrow(y), ncol = ncol(z))
+  # if (is.null(X)) beta.x = matrix(0, nrow = ncol(y), ncol = 0)
+  # if (is.null(z)) beta.z = matrix(0, nrow = nrow(y), ncol = 0)
 
   eta = tcrossprod(SVD$u, SVD$v %*% diag(SVD$d))
   mu = family$linkinv(eta)
@@ -384,12 +399,27 @@ fit.deviance = function (y, x = NULL, z = NULL, ncomp = 2,
   # model fitting
   time0 = proc.time()
   res = scry::nullResiduals(object = as.matrix(y), fam = "poisson", type = "deviance")
-  res = res - x %*% solve(crossprod(x), crossprod(x, res))
+
+  if (is.null(x)) {
+    beta.x = 0
+  } else {
+    beta.x = t(solve(crossprod(x), crossprod(x, res)))
+    res = res - res - crossprod(x, beta.x)
+  }
+
+  if (is.null(z)) {
+    beta.z = 0
+  } else {
+    beta.z = t(solve(crossprod(z), crossprod(z, t(res))))
+    res = res - crossprod(beta.z, z)
+  }
+
+  # if (!is.null(x)) res = res - x %*% solve(crossprod(x), crossprod(x, res))
   SVD = svd::propack.svd(res, neig = ncomp)
   timef = proc.time()
 
-  if (!is.null(X)) beta.x = matrix(0, nrow = ncol(y), ncol = ncol(x))
-  if (!is.null(z)) beta.z = matrix(0, nrow = nrow(y), ncol = ncol(z))
+  if (is.null(X)) beta.x = matrix(0, nrow = ncol(y), ncol = 0)
+  if (is.null(z)) beta.z = matrix(0, nrow = nrow(y), ncol = 0)
 
   eta = tcrossprod(SVD$u, SVD$v %*% diag(SVD$d))
   mu = family$linkinv(eta)
@@ -1583,63 +1613,12 @@ fit.C.csgd = function (
   p = ncol(x)
   q = ncol(z)
 
-  # init = gmf.init(y, x, z, d = ncomp, method = "svd",
-  #                 niter = 0, verbose = FALSE)
-
   familyname = family$family
   linkname = family$link
 
   if (familyname == "Negative Binomial") {
     familyname = "negbinom"
   }
-
-##  isna = is.na(y)
-##
-##  yc = apply(y, 2, function (x) {
-##    m = mean(x, na.rm = TRUE)
-##    x[is.na(x)] = round(m)
-##    return (x)
-##  })
-##
-##  r = log(yc + 0.1)
-##
-##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-##  # r[!isna] = log(y[!isna] + 0.1)
-##  # r[isna] = mean(r[!isna])
-##
-##  # Compute the initial column-specific regression parameters (if any)
-##  B = t(solve(crossprod(x), crossprod(x, r)))
-##  XB = tcrossprod(x, B)
-##
-##  # Compute the initial row-specific regression parameter (if any)
-##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-##  AZ = tcrossprod(A, z)
-##
-##  # Compute the initial latent factors via incomplete SVD
-##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-##  U = s$u %*% diag(sqrt(s$d))
-##  V = s$v %*% diag(sqrt(s$d))
-##  UV = tcrossprod(U, V)
-##
-##  niter = 10
-##  for (iter in 1:niter) {
-##    r[isna] = (XB + AZ + UV)[isna]
-##
-##    XtX = crossprod(x)
-##    Xty = crossprod(x, r - AZ - UV)
-##    B = t(solve(XtX, Xty))
-##    XB = tcrossprod(x, B)
-##
-##    ZtZ = crossprod(z)
-##    Zty = crossprod(z, t(r - XB - UV))
-##    A = t(solve(ZtZ, Zty))
-##    AZ = tcrossprod(A, z)
-##
-##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-##    U = s$u %*% diag(sqrt(s$d))
-##    V = s$v %*% diag(sqrt(s$d))
-##    UV = tcrossprod(U, V)
-##  }
 
   init = sgdGMF::init.param.svd(
     Y = y, X = x, Z = z, ncomp = ncomp,
@@ -1857,54 +1836,6 @@ fit.C.bsgd = function (
   if (familyname == "Negative Binomial") {
     familyname = "negbinom"
   }
-
-##  isna = is.na(y)
-##
-##  yc = apply(y, 2, function (x) {
-##    m = mean(x, na.rm = TRUE)
-##    x[is.na(x)] = round(m)
-##    return (x)
-##  })
-##
-##  r = log(yc + 0.1)
-##
-##  # r = matrix(NA, nrow = nrow(y), ncol = ncol(y))
-##  # r[!isna] = log(y[!isna] + 0.1)
-##  # r[isna] = mean(r[!isna])
-##
-##  # Compute the initial column-specific regression parameters (if any)
-##  B = t(solve(crossprod(x), crossprod(x, r)))
-##  XB = tcrossprod(x, B)
-##
-##  # Compute the initial row-specific regression parameter (if any)
-##  A = t(solve(crossprod(z), crossprod(z, t(r - XB))))
-##  AZ = tcrossprod(A, z)
-##
-##  # Compute the initial latent factors via incomplete SVD
-##  s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-##  U = s$u %*% diag(sqrt(s$d))
-##  V = s$v %*% diag(sqrt(s$d))
-##  UV = tcrossprod(U, V)
-##
-##  niter = 10
-##  for (iter in 1:niter) {
-##    r[isna] = (XB + AZ + UV)[isna]
-##
-##    XtX = crossprod(x)
-##    Xty = crossprod(x, r - AZ - UV)
-##    B = t(solve(XtX, Xty))
-##    XB = tcrossprod(x, B)
-##
-##    ZtZ = crossprod(z)
-##    Zty = crossprod(z, t(r - XB - UV))
-##    A = t(solve(ZtZ, Zty))
-##    AZ = tcrossprod(A, z)
-##
-##    s = svd::propack.svd(r - XB - AZ, neig = ncomp)
-##    U = s$u %*% diag(sqrt(s$d))
-##    V = s$v %*% diag(sqrt(s$d))
-##    UV = tcrossprod(U, V)
-##  }
 
   init = sgdGMF::init.param.svd(
     Y = y, X = x, Z = z, ncomp = ncomp,
