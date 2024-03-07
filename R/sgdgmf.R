@@ -55,23 +55,24 @@ sgdgmf = function (
   q = ifelse(is.null(Z), 0, ncol(Z))
   f = 0.3
 
-  # Perform model selection minimizing the test deviance minimization
+  # Perform model selection minimizing the test deviance
   if (selection) {
     maxcomp = ncomp
     data = partition(Y, f)
-    dev = numeric(maxcomp-1)
-    aic = numeric(maxcomp-1)
-    bic = numeric(maxcomp-1)
+    dev = numeric(maxcomp)
+    aic = numeric(maxcomp)
+    bic = numeric(maxcomp)
+    dfs = numeric(maxcomp)
 
     # Estimation loop
-    for (ncomp in 2:maxcomp) {
+    for (ncomp in 1:maxcomp) {
       cat("Matrix rank:", ncomp, "\n")
 
       # Effective number of parameters
       df = m * p + n * q + (n + m) * ncomp
 
       # Estimated mean matrix
-      mu = sgdgmf.fit(Y = Y, X = X, Z = Z, family = family, ncomp = ncomp,
+      mu = sgdgmf.fit(Y = data$train, X = X, Z = Z, family = family, ncomp = ncomp,
         method = method, penalty = penalty, init = init, control = control)$mu
 
       # Train and test deviances
@@ -79,9 +80,10 @@ sgdgmf = function (
       dev.test = matrix.deviance(mu = mu, y = data$test, family = family)
 
       # Out-of-sample error and information criteria
-      dev[ncomp-1] = dev.test / (f*n*m)
-      aic[ncomp-1] = (dev.train + 2 * df) / ((1-f)*n*m)
-      bic[ncomp-1] = (dev.train + 2 * df * log((1-f)*n*m)) / ((1-f)*n*m)
+      dfs[ncomp] = df
+      dev[ncomp] = dev.test / (f*n*m)
+      aic[ncomp] = (dev.train + 2 * df) / ((1-f)*n*m)
+      bic[ncomp] = (dev.train + 2 * df * log((1-f)*n*m)) / ((1-f)*n*m)
     }
 
     cat("Final estimation \n")
@@ -95,7 +97,7 @@ sgdgmf = function (
     method = method, penalty = penalty, init = init, control = control)
 
   if (selection) {
-    fit$selection = cbind(ncomp = 2:maxcomp, dev = dev, aic = aic, bic = bic)
+    fit$selection = data.frame(ncomp = 1:maxcomp, dev = dev, aic = aic, bic = bic, df = dfs)
   }
 
   # Convert the result in a S3 class
