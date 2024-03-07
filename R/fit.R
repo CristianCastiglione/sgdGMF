@@ -173,7 +173,7 @@ sgdgmf.fit = function (
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size = ctr$size, burn = ctr$burn, rate0 = ctr$rate0, decay = ctr$decay,
-      damping = ctr$damping, rate1 = control$rate[1], rate2 = ctr$rate[2],
+      damping = ctr$damping, rate1 = control$rate1, rate2 = ctr$rate2,
       parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
       frequency = ctr$frequency, progress = ctr$progress
     )
@@ -185,7 +185,7 @@ sgdgmf.fit = function (
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
-      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate[1], rate2 = ctr$rate[2],
+      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate1, rate2 = ctr$rate2,
       parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
       frequency = ctr$frequency, progress = ctr$progress
     )
@@ -197,7 +197,7 @@ sgdgmf.fit = function (
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
-      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate[1], rate2 = ctr$rate[2],
+      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate1, rate2 = ctr$rate2,
       parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
       frequency = ctr$frequency, progress = ctr$progress
     )
@@ -209,7 +209,7 @@ sgdgmf.fit = function (
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
       size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
-      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate[1], rate2 = ctr$rate[2],
+      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate1, rate2 = ctr$rate2,
       parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
       frequency = ctr$frequency, progress = ctr$progress
     )
