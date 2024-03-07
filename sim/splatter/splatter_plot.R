@@ -181,7 +181,7 @@ plot.list = function (error) {
 
     df = df[df$Data == "Test", ]
 
-    labels = c("Time", "Deviance", "RMSE", "Silhouette")
+    labels = c("Time", "Deviance", "Error", "Silhouette")
 
     df = data.frame(
       Model = rep(df$Model, times = 4),
@@ -195,15 +195,28 @@ plot.list = function (error) {
     plt = ggplot(data = df, map = aes(x = Model, y = Val, color = Model, fill = Model)) +
       geom_boxplot(alpha = 0.5) + facet_grid(rows = vars(Var), scales = "free_y") +
       ggtitle(sim.dim.str(100*dm, 10*dm, nc)) +
-      theme_bw() + theme(axis.title = element_blank())
+      theme_gray() +
+      theme(axis.title = element_blank(),
+            axis.text.y = element_text(size = 12),
+            axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
+            strip.text = element_text(size = 15),
+            legend.position = "none",
+            legend.title = element_text(size = 15),
+            legend.text = element_text(size = 12))
+      # theme(text = element_text(size = 20),
+      #       legend.position = "bottom",
+      #       legend.text = element_text(size = 10),
+      #       legend.title = element_text(size = 15),
+      #       axis.title = element_blank(),
+      #       axis.text.x = element_text(angle = 45))
 
     if (SHOW) print(plt)
 
     if (SAVE) {
       filepath = join.path("img", "splatter")
       filename = join.string("summary", errorh$str, ".pdf")
-      zoom = 6
-      width = 1
+      zoom = 8
+      width = .6
       height = 1
       ggplot2::ggsave(
         file = filename, path = filepath, plot = plt,
@@ -379,8 +392,7 @@ plot.contrast = function (flat, deep, setting = "Bubble") {
   df$Setting = factor(c(
     rep("$n \\uparrow, m \\uparrow, d = 5$", times = nrow(flat)),
     rep("$n = 5000, m = 500, d \\uparrow$", times = nrow(deep))),
-    levels = c("$n \\uparrow, m \\uparrow, d = 5$",
-               "$n = 5000, m = 500, d \\uparrow$"))
+    levels = c("$n \\uparrow, m \\uparrow, d = 5$", "$n = 5000, m = 500, d \\uparrow$"))
 
   # Reorganize the data-frame into a flat representation
   bigdf = data.frame(Model = c(), Setting = c(), Dim = c())
@@ -389,9 +401,9 @@ plot.contrast = function (flat, deep, setting = "Bubble") {
   bigdf = rbind(bigdf, as.data.frame(df[, c("Model", "Setting", "Dim")]))
   bigdf = rbind(bigdf, as.data.frame(df[, c("Model", "Setting", "Dim")]))
 
-  bigdf$Values = c(100*df$Deviance, 100*df$RMSE, df$Silhouette, log10(df$Time))
-  bigdf$Variables = rep(c("Deviance", "RMSE", "Silhouette", "Time"), each = nrow(df))
-  bigdf$Variables = factor(bigdf$Variables, levels = c("Deviance", "RMSE", "Silhouette", "Time"))
+  bigdf$Values = c(log10(df$Time), 100*df$Deviance, 100*df$RMSE, df$Silhouette)
+  bigdf$Variables = rep(c("Time", "Deviance", "Error", "Silhouette"), each = nrow(df))
+  bigdf$Variables = factor(bigdf$Variables, levels = c("Time", "Deviance", "Error", "Silhouette"))
 
   parser = function(string) TeX(string)
 
@@ -401,9 +413,14 @@ plot.contrast = function (flat, deep, setting = "Bubble") {
     geom_line() + geom_point(shape = 21, size = 4, colour = "white") +
     facet_grid(cols = vars(Setting), rows = vars(Variables), scales = "free",
                labeller = as_labeller(parser, default = label_parsed)) +
-    # theme_bw() +
-    theme(legend.position = "right") +
-    labs(x = "", y = "", fill = "Model", color = "Model")
+    theme_gray() + labs(x = "", y = "", fill = "Model", color = "Model") +
+    theme(legend.position = "right",
+          legend.title = element_text(size = 13),
+          legend.text = element_text(size = 10),
+          plot.title = element_text(size = 13),
+          strip.text = element_text(size = 13),
+          axis.title = element_blank())
+    # theme(legend.position = "right")
 
   if (SHOW) print(plt)
 
@@ -411,11 +428,13 @@ plot.contrast = function (flat, deep, setting = "Bubble") {
     filepath = join.path("img", "splatter")
     filename = join.string("summary_", setting,"_sim.pdf")
     zoom = 4
-    width = 1
-    height = .5
+    nrows = 4
+    ncols = 2
+    width = 1 * ncols
+    height = .5 * nrows
     ggplot2::ggsave(
       file = filename, path = filepath, plot = plt,
-      width = zoom * 2 * width, height = zoom * 4 * height)
+      width = zoom * width, height = zoom * height)
   }
 
   return (plt)
