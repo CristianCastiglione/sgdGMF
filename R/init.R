@@ -203,8 +203,13 @@ init.param.svd = function (
   if (verbose) cat(" Initialization: latent scores and loadings \n")
   # sv = svd::propack.svd(y - xb - az, neig = ncomp)
   s = RSpectra::svds(y - xb - az, k = d, nu = d, nv = d)
-  U = s$u %*% diag(sqrt(s$d))
-  V = s$v %*% diag(sqrt(s$d))
+  if (d == 1) {
+    U = s$u %*% sqrt(s$d)
+    V = s$v %*% sqrt(s$d)
+  } else {
+    U = s$u %*% diag(sqrt(s$d))
+    V = s$v %*% diag(sqrt(s$d))
+  }
   uv = tcrossprod(U, V)
 
   # Refinement loop (it might be useful if there are many missing values)
@@ -234,8 +239,13 @@ init.param.svd = function (
       # Refine the initial latent factors via incomplete SV
       # s = svd::propack.svd(y - xb - az, neig = d)
       s = RSpectra::svds(y - xb - az, k = d, nu = d, nv = d)
-      U = s$u %*% diag(sqrt(s$d))
-      V = s$v %*% diag(sqrt(s$d))
+      if (d == 1) {
+        U = s$u * sqrt(s$d)
+        V = s$v * sqrt(s$d)
+      } else {
+        U = s$u %*% diag(sqrt(s$d))
+        V = s$v %*% diag(sqrt(s$d))
+      }
       uv = tcrossprod(U, V)
     }
     if (verbose) cat("| \n")
