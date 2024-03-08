@@ -85,5 +85,10 @@ sandbox
 sandbox/
 sandbox/**
 
+# Data folder
+data/splatter
+data/splatter/
+data/splatter/**
+
 # Compressed files
 *.zip
