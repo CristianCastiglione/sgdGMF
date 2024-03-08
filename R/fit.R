@@ -219,6 +219,9 @@ sgdgmf.fit = function (
   n = nrow(Y); m = ncol(Y)
   p = ncol(X); q = ncol(Z)
 
+  df = p * m + q * n + (n + m) * ncomp
+  nm = n * m - sum(is.na(Y))
+
   # Output list
   out = list()
   out$method = fit$method
@@ -235,6 +238,8 @@ sgdgmf.fit = function (
   out$penalty = fit$penalty
   out$deviance = fit$deviance
   out$objective = fit$objective
+  out$aic = fit$deviance + 2 * df
+  out$bic = fit$deviance + 2 * df * log(nm)
   out$exe.time = fit$exe.time
   out$trace = as.data.frame(fit$trace)
 
