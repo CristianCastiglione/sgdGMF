@@ -82,7 +82,7 @@ sgdgmf.cv = function (
       for (fold in 1:nfolds) {
 
         # Print the eestimation status
-        cat("Matrix rank:", ncomp, " Fold :", fold, "\n")
+        cat("Rank:", ncomp, " Fold :", fold, "\n")
 
         # Estimated mean matrix
         mu = sgdgmf.fit(Y = data[[fold]]$train, X = X, Z = Z,
