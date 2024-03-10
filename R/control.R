@@ -123,6 +123,21 @@ set.init = function (init) {
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
 #'
+#' \itemize{
+#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
+#' \item \code{maxiter}: maximum number of iterations (default \code{100})
+#' \item \code{nstep}: number of IRWLS steps in each inner loop of AIRWLS (default \code{1})
+#' \item \code{stepsize}: step-size parameter scaling each IRWLS step (default \code{0.1})
+#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
+#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
+#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
+#' \item \code{damping}: regularization parameter which is added to the diagonal of the Hessian to ensure numerical stability (default \code{1e-03})
+#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
+#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
+#' \item \code{parallel}: if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP} (default \code{FALSE})
+#' \item \code{nthreads}: number of cores to be used in parallel (only if \code{parallel=TTUE}, default \code{1})
+#' }
+#'
 #' @keywords internal
 set.control.airwls = function (control) {
   # Set the default control parameters
@@ -169,6 +184,20 @@ set.control.airwls = function (control) {
 #' @description
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' \itemize{
+#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
+#' \item \code{maxiter}: maximum number of iterations (default \code{500})
+#' \item \code{stepsize}: step-size parameter scaling each IRWLS step (default \code{0.01})
+#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
+#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
+#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
+#' \item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
+#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
+#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
+#' \item \code{parallel}: if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP} (default \code{FALSE})
+#' \item \code{nthreads}: number of cores to be used in parallel (only if \code{parallel=TTUE}, default \code{1})
+#' }
 #'
 #' @keywords internal
 set.control.newton = function (control) {
@@ -274,6 +303,26 @@ set.control.msgd = function (control) {
 #' @description
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' \itemize{
+#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
+#' \item \code{maxiter}: maximum number of iterations (default \code{1000})
+#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
+#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
+#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
+#' \item \code{size}: mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample (default \code{c(100, 100)})
+#' \item \code{burn}: percentage of iterations to ignore before performing Polyak averaging (default \code{0.75})
+#' \item \code{rate0}: initial learning rate (default \code{0.01})
+#' \item \code{decay}: learning rate decay (default \code{0.01})
+#' \item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
+#' \item \code{rate1}: exponential decay rate for the moment estimate of the gradient (default \code{0.1})
+#' \item \code{rate2}: exponential decay rate for the moment estimate of the Hessian (default \code{0.01})
+#' \item \code{parallel}: ...
+#' \item \code{nthreads}: ...
+#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
+#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
+#' \item \code{progress}: if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#' }
 #'
 #' @keywords internal
 set.control.csgd = function (control) {
@@ -395,6 +444,26 @@ set.control.rsgd = function (control) {
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
 #'
+#' \itemize{
+#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
+#' \item \code{maxiter}: maximum number of iterations (default \code{1000})
+#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
+#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{10})
+#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
+#' \item \code{size}: mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample (default \code{c(100, 100)})
+#' \item \code{burn}: percentage of iterations to ignore before performing Polyak averaging (default \code{0.75})
+#' \item \code{rate0}: initial learning rate (default \code{0.01})
+#' \item \code{decay}: learning rate decay (default \code{0.01})
+#' \item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
+#' \item \code{rate1}: exponential decay rate for the moment estimate of the gradient (default \code{0.1})
+#' \item \code{rate2}: exponential decay rate for the moment estimate of the Hessian (default \code{0.01})
+#' \item \code{parallel}: ...
+#' \item \code{nthreads}: ...
+#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
+#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
+#' \item \code{progress}: if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#' }
+#'
 #' @keywords internal
 set.control.bsgd = function (control) {
   # Set the default control parameters
@@ -449,11 +518,25 @@ set.control.bsgd = function (control) {
   return (default)
 }
 
-#' @title Check and set the control parameters for the selecte optimization algorithm
+#' @title Check and set the control parameters for the select optimization algorithm
 #'
 #' @description
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @param method optimization method: \code{"airwls"}, \code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}
+#' @param control list of algorithm-specific control parameters
+#'
+#' @details
+#' It is not necessary to provide a complete list of control parameters, one can
+#' just specify a list containing the parameters he/she needs to change from the
+#' default values. Wrongly specified parameters are ignored or set to default values.
+#' For a detailed description of all the algorithm-specific control parameters,
+#' please refer to
+#' \code{\link{set.control.airwls}} (\code{method="airwls"}),
+#' \code{\link{set.control.newton}} (\code{method="newton"}),
+#' \code{\link{set.control.csgd}} (\code{method="csgd"}),
+#' \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
 #'
 #' @keywords internal
 set.control = function (method, control) {
