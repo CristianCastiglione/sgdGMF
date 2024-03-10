@@ -10,7 +10,15 @@ License: What license is it under?
 Imports: Rcpp (>= 1.0.10), RSpectra, svd, whitening, foreach
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
-    testthat (>= 3.0.0), Rtsne, dplyr, ggplot2, reshape2, ggpubr
+    testthat (>= 3.0.0),
+    Rtsne,
+    dplyr,
+    ggplot2,
+    reshape2,
+    ggpubr,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
 Encoding: UTF-8
 RoxygenNote: 7.2.3
+VignetteBuilder: knitr
