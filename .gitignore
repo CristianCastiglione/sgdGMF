@@ -92,3 +92,4 @@ data/splatter/**
 
 # Compressed files
 *.zip
+inst/doc
