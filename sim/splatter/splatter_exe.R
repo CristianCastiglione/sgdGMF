@@ -371,10 +371,22 @@ model.bsgd = sgdGMF::sgdgmf.cv(
   Y = Y, X = X, Z = Z, ncomp = 10, family = family, method = "bsgd", cvopt = list(nfolds = 4),
   control = list(size = c(100,20), frequency = 500, stepsize = 0.01, rate1 = 0.1, rate2 = 0.01))
 
-model.bsgd$cv.stat |>
-  ggplot(map = aes(x = as.factor(ncomp), y = bic, fill = as.factor(ncomp))) +
-  geom_boxplot() + theme(legend.position = "none") +
+plt.aic = model.bsgd$cv.stat |>
+  ggplot(map = aes(x = as.factor(ncomp), y = aic, color = as.factor(ncomp), fill = as.factor(ncomp))) +
+  geom_boxplot(alpha = 0.3) + theme(legend.position = "none") +
+  labs(x = "Matrix rank", y = "AIC", title = "In-sample AIC path")
+
+plt.bic = model.bsgd$cv.stat |>
+  ggplot(map = aes(x = as.factor(ncomp), y = bic, color = as.factor(ncomp), fill = as.factor(ncomp))) +
+  geom_boxplot(alpha = 0.3) + theme(legend.position = "none") +
+  labs(x = "Matrix rank", y = "BIC", title = "In-sample BIC path")
+
+plt.dev = model.bsgd$cv.stat |>
+  ggplot(map = aes(x = as.factor(ncomp), y = dev, color = as.factor(ncomp), fill = as.factor(ncomp))) +
+  geom_boxplot(alpha = 0.3) + theme(legend.position = "none") +
   labs(x = "Matrix rank", y = "Deviance", title = "Out-of-sample deviance path")
+
+ggpubr::ggarrange(plt.aic, plt.bic, plt.dev, nrow = 3, ncol = 1)
 
 library(dplyr)
 df = model.bsgd$cv.stat |> group_by(ncomp) |> summarize(
