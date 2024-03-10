@@ -222,15 +222,22 @@ sgdgmf.fit = function (
   df = p * m + q * n + (n + m) * ncomp
   nm = n * m - sum(is.na(Y))
 
+  # Set the indices of A, B, U and V
+  idxA = seq(from = p+1, to = p+q)
+  idxB = seq(from = 1, to = p)
+  idxU = seq(from = p+q+1, to = p+q+ncomp)
+  idxV = seq(from = p+q+1, to = p+q+ncomp)
+
   # Output list
   out = list()
   out$method = fit$method
   out$family = family
+  out$ncomp = ncomp
   out$control = ctr
-  out$B = fit$U[, (p+1):(p+q)]
-  out$A = fit$V[, 1:p]
-  out$U = fit$U[, (p+q+1):(p+q+ncomp)]
-  out$V = fit$V[, (p+q+1):(p+q+ncomp)]
+  out$A = fit$U[, idxA]
+  out$B = fit$V[, idxB]
+  out$U = fit$U[, idxU]
+  out$V = fit$V[, idxV]
   out$eta = fit$eta
   out$mu = fit$mu
   out$var = fit$var
@@ -242,6 +249,7 @@ sgdgmf.fit = function (
   out$bic = fit$deviance + 2 * df * log(nm)
   out$exe.time = fit$exe.time
   out$trace = as.data.frame(fit$trace)
+  colnames(out$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
 
   # Normalize the latent factors
   if (ctr$normalize) {
