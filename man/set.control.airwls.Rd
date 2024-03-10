@@ -9,5 +9,20 @@ set.control.airwls(control)
 \description{
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.
+
+\itemize{
+\item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
+\item \code{maxiter}: maximum number of iterations (default \code{100})
+\item \code{nstep}: number of IRWLS steps in each inner loop of AIRWLS (default \code{1})
+\item \code{stepsize}: step-size parameter scaling each IRWLS step (default \code{0.1})
+\item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
+\item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
+\item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
+\item \code{damping}: regularization parameter which is added to the diagonal of the Hessian to ensure numerical stability (default \code{1e-03})
+\item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
+\item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
+\item \code{parallel}: if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP} (default \code{FALSE})
+\item \code{nthreads}: number of cores to be used in parallel (only if \code{parallel=TTUE}, default \code{1})
+}
 }
 \keyword{internal}
