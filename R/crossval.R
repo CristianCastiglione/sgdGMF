@@ -82,7 +82,8 @@ sgdgmf.cv = function (
       for (fold in 1:nfolds) {
 
         # Print the eestimation status
-        cat("Rank:", ncomp, " Fold :", fold, "\n")
+        cat(" Rank:", paste(ncomp, maxcomp, sep = "/"),
+            " Fold:", paste(fold, nfolds, sep = "/"), "\n")
 
         # Estimated mean matrix
         mu = sgdgmf.fit(Y = data[[fold]]$train, X = X, Z = Z,
@@ -133,7 +134,7 @@ sgdgmf.cv = function (
     }
   }
 
-  cat("Final estimation \n")
+  cat("Final refit with rank = ", ncomp, " \n")
 
   # Fit the model using the chosen optimizer
   fit = sgdgmf.fit(Y = Y, X = X, Z = Z, family = family, ncomp = ncomp,
