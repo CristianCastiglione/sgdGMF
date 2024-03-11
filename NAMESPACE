@@ -1,3 +1,13 @@
 useDynLib(sgdGMF, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
 exportPattern("^[[:alpha:]]+")
+
+
+import(svd)
+import(RSpectra)
+import(parallel)
+import(doParallel)
+import(foreach)
+
+importFrom(vegan, procrustes)
+importFrom(whitening, whiteningMatrix)
