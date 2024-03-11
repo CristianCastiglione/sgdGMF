@@ -2,7 +2,7 @@
 % Please edit documentation in R/init.R
 \name{init.param.glm}
 \alias{init.param.glm}
-\title{GLM-SVD initialization}
+\title{GLM-SVD initialization (DEPRECATED)}
 \usage{
 init.param.glm(
   Y,
@@ -10,6 +10,7 @@ init.param.glm(
   Z = NULL,
   ncomp = 2,
   family = poisson(),
+  type = c("deviance", "pearson", "working"),
   verbose = FALSE
 )
 }
