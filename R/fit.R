@@ -138,9 +138,9 @@ sgdgmf.fit = function (
 
   # Initialize the parameters
   init = init.param(
-    Y = Y, X = X, Z = Z, ncomp = ncomp, family = family,
-    method = init$method, niter = init$niter,
-    values = init$values, verbose = init$verbose)
+    Y = Y, X = X, Z = Z, ncomp = ncomp, family = family, method = init$method,
+    type = init$type, niter = init$niter, values = init$values,
+    verbose = init$verbose, parallel = init$parallel, nthreads = init$threads)
 
   # Select the correct estimation method
   if (method == "airwls") {
