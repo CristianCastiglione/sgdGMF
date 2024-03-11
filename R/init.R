@@ -59,9 +59,12 @@ init.param = function (
     ncomp = 2,
     family = gaussian(),
     method = c("svd", "glm", "random", "values"),
+    type = c("deviance", "pearson", "working"),
     niter = 0,
     values = list(),
-    verbose = FALSE
+    verbose = FALSE,
+    parallel = FALSE,
+    nthreads = 1
 ) {
 
   method = match.arg(method)
@@ -71,7 +74,11 @@ init.param = function (
   if (method == "svd") {
     init = init.param.svd(Y, X, Z, ncomp, family, niter, verbose)
   } else if (method == "glm") {
-    init = init.param.glm(Y, X, Z, ncomp, family, verbose)
+    if (parallel) {
+      init = init.param.glm3(Y, X, Z, ncomp, family, type, verbose, nthreads)
+    } else {
+      init = init.param.glm2(Y, X, Z, ncomp, family, type, verbose)
+    }
   } else if (method == "random") {
     init = init.param.random(Y, X, Z, ncomp)
   } else if (method == "values") {
@@ -265,7 +272,7 @@ init.param.svd = function (
 }
 
 
-#' @title GLM-SVD initialization
+#' @title GLM-SVD initialization (DEPRECATED)
 #'
 #' @description
 #' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
@@ -280,94 +287,77 @@ init.param.glm = function (
     Z = NULL,
     ncomp = 2,
     family = poisson(),
+    type = c("deviance", "pearson", "working"),
     verbose = FALSE
 ) {
-  # We still have to implement parallel computation for
-  # independent row- and column-specific calculations
-
+  # Model dimensions
   n = nrow(Y)
   m = ncol(Y)
   d = ncomp
 
+  # Set the residual type
+  type = match.arg(type)
+
+  # Compute the transformed data
+  if (verbose) cat(" Initialization: working data \n")
+  isna = is.na(Y)
+  Y[] = apply(Y, 2, function (x) {
+    x[is.na(x)] = mean(x, na.rm = TRUE)
+    return (x)
+  })
+
   # Initialize the mean and variance matrices
-  eta = matrix(0, nrow = n, ncol = m)
+  eta = matrix(NA, nrow = n, ncol = m)
   mu = matrix(NA, nrow = n, ncol = m)
   var = matrix(NA, nrow = n, ncol = m)
+  res = matrix(NA, nrow = n, ncol = m)
 
   # column-specific covariate vector initialization
   if (verbose) cat(" Initialization: column-specific covariates \n")
-  res = c()
   B = c()
   for (j in 1:m) {
-    yj = Y[,j]
-    mj = mean(yj, na.rm = TRUE)
-    naj = is.na(yj)
-
-    if (any(naj)) {
-      if (family$family == "binomial") {
-        yj[naj] = rbinom(n = sum(naj), size = 1, prob = mj)
-        yj = as.factor(yj)
-      } else {
-        yj[naj] = mj
-      }
-    }
-
-    if (is.null(X)) {
-      res = cbind(res, yj)
-    } else {
-      m = glm(yj ~ X - 1, family = family)
-      B = rbind(B, m$coefficients)
-      res = cbind(res, m$residuals)
-    }
+    yj = as.vector(Y[,j])
+    fit = stats::glm.fit(x = X, y = yj, family = family)
+    B = rbind(B, fit$coefficients)
   }
 
-  # partial linear predictor
-  if (!is.null(X)) {
-    eta[] = eta + tcrossprod(X, B)
-  }
+  # Update the linear predictor
+  eta[] = tcrossprod(X, B)
 
   # row-specific covariate vector initialization
   if (verbose) cat(" Initialization: row-specific covariates \n")
-  res = c()
   A = c()
   for (i in 1:n) {
-    yi = Y[i,]
-    mi = mean(yi, na.rm = TRUE)
-    nai = is.na(yi)
-
-    if (any(nai)) {
-      if (family$family == "binomial") {
-        yi[nai] = rbinom(n = sum(nai), size = 1, prob = mi)
-        yi = as.factor(yi)
-      } else {
-        yi[nai] = mi
-      }
-    }
-
-    if (is.null(Z)) {
-      res = rbind(res, yi)
-    } else {
-      m = glm(yi ~ Z - 1, family = family, offset = eta[i,])
-      A = rbind(A, m$coefficients)
-      res = rbind(res, m$residuals)
-    }
+    yi = as.vector(Y[i,])
+    oi = as.vector(eta[i,])
+    fit = stats::glm.fit(x = Z, y = yi, family = family, offset = oi)
+    A = rbind(A, fit$coefficients)
   }
 
-  # partial linear predictor
-  if (!is.null(Z)) {
-    eta[] = eta + tcrossprod(A, Z)
-  }
+  # Update the linear predictor
+  eta[] = eta + tcrossprod(A, Z)
+  mu[] = family$linkinv(eta)
 
-  # residual matrix factorization for initializing the latent components U * Vt
-  if (verbose) cat(" Initialization: latent scores and loadings \n")
-  s = svd(res, nu = d, nv = d)
-  U = s$u %*% diag(sqrt(s$d[1:d]))
-  V = s$v %*% diag(sqrt(s$d[1:d]))
+  # Compute the residuals
+  if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
+  if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
+  if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
+
+  # Initialize the latent factors via residual SVD
+  if (verbose) cat(" Initialization: latent scores \n")
+  U = RSpectra::svds(res, k = ncomp)$u
+
+  # Initialize the loading matrix via GLM regression
+  if (verbose) cat(" Initialization: latent loadings \n")
+  V = c()
+  for (j in 1:m) {
+    yj = as.vector(Y[,j])
+    oj = as.vector(eta[,j])
+    fit = stats::glm.fit(x = U, y = yj, family = family, offset = oj)
+    V = rbind(V, fit$coefficients)
+  }
 
   # Compute the initial vector of dispersion parameters
-  # eta[] = eta + tcrossprod(U, V)
-  # if (!is.null(X)) eta = eta + tcrossprod(X, B)
-  # if (!is.null(Z)) eta = eta + tcrossprod(A, Z)
   eta[] = eta + tcrossprod(U, V)
   mu[] = family$linkinv(eta)
   var[] = family$variance(mu)
@@ -378,6 +368,230 @@ init.param.glm = function (
   if (is.null(Z)) A = matrix(0, nrow = nrow(Y), ncol = 0)
 
   # output
+  list(U = U, V = V, A = A, B = B, phi = phi)
+}
+
+
+#' @title GLM-SVD initialization
+#'
+#' @description
+#' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
+#' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
+#'
+#' @import RSpectra, parallel, doParallel, foreach
+#'
+#' @keywords internal
+init.param.glm2 = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    ncomp = 2,
+    family = poisson(),
+    type = c("deviance", "pearson", "working"),
+    verbose = FALSE
+) {
+  # Require the needed packages
+  # suppressPackageStartupMessages({
+  #   require(parallel)
+  #   require(doParallel)
+  #   require(foreach)
+  # })
+
+  # Model dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+  d = ncomp
+
+  # Set the residual type
+  type = match.arg(type)
+
+  # Compute the transformed data
+  if (verbose) cat(" Initialization: working data \n")
+  Y[] = apply(Y, 2, function (x) {
+    x[is.na(x)] = mean(x, na.rm = TRUE)
+    return (x)
+  })
+
+  # Set the covariate matrices
+  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+
+  # Initialize the mean and variance matrices
+  eta = matrix(NA, nrow = n, ncol = m)
+  mu  = matrix(NA, nrow = n, ncol = m)
+  var = matrix(NA, nrow = n, ncol = m)
+  res = matrix(NA, nrow = n, ncol = m)
+
+  # Column-specific covariate vector initialization
+  if (verbose) cat(" Initialization: column-specific covariates \n")
+  B = foreach(j = 1:m, .combine = "rbind") %do% {
+    yj = as.vector(Y[,j])
+    fit = stats::glm.fit(x = X, y = yj, family = family)
+    t(fit$coefficients)
+  }
+
+  # Update the linear predictor
+  eta[] = tcrossprod(X, B)
+
+  # Row-specific covariate vector initialization
+  if (verbose) cat(" Initialization: row-specific covariates \n")
+  A = foreach(i = 1:n, .combine = "rbind") %do% {
+    yi = as.vector(Y[i,])
+    oi = as.vector(eta[i,])
+    fit = stats::glm.fit(x = Z, y = yi, family = family, offset = oi)
+    fit$coefficients
+  }
+
+  # Update the linear predictor and the conditional mean matrix
+  eta[] = eta + tcrossprod(A, Z)
+  mu[] = family$linkinv(eta)
+
+  # Compute the residuals
+  if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
+  if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
+  if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
+
+  # Initialize the latent factors via residual SVD
+  if (verbose) cat(" Initialization: latent scores \n")
+  U = RSpectra::svds(res, k = ncomp)$u
+
+  # Initialize the loading matrix via GLM regression
+  if (verbose) cat(" Initialization: latent loadings \n")
+  V = foreach(j = 1:m, .combine = "rbind") %do% {
+    yj = as.vector(Y[,j])
+    oj = as.vector(eta[,j])
+    fit = stats::glm.fit(x = U, y = yj, family = family, offset = oj)
+    t(fit$coefficients)
+  }
+
+  # Compute the initial vector of dispersion parameters
+  eta[] = eta + tcrossprod(U, V)
+  mu[] = family$linkinv(eta)
+  var[] = family$variance(mu)
+  phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
+
+  # Initialization of the regression effects when there are no covariates
+  if (is.null(X)) B = matrix(0, nrow = ncol(Y), ncol = 0)
+  if (is.null(Z)) A = matrix(0, nrow = nrow(Y), ncol = 0)
+
+  # Output
+  list(U = U, V = V, A = A, B = B, phi = phi)
+}
+
+
+#' @title GLM-SVD initialization
+#'
+#' @description
+#' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
+#' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
+#'
+#' @import RSpectra, parallel, doParallel, foreach
+#'
+#' @keywords internal
+init.param.glm3 = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    ncomp = 2,
+    family = poisson(),
+    type = c("deviance", "pearson", "working"),
+    verbose = FALSE,
+    nthreads = 1
+) {
+  # Require the needed packages
+  suppressPackageStartupMessages({
+    require(parallel)
+    require(doParallel)
+    require(foreach)
+  })
+
+  # Model dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+  d = ncomp
+
+  # Set the residual type
+  type = match.arg(type)
+
+  # Compute the transformed data
+  if (verbose) cat(" Initialization: working data \n")
+  Y[] = apply(Y, 2, function (x) {
+    x[is.na(x)] = mean(x, na.rm = TRUE)
+    return (x)
+  })
+
+  # Set the covariate matrices
+  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+
+  # Initialize the mean and variance matrices
+  eta = matrix(NA, nrow = n, ncol = m)
+  mu  = matrix(NA, nrow = n, ncol = m)
+  var = matrix(NA, nrow = n, ncol = m)
+  res = matrix(NA, nrow = n, ncol = m)
+
+  # Register the clusters
+  ncores = parallel::detectCores() - 1
+  ncores = max(1, min(nthreads, ncores))
+  clust = parallel::makeCluster(ncores)
+  doParallel::registerDoParallel(clust)
+
+  # Column-specific covariate vector initialization
+  if (verbose) cat(" Initialization: column-specific covariates \n")
+  B = foreach(j = 1:m, .combine = "rbind") %dopar% {
+    yj = as.vector(Y[,j])
+    fit = stats::glm.fit(x = X, y = yj, family = family)
+    t(fit$coefficients)
+  }
+
+  # Update the linear predictor
+  eta[] = tcrossprod(X, B)
+
+  # Row-specific covariate vector initialization
+  if (verbose) cat(" Initialization: row-specific covariates \n")
+  A = foreach(i = 1:n, .combine = "rbind") %dopar% {
+    yi = as.vector(Y[i,])
+    oi = as.vector(eta[i,])
+    fit = stats::glm.fit(x = Z, y = yi, family = family, offset = oi)
+    fit$coefficients
+  }
+
+  # Update the linear predictor and the conditional mean matrix
+  eta[] = eta + tcrossprod(A, Z)
+  mu[] = family$linkinv(eta)
+
+  # Compute the residuals
+  if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
+  if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
+  if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
+
+  # Initialize the latent factors via residual SVD
+  if (verbose) cat(" Initialization: latent scores \n")
+  U = RSpectra::svds(res, k = ncomp)$u
+
+  # Initialize the loading matrix via GLM regression
+  if (verbose) cat(" Initialization: latent loadings \n")
+  V = foreach(j = 1:m, .combine = "rbind") %dopar% {
+    yj = as.vector(Y[,j])
+    oj = as.vector(eta[,j])
+    fit = stats::glm.fit(x = U, y = yj, family = family, offset = oj)
+    t(fit$coefficients)
+  }
+
+  # Close the connection to the clusters
+  parallel::stopCluster(clust)
+
+  # Compute the initial vector of dispersion parameters
+  eta[] = eta + tcrossprod(U, V)
+  mu[] = family$linkinv(eta)
+  var[] = family$variance(mu)
+  phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
+
+  # Initialization of the regression effects when there are no covariates
+  if (is.null(X)) B = matrix(0, nrow = ncol(Y), ncol = 0)
+  if (is.null(Z)) A = matrix(0, nrow = nrow(Y), ncol = 0)
+
+  # Output
   list(U = U, V = V, A = A, B = B, phi = phi)
 }
 
