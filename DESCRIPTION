@@ -3,11 +3,18 @@ Type: Package
 Title: Estimation of generalized matrix factorization models via stochastic gradient descent
 Version: 1.0
 Date: 2023-09-28
-Author: Who wrote it
+Author: Cristian Castiglione, Davide Risso
 Maintainer: Cristian Castiglione <cristian.castiglione@unipd.it>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
-Imports: Rcpp (>= 1.0.10), RSpectra, svd, whitening, foreach
+Imports: 
+    Rcpp (>= 1.0.10), 
+    RSpectra, 
+    svd, 
+    whitening, 
+    parallel, 
+    doParallel, 
+    foreach
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
     testthat (>= 3.0.0),
