@@ -89,14 +89,22 @@ set.init = function (init) {
 
   default = list()
   default$method = "svd"
+  default$type = "deviance"
   default$values = list()
   default$niter = 5
   default$normalize = TRUE
   default$verbose = FALSE
+  default$parallel = FALSE
+  default$nthreads = 1
 
   if (check.class(init$method, "character")) {
     if (init$method %in% c("glm", "svd", "random", "values")) {
       default$method = init$method
+    }
+  }
+  if (check.class(init$type, "character")) {
+    if (init$type %in% c("deviance", "pearson", "working")) {
+      default$type = init$type
     }
   }
   if (check.class(init$niter, "numeric")) {
@@ -112,6 +120,14 @@ set.init = function (init) {
   }
   if (check.class(init$values, "list")) {
     default$values = init$values
+  }
+  if (check.class(init$parallel, "logical")) {
+    default$parallel = init$parallel
+  }
+  if (check.class(init$nthreads, "numeric")) {
+    if (floor(init$nthreads) >= 0) {
+      default$nthreads = floor(init$nthreads)
+    }
   }
 
   return (default)
