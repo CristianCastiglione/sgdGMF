@@ -11,9 +11,12 @@ init.param(
   ncomp = 2,
   family = gaussian(),
   method = c("svd", "glm", "random", "values"),
+  type = c("deviance", "pearson", "working"),
   niter = 0,
   values = list(),
-  verbose = FALSE
+  verbose = FALSE,
+  parallel = FALSE,
+  nthreads = 1
 )
 }
 \arguments{
