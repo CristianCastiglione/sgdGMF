@@ -34,6 +34,56 @@ set.mat.X = function (X, n, mat = "X") {
   return (X)
 }
 
+#' @title Check and set the model family
+#'
+#' @description
+#' Check if the model family is well-defined and return it eventualy with a
+#' different family name for compatibility with \code{C++}
+#'
+#' @keywords internal
+set.family = function (family) {
+
+  flag = TRUE
+  if (check.class(family, "family")) {
+    # Gaussian family
+    if (family$family == "gaussian") {
+      if (family$link == "identity") {
+        flag = FALSE
+      }
+    }
+    # Binomial family
+    if (family$family %in% c("binomial", "quasibinomial")) {
+      if (family$link %in% c("logit", "probit", "cauchit", "cloglog")) {
+        flag = FALSE
+      }
+    }
+    # Poisson family
+    if (family$family %in% c("poisson", "quasipoisson")) {
+      if (family$link == "log") {
+        flag = FALSE
+      }
+    }
+    # Gamma family
+    if (family$family == "gamma") {
+      if (family$link %in% c("inverse", "log", "sqrt")) {
+        flag = FALSE
+      }
+    }
+    # Negtive Binomial family
+    if (family$family == "Negative Binomial" | substring(family$family, 1, 17) == "Negative Binomial") {
+      if (family$link %in% c("inverse", "log", "sqrt")) {
+        family$family = "negbinom"
+        flag = FALSE
+      }
+    }
+  }
+  if (flag) {
+    stop("Family not available")
+  }
+
+  return (family)
+}
+
 #' @title Check and set the cross-validation parameters
 #'
 #' @description
@@ -610,7 +660,9 @@ set.jitter = function (family) {
   if (family$family %in% c("Gamma", "inverse.gaussian")) {
     f = function(x) family$linkfun(x)
   }
-  if (substring(family$family, first = 1, last = 17) == "Negative Binomial") {
+  if (family$family == "negbinom" |
+      family$family == "Negative Binomial" |
+      substring(family$family, first = 1, last = 17) == "Negative Binomial") {
     f = function(x) family$linkfun(x + (x == 0) / 6)
   }
   return (f)
