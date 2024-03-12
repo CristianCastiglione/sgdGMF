@@ -5,7 +5,9 @@ Version: 1.0
 Date: 2023-09-28
 Author: 
     person("Cristian", "Castiglione", email = "cristian.castiglione@unipd.it", 
-           role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890"))
+           role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
+    person("Davide", "Risso", email = "davide.risso@unipd.it", 
+           role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012"))
 Maintainer: Cristian Castiglione <cristian.castiglione@unipd.it>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
