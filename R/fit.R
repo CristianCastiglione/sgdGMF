@@ -130,6 +130,7 @@ sgdgmf.fit = function (
 
   # Check and set the control parameters
   method = match.arg(method)
+  family = set.family(family)
   ctr = set.control(method, control)
   lambda = set.penalty(penalty)
   init = set.init(init)
