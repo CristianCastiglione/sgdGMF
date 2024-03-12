@@ -10,4 +10,19 @@ set.init(init)
 Check if the input initialization parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined initialization parameters.
 }
+\details{
+It takes in input a list of options which define how to initialize the GMF model
+parameters. It returns a list of safe initialization parameters containing the
+following elements:
+\itemize{
+\item \code{method}:
+\item \code{type}:
+\item \code{values}:
+\item \code{niter}:
+\item \code{normalize}:
+\item \code{verbose}:
+\item \code{parallel}:
+\item \code{nthreads}:
+}
+}
 \keyword{internal}
