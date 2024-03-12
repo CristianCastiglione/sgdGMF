@@ -4,10 +4,8 @@ Title: Estimation of generalized matrix factorization models via stochastic grad
 Version: 1.0
 Date: 2023-09-28
 Author: 
-    person("Cristian", "Castiglione", 
-           email = "cristian.castiglione@unipd.it", 
-           role = c("aut","cre"), 
-           comment = c(ORCID = "0000-0001-5883-4890"))
+    person("Cristian", "Castiglione", email = "cristian.castiglione@unipd.it", 
+           role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890"))
 Maintainer: Cristian Castiglione <cristian.castiglione@unipd.it>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
