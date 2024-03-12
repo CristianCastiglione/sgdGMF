@@ -76,4 +76,3 @@ using the same strategy described in \code{method="svd"}.
 ...
 
 }
-\keyword{internal}
