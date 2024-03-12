@@ -51,7 +51,7 @@
 #' @examples
 #' ...
 #'
-#' @keywords internal
+#' @export
 init.param = function (
     Y,
     X = NULL,
@@ -141,8 +141,6 @@ init.param.random = function (
 #' linear regression followed by a residual SVD decomposition. It allows to
 #' recursively refine the initial estimate by repeating the process a pre-specified
 #' number of times. See \code{\link{init.param}} for more details.
-#'
-#' @import svd
 #'
 #' @keywords internal
 init.param.svd = function (
@@ -278,8 +276,6 @@ init.param.svd = function (
 #' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
 #' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
 #'
-#' @import svd
-#'
 #' @keywords internal
 init.param.glm = function (
     Y,
@@ -377,8 +373,6 @@ init.param.glm = function (
 #' @description
 #' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
 #' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
-#'
-#' @import RSpectra, parallel, doParallel, foreach
 #'
 #' @keywords internal
 init.param.glm2 = function (
@@ -484,8 +478,6 @@ init.param.glm2 = function (
 #' @description
 #' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
 #' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
-#'
-#' @import RSpectra, parallel, doParallel, foreach
 #'
 #' @keywords internal
 init.param.glm3 = function (
@@ -603,8 +595,6 @@ init.param.glm3 = function (
 #' and estimating the unspecified parameters using the same procedure described in
 #' \code{\link{init.param.svd}}. See \code{\link{init.param}} for more details.
 #'
-#' @import svd
-#'
 #' @keywords internal
 init.param.custom = function (
     Y,
@@ -683,7 +673,7 @@ init.param.custom = function (
   # If both U and V are provided, orthogonalize them via incomplete SVD
   if (!is.null(U) & !is.null(V)) {
     uv = tcrossprod(U, V)
-    s = svd::propack.svd(uv, neig = d)
+    s = RSpectra::svds(uv, k = d)
     U = s$u %*% diag(sqrt(s$d))
     V = s$v %*% diag(sqrt(s$d))
   }
@@ -697,7 +687,7 @@ init.param.custom = function (
     U = t(solve(vtv, vty))
     # Orthogonalize U and V via incomplete SVD
     uv = tcrossprod(U, V)
-    s = svd::propack.svd(uv, neig = d)
+    s = RSpectra::svds(uv, k = d)
     U = s$u %*% diag(sqrt(s$d))
     V = s$v %*% diag(sqrt(s$d))
   }
@@ -711,7 +701,7 @@ init.param.custom = function (
     V = t(solve(utu, uty))
     # Orthogonalize U and V via incomplete SVD
     uv = tcrossprod(U, V)
-    s = svd::propack.svd(uv, neig = d)
+    s = RSpectra::svds(uv, k = d)
     U = s$u %*% diag(sqrt(s$d))
     V = s$v %*% diag(sqrt(s$d))
   }
@@ -720,7 +710,7 @@ init.param.custom = function (
   # calculated over the regression residuals
   if (is.null(U) & is.null(V)) {
     if (verbose) cat(" Initialization: latent scores and loadings \n")
-    s = svd::propack.svd(y - xb - az, neig = d)
+    s = RSpectra::svds(y - xb - az, k = d)
     U = s$u %*% diag(sqrt(s$d))
     V = s$v %*% diag(sqrt(s$d))
     uv = tcrossprod(U, V)
