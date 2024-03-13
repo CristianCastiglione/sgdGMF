@@ -231,10 +231,14 @@ Rcpp::List CSGD::fit (
     this->init_phi(phi, df, Y, mu, family);
 
     // Get the initial deviance, penalty and objective function
-    double dev, pen, obj, objt, change, scanned;
+    double dev, pen, obj;
+    double devt, objt;
+    double change, scanned;
     dev = arma::accu(deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
-    obj = dev + 0.5 * pen; objt = obj;
+    obj = dev + 0.5 * pen;
+    devt = dev;
+    objt = obj;
     change = INFINITY;
     scanned = 0;
 
@@ -313,9 +317,14 @@ Rcpp::List CSGD::fit (
         if (iter % frequency == 0) {
             // Update the deviance, penalty and objective functions
             dev = arma::accu(deviance(Y, mu, family));
-            pen = penalty(u, penu) + penalty(v, penv);
-            objt = obj; obj = dev + 0.5 * pen;
+            pen = penalty(ut, penu) + penalty(vt, penv);
+            // objt = obj; 
+            obj = dev + 0.5 * pen;
             change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
+
+            // Save the current values of the daviance, penalty and objective function
+            devt = dev;
+            objt = obj;
 
             // Get the current execution time
             end = clock();
@@ -334,6 +343,10 @@ Rcpp::List CSGD::fit (
         if (change < this->tol) {break;}
     }
 
+    // Save the final deviance, penalty and objective function
+    devt = dev;
+    objt = obj;
+
     // Get the estimated predictions
     eta = get_eta(u, v, etalo, etaup);
     mu = family->linkinv(eta);
@@ -349,7 +362,7 @@ Rcpp::List CSGD::fit (
     time = exetime(start, end);
 
     if (this->verbose) {
-        print_state(iter, dev / nm, change, time, scanned);
+        print_state(iter, devt / nm, change, time, scanned);
         std::printf("------------------------------------------------------\n");
     }
     
