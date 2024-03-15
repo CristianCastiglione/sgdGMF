@@ -12,8 +12,8 @@ sgdgmf.fit(
   ncomp = 2,
   method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
   penalty = list(),
-  init = list(),
-  control = list()
+  control.init = list(),
+  control.alg = list()
 )
 }
 \arguments{
