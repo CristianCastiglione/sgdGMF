@@ -119,8 +119,8 @@ sgdgmf.fit = function (
     ncomp = 2,
     method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
     penalty = list(),
-    init = list(),
-    control = list()
+    control.init = list(),
+    control.alg = list()
 ) {
 
   # Check and set the model matrices
@@ -128,20 +128,37 @@ sgdgmf.fit = function (
   X = set.mat.X(X, nrow(Y), "X")
   Z = set.mat.X(Z, ncol(Y), "Z")
 
-  # Check and set the control parameters
-  method = match.arg(method)
+  # Check the model family
   family = set.family(family)
-  ctr = set.control(method, control)
-  lambda = set.penalty(penalty)
-  init = set.init(init)
   familyname = family$family
   linkname = family$link
 
+  # Check the optimization method
+  method = match.arg(method)
+
+  # Check the penalty terms
+  lambda = do.call("set.penalty", penalty)
+
+  # Check the control parameters for the initialization
+  control.init = do.call("set.control.init", control.init)
+
+  # Check the control parameters for the optimization
+  if (method == "airwls") control.alg = do.call("set.control.airwls", control.alg)
+  if (method == "newton") control.alg = do.call("set.control.newton", control.alg)
+  if (method == "msgd") control.alg = do.call("set.control.msgd", control.alg)
+  if (method == "csgd") control.alg = do.call("set.control.csgd", control.alg)
+  if (method == "rsgd") control.alg = do.call("set.control.rsgd", control.alg)
+  if (method == "bsgd") control.alg = do.call("set.control.bsgd", control.alg)
+
+  alg = control.alg
+
   # Initialize the parameters
   init = init.param(
-    Y = Y, X = X, Z = Z, ncomp = ncomp, family = family, method = init$method,
-    type = init$type, niter = init$niter, values = init$values,
-    verbose = init$verbose, parallel = init$parallel, nthreads = init$threads)
+    Y = Y, X = X, Z = Z, ncomp = ncomp,
+    family = family, method = control.init$method,
+    type = control.init$type, niter = control.init$niter,
+    values = control.init$values,verbose = control.init$verbose,
+    parallel = control.init$parallel, nthreads = control.init$threads)
 
   # Select the correct estimation method
   if (method == "airwls") {
@@ -149,11 +166,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.airwls(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = ctr$maxiter, nstep = ctr$nstep, stepsize = ctr$stepsize,
-      eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
-      damping = ctr$damping, verbose = ctr$verbose,
-      frequency = ctr$frequency, parallel = ctr$parallel,
-      nthreads = ctr$nthreads
+      maxiter = alg$maxiter, nstep = alg$nstep, stepsize = alg$stepsize,
+      eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      damping = alg$damping, verbose = alg$verbose,
+      frequency = alg$frequency, parallel = alg$parallel,
+      nthreads = alg$nthreads
     )
   }
   if (method == "newton") {
@@ -161,10 +178,10 @@ sgdgmf.fit = function (
     fit = cpp.fit.newton(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = ctr$maxiter, stepsize = ctr$stepsize, eps = ctr$eps,
-      nafill = ctr$nafill, tol = ctr$tol, damping = ctr$damping,
-      verbose = ctr$verbose, frequency = ctr$frequency,
-      parallel = ctr$parallel, nthreads = ctr$nthreads
+      maxiter = alg$maxiter, stepsize = alg$stepsize, eps = alg$eps,
+      nafill = alg$nafill, tol = alg$tol, damping = alg$damping,
+      verbose = alg$verbose, frequency = alg$frequency,
+      parallel = alg$parallel, nthreads = alg$nthreads
     )
   }
   if (method == "msgd") {
@@ -172,11 +189,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.msgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
-      size = ctr$size, burn = ctr$burn, rate0 = ctr$rate0, decay = ctr$decay,
-      damping = ctr$damping, rate1 = control$rate1, rate2 = ctr$rate2,
-      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
-      frequency = ctr$frequency, progress = ctr$progress
+      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      size = alg$size, burn = alg$burn, rate0 = alg$rate0, decay = alg$decay,
+      damping = alg$damping, rate1 = control$rate1, rate2 = alg$rate2,
+      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      frequency = alg$frequency, progress = alg$progress
     )
   }
   if (method == "csgd") {
@@ -184,11 +201,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.csgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
-      size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
-      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate1, rate2 = ctr$rate2,
-      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
-      frequency = ctr$frequency, progress = ctr$progress
+      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
+      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
+      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      frequency = alg$frequency, progress = alg$progress
     )
   }
   if (method == "rsgd") {
@@ -196,11 +213,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.rsgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
-      size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
-      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate1, rate2 = ctr$rate2,
-      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
-      frequency = ctr$frequency, progress = ctr$progress
+      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
+      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
+      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      frequency = alg$frequency, progress = alg$progress
     )
   }
   if (method == "bsgd") {
@@ -208,11 +225,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.bsgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = ctr$maxiter, eps = ctr$eps, nafill = ctr$nafill, tol = ctr$tol,
-      size1 = ctr$size[1], size2 = ctr$size[2], burn = ctr$burn, rate0 = ctr$rate0,
-      decay = ctr$decay, damping = ctr$damping, rate1 = ctr$rate1, rate2 = ctr$rate2,
-      parallel = ctr$parallel, nthreads = ctr$nthreads, verbose = ctr$verbose,
-      frequency = ctr$frequency, progress = ctr$progress
+      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
+      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
+      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      frequency = alg$frequency, progress = alg$progress
     )
   }
 
@@ -231,10 +248,11 @@ sgdgmf.fit = function (
 
   # Output list
   out = list()
-  out$method = fit$method
+  out$method = method
   out$family = family
   out$ncomp = ncomp
-  out$control = ctr
+  out$control.init = control.init
+  out$control.alg = control.alg
   out$A = fit$U[, idxA]
   out$B = fit$V[, idxB]
   out$U = fit$U[, idxU]
@@ -253,11 +271,15 @@ sgdgmf.fit = function (
   colnames(out$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
 
   # Normalize the latent factors
-  if (ctr$normalize) {
+  if (alg$normalize) {
     uv = normalize.uv(out$U, out$V, method = "qr")
     out$U = uv$U
     out$V = uv$V
   }
 
+  # Set the S3 class of the output model
+  class(out) = "sgdgmf"
+
+  # Return the estimated model
   return (out)
 }
