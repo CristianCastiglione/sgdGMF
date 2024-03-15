@@ -11,10 +11,10 @@ sgdgmf.cv(
   family = poisson(),
   ncomp = 2,
   method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
-  cvopt = list(),
   penalty = list(),
-  init = list(),
-  control = list()
+  control.init = list(),
+  control.alg = list(),
+  control.cv = list()
 )
 }
 \arguments{
@@ -33,13 +33,13 @@ sgdgmf.cv(
 
 \item{penalty}{list of penalty parameters corresponding to u, v, a and b}
 
-\item{init}{list of initialization options}
-
-\item{control}{list of optimization options}
-
 \item{nfolds}{number of cross-validation folds (default 5)}
 
 \item{parallel}{if \code{TRUE}, use parallel \code{foreach} to fit the models over different folds}
+
+\item{init}{list of initialization options}
+
+\item{control}{list of optimization options}
 }
 \value{
 ...
