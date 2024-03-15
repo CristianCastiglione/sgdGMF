@@ -9,8 +9,6 @@
 #' @importFrom stats glm.fit
 #' @importFrom svd propack.svd
 #' @importFrom RSpectra eigs svds
-#' @importFrom vegan procrustes
-#' @importFrom whitening whiteningMatrix
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach %do% %dopar% foreach
