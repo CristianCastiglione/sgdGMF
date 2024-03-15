@@ -39,14 +39,14 @@ sgdgmf.cv = function (
     family = poisson(),
     ncomp = 2,
     method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
-    cvopt = list(),
     penalty = list(),
-    init = list(),
-    control = list()
+    control.init = list(),
+    control.alg = list(),
+    control.cv = list()
 ) {
 
   # Sanity check for the cross-validation options
-  cvopt = set.cvopt(cvopt)
+  control.cv = do.call("set.control.cv", control.cv)
 
   # Data dimensions
   n = nrow(Y)
@@ -57,9 +57,9 @@ sgdgmf.cv = function (
 
   # Maximum rank
   maxcomp = ncomp
-  nfolds = cvopt$nfolds
-  parallel = cvopt$parallel
-  nthreads = cvopt$nthreads
+  nfolds = control.cv$nfolds
+  parallel = control.cv$parallel
+  nthreads = control.cv$nthreads
 
   # Perform model selection minimizing the test deviance
   {
@@ -86,9 +86,9 @@ sgdgmf.cv = function (
             " Fold:", paste(fold, nfolds, sep = "/"), "\n")
 
         # Estimated mean matrix
-        mu = sgdgmf.fit(Y = data[[fold]]$train, X = X, Z = Z,
-                        family = family, ncomp = ncomp, method = method,
-                        penalty = penalty, init = init, control = control)$mu
+        mu = sgdgmf.fit(Y = data[[fold]]$train, X = X, Z = Z, family = family,
+                        ncomp = ncomp, method = method, penalty = penalty,
+                        control.init = control.init, control.alg = control.alg)$mu
 
         # Train and test sample sizes
         n.train = (1-f)*n*m
@@ -116,8 +116,7 @@ sgdgmf.cv = function (
 
     # Rank selection
     if (nfolds > 1) {
-      avgres = data.frame(ncomp = c(), fold = c(), df = c(),
-                          aic = c(), bic = c(), dev = c())
+      avgcv = data.frame(ncomp = c(), fold = c(), df = c(), aic = c(), bic = c(), dev = c())
       for (ncomp in 1:maxcomp) {
         for (fold in 1:nfolds) {
           df = mean(cv$df[(cv$ncomp == ncomp) & (cv$fold == fold)])
@@ -125,27 +124,27 @@ sgdgmf.cv = function (
           bic = mean(cv$bic[(cv$ncomp == ncomp) & (cv$fold == fold)])
           dev = mean(cv$dev[(cv$ncomp == ncomp) & (cv$fold == fold)])
           avgstat = data.frame(ncomp = ncomp, df = df, aic = aic, bic = bic, dev = dev)
-          avgres = rbind(avgres, avgstat)
+          avgcv = rbind(avgcv, avgstat)
         }
       }
-      ncomp = which.min(cv$dev)+1
+      ncomp = avgcv$ncomp[which.min(avgcv$dev)]
     } else {
-      ncomp = which.min(cv$dev)+1
+      ncomp = vc$ncomp[which.min(cv$dev)]
     }
   }
 
   cat("Final refit with rank = ", ncomp, " \n")
 
   # Fit the model using the chosen optimizer
-  fit = sgdgmf.fit(Y = Y, X = X, Z = Z, family = family, ncomp = ncomp,
-                   method = method, penalty = penalty, init = init, control = control)
+  fit = sgdgmf.fit(Y = Y, X = X, Z = Z, family = family,
+                   ncomp = ncomp, method = method, penalty = penalty,
+                   control.init = control.init, control.alg = control.alg)
+
+  # Return the cross-validation parameters
+  fit$control.cv = control.cv
 
   # Return the cross-validation statistics
   fit$cv.stat = cv
-
-
-  # Convert the result in a S3 class
-  class(fit) = "sgdgmf"
 
   # Return the fitted model
   return (fit)
