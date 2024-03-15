@@ -23,18 +23,17 @@ sgdgmf.fit(
 
 \item{Z}{matrix of column fixed effects (\eqn{q \times m})}
 
-\item{family}{a family as in the \code{\link{glm}} interface (default \code{gaussian()})}
+\item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
 
 \item{ncomp}{rank of the latent matrix factorization (default 2)}
 
-\item{method}{optimization method: \code{"airwls"} (default),
-\code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}}
+\item{method}{estimation method to minimize the negative penalized log-likelihood}
 
-\item{penalty}{list of penalty parameters}
+\item{penalty}{list of penalty parameters (see \code{\link{set.penalty}} for more details)}
 
-\item{init}{list of initialization options}
+\item{control.init}{list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)}
 
-\item{control}{list of optimization options}
+\item{control.alg}{list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)}
 }
 \value{
 An \code{sgdgmf} object, namely a list, containing the estimated parameters of the GMF model.
