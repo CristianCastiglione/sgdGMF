@@ -9,7 +9,7 @@ sgdgmf.cv(
   X = NULL,
   Z = NULL,
   family = poisson(),
-  ncomp = 2,
+  ncomps = seq(from = 1, to = 10, by = 1),
   method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
   penalty = list(),
   control.init = list(),
@@ -24,22 +24,19 @@ sgdgmf.cv(
 
 \item{Z}{matrix of column fixed effects (\eqn{q \times m})}
 
-\item{family}{a family as in the \code{\link{glm}} interface}
+\item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
 
-\item{ncomp}{number of random effects to estimate (default 2)}
+\item{ncomps}{rank of the latent matrix factorization (default 2)}
 
-\item{method}{optimization method: \code{"airwls"} (default),
-\code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}}
+\item{method}{estimation method to minimize the negative penalized log-likelihood}
 
-\item{penalty}{list of penalty parameters corresponding to u, v, a and b}
+\item{penalty}{list of penalty parameters (see \code{\link{set.penalty}} for more details)}
 
-\item{nfolds}{number of cross-validation folds (default 5)}
+\item{control.init}{list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)}
 
-\item{parallel}{if \code{TRUE}, use parallel \code{foreach} to fit the models over different folds}
+\item{control.alg}{list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)}
 
-\item{init}{list of initialization options}
-
-\item{control}{list of optimization options}
+\item{control.cv}{list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)}
 }
 \value{
 ...
