@@ -4,30 +4,62 @@
 \alias{set.control.bsgd}
 \title{Check and set the control parameters for the blockwise-SGD algorithm}
 \usage{
-set.control.bsgd(control)
+set.control.bsgd(
+  normalize = TRUE,
+  maxiter = 1000,
+  eps = 1e-08,
+  nafill = 10,
+  tol = 1e-08,
+  size = c(100, 100),
+  burn = 1,
+  rate0 = 0.01,
+  decay = 0.01,
+  damping = 0.001,
+  rate1 = 0.1,
+  rate2 = 0.01,
+  parallel = FALSE,
+  nthreads = 1,
+  verbose = TRUE,
+  frequency = 250,
+  progress = FALSE
+)
+}
+\arguments{
+\item{normalize}{if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal}
+
+\item{maxiter}{maximum number of iterations}
+
+\item{eps}{how much shrinkage has to be introduced on extreme predictions lying outside of the data range}
+
+\item{nafill}{how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm}
+
+\item{tol}{tolerance threshold for the stopping criterion}
+
+\item{size}{mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample}
+
+\item{burn}{percentage of iterations to ignore before performing Polyak averaging}
+
+\item{rate0}{initial learning rate}
+
+\item{decay}{learning rate decay}
+
+\item{damping}{regularization parameter which is added to the Hessian to ensure numerical stability}
+
+\item{rate1}{exponential decay rate for the moment estimate of the gradient}
+
+\item{rate2}{exponential decay rate for the moment estimate of the Hessian}
+
+\item{parallel}{...}
+
+\item{nthreads}{...}
+
+\item{verbose}{if \code{TRUE}, print the optimization status}
+
+\item{frequency}{how often the optimization status is printed (only if \code{verbose=TRUE})}
+
+\item{progress}{if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})}
 }
 \description{
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.
-
-\itemize{
-\item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
-\item \code{maxiter}: maximum number of iterations (default \code{1000})
-\item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
-\item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{10})
-\item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
-\item \code{size}: mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample (default \code{c(100, 100)})
-\item \code{burn}: percentage of iterations to ignore before performing Polyak averaging (default \code{0.75})
-\item \code{rate0}: initial learning rate (default \code{0.01})
-\item \code{decay}: learning rate decay (default \code{0.01})
-\item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
-\item \code{rate1}: exponential decay rate for the moment estimate of the gradient (default \code{0.1})
-\item \code{rate2}: exponential decay rate for the moment estimate of the Hessian (default \code{0.01})
-\item \code{parallel}: ...
-\item \code{nthreads}: ...
-\item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
-\item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
-\item \code{progress}: if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
 }
-}
-\keyword{internal}
