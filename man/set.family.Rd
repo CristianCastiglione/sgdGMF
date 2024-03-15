@@ -6,8 +6,10 @@
 \usage{
 set.family(family)
 }
-\description{
-Check if the model family is well-defined and return it eventualy with a
-different family name for compatibility with \code{C++}
+\arguments{
+\item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
 }
-\keyword{internal}
+\description{
+Check if the model family is allowed and return it eventually with a
+different family name for compatibility with the \code{C++} implementation
+}
