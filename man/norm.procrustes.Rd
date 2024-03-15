@@ -6,7 +6,12 @@
 \usage{
 norm.procrustes(A, B)
 }
+\arguments{
+\item{A}{target matrix}
+
+\item{B}{matrix to be rotated}
+}
 \description{
-...
+Compute the Procrustes distance between two matrices
 }
 \keyword{internal}
