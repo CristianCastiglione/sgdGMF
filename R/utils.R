@@ -22,23 +22,131 @@ normx = function (x, p = 2) {
 }
 
 #' @keywords internal
-max0 = function (x) {
+max.zero = function (x) {
   0.5 * (abs(x) + x)
 }
 
 #' @keywords internal
 soft.threshold = function (x, a) {
-  sign(x) * max0(abs(x) - a)
+  y = abs(x) - a
+  0.5 * sign(x) * (abs(y) + y)
+}
+
+#' @title Procrustes rotation of two configurations
+#' @description Rotates a configuration to maximum similarity with another configuration
+#' @param X target matrix
+#' @param Y matrix to be rotated
+#' @param scale allow scaling of axes of Y
+#' @param symmetric if \code{TRUE}, use symmetric Procrustes statistic
+#' @keywords internal
+procrustes <- function (X, Y, scale = TRUE, symmetric = FALSE) {
+  # X <- vegan::scores(X, display = scores, ...)
+  # Y <- vegan::scores(Y, display = scores, ...)
+  if (nrow(X) != nrow(Y))
+    stop(gettextf("matrices have different number of rows: %d and %d", nrow(X), nrow(Y)))
+  if (ncol(X) < ncol(Y)) {
+    warning("X has fewer axes than Y: X adjusted to comform Y\n")
+    addcols <- ncol(Y) - ncol(X)
+    for (i in 1:addcols) X <- cbind(X, 0)
+  }
+  ctrace <- function(mat) sum(mat^2)
+  c <- 1
+  if (symmetric) {
+    X <- scale(X, scale = FALSE)
+    Y <- scale(Y, scale = FALSE)
+    X <- X / sqrt(ctrace(X))
+    Y <- Y / sqrt(ctrace(Y))
+  }
+  xmean <- colMeans(X, 2, mean)
+  ymean <- colMeans(Y, 2, mean)
+  if (!symmetric) {
+    X <- scale(X, scale = FALSE)
+    Y <- scale(Y, scale = FALSE)
+  }
+  XY <- crossprod(X, Y)
+  sol <- svd(XY)
+  A <- sol$v %*% t(sol$u)
+  if (scale) {
+    c <- sum(sol$d) / ctrace(Y)
+  }
+  Yrot <- c * Y %*% A
+  ## Translation (b) needs scale (c) although Mardia et al. do not
+  ## have this. Reported by Christian Dudel.
+  b <- xmean - c * ymean %*% A
+  R2 <- ctrace(X) + c * c * ctrace(Y) - 2 * c * sum(sol$d)
+  result <- list(Yrot = Yrot, X = X, ss = R2, rotation = A,
+                 translation = b, scale = c, xmean = xmean,
+                 symmetric = symmetric, call = match.call())
+  result$svd <- sol
+  class(reslt) <- "procrustes"
+  return(result)
 }
 
 #' @title Procrustes distance
-#' @description ...
-#' @importFrom vegan procrustes
+#' @description Compute the Procrustes distance between two matrices
+#' @param A target matrix
+#' @param B matrix to be rotated
 #' @keywords internal
 norm.procrustes = function(A, B){
   A = A / norm(A, type = "F")
   B = B / norm(B, type = "F")
-  vegan::procrustes(A, B)
+  procrustes(A, B)
+  # vegan::procrustes(A, B)
+}
+
+#' @title Fix sign ambiguity of eigen-vectors
+#' @description Fix sign ambiguity of eigen-vectors by making U positive diagonal
+#' @keywords internal
+make.pos.diag = function(U) {
+  sweep(U, 2, sign(diag(U)), "*")
+}
+
+#' @title Compute the whitening matrix from a given covariance matrix
+#' @description Compute the whitening matrix from a given covariance matrix
+#' @param sigma covariance matrix.
+#' @param method determines the type of whitening transformation.
+#' @keywords internal
+whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
+
+  v = diag(sigma)
+  method = match.arg(method)
+  if (method == "ZCA" | method == "PCA") {
+    eS = eigen(sigma, symmetric = TRUE)
+    U = eS$vectors
+    lambda = eS$values
+  }
+  if (method == "ZCA-cor" | method == "PCA-cor") {
+    R = stats::cov2cor(sigma)
+    eR = eigen(R, symmetric = TRUE)
+    G = eR$vectors
+    theta = eR$values
+  }
+  if (method == "ZCA") {
+    W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
+  }
+  if (method == "PCA") {
+    U = make.pos.diag(U)
+    W = diag(1 / sqrt(lambda)) %*% t(U)
+  }
+  if (method == "Cholesky") {
+    W = solve(t(chol(sigma)))
+  }
+  if (method == "ZCA-cor"){
+    W = G %*% diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
+  }
+  if (method == "PCA-cor") {
+    G = make.pos.diag(G)
+    W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
+  }
+
+  result = list()
+
+  colnames(W) = colnames(sigma)
+  rownames(W) = paste0("L", 1:ncol(sigma))
+  attr(W, "method") = method
+  result$W = W
+
+  return(result)
 }
 
 #' @title Normalize the matrices U and V
@@ -47,10 +155,8 @@ norm.procrustes = function(A, B){
 #' Rotate U and V in such a way that the transformed matrices
 #' are such that U is orthogonal and V is lower triangular
 #'
-#' @importFrom whitening whiteningMatrix
-#'
 #' @keywords internal
-normalize.uv = function(U, V, method = c("svd", "qr")){
+normalize.uv = function (U, V, method = c("svd", "qr")) {
 
   method = match.arg(method)
 
@@ -75,11 +181,11 @@ normalize.uv = function(U, V, method = c("svd", "qr")){
       V = V * sqrt(S)
     } else {
       try({
-        # Computet the cov of U
+        # Compute the covariance of U
         S = cov(U)
 
-        # Make cov of U identity
-        W = whitening::whiteningMatrix(S)
+        # Make the covariance of U identity
+        W = whitening.matrix(S)
         U = U %*% W
         V = V %*% t(solve(W))
 
