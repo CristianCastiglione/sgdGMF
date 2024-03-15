@@ -4,10 +4,18 @@
 \alias{set.penalty}
 \title{Check and set the penalty parameters}
 \usage{
-set.penalty(penalty)
+set.penalty(B = 0, A = 0, U = 1, V = 0)
+}
+\arguments{
+\item{B}{penalty parameter of \code{B}}
+
+\item{A}{penalty parameter of \code{A}}
+
+\item{U}{penalty parameter of \code{U}}
+
+\item{V}{penalty parameter of \code{V}}
 }
 \description{
 Check if the input penalty parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined penalty parameters.
 }
-\keyword{internal}
