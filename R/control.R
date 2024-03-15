@@ -37,10 +37,12 @@ set.mat.X = function (X, n, mat = "X") {
 #' @title Check and set the model family
 #'
 #' @description
-#' Check if the model family is well-defined and return it eventualy with a
-#' different family name for compatibility with \code{C++}
+#' Check if the model family is allowed and return it eventually with a
+#' different family name for compatibility with the \code{C++} implementation
 #'
-#' @keywords internal
+#' @param family a \code{glm} family (see \code{\link{family}} for more details)
+#'
+#' @export
 set.family = function (family) {
 
   flag = TRUE
@@ -84,559 +86,6 @@ set.family = function (family) {
   return (family)
 }
 
-#' @title Check and set the cross-validation parameters
-#'
-#' @description
-#' Check if the input cross-validation parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined cross-validation parameters.
-#'
-#' @keywords internal
-set.cvopt = function (cvopt) {
-
-  default = list(nfolds = 5, parallel = FALSE, nthreads = 1)
-
-  if (check.class(cvopt, "list")) {
-    if (check.pos(cvopt$nfolds)) default$nfolds = cvopt$nfolds
-    if (check.bool(cvopt$parallel)) default$parallel = cvopt$parallel
-    if (check.pos(cvopt$nthreads)) default$nthreads = cvopt$nthreads
-  }
-
-  return (default)
-}
-
-#' @title Check and set the penalty parameters
-#'
-#' @description
-#' Check if the input penalty parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined penalty parameters.
-#'
-#' @keywords internal
-set.penalty = function (penalty) {
-
-  default = list(u = 1, v = 0, b = 0, a = 0)
-
-  if (check.class(penalty, "list")) {
-    if (check.neg(penalty$u)) default$u = penalty$u
-    if (check.neg(penalty$v)) default$v = penalty$v
-    if (check.neg(penalty$b)) default$b = penalty$b
-    if (check.neg(penalty$a)) default$a = penalty$a
-    if (default$u == 0 & default$v == 0) default$u = 1
-  }
-
-  penalty = c(default$b, default$a, default$u, default$v)
-
-  return (penalty)
-}
-
-#' @title Check and set the initialization parameters
-#'
-#' @description
-#' Check if the input initialization parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined initialization parameters.
-#'
-#' @details
-#' It takes in input a list of options which define how to initialize the GMF model
-#' parameters. It returns a list of safe initialization parameters containing the
-#' following elements:
-#' \itemize{
-#' \item \code{method}:
-#' \item \code{type}:
-#' \item \code{values}:
-#' \item \code{niter}:
-#' \item \code{normalize}:
-#' \item \code{verbose}:
-#' \item \code{parallel}:
-#' \item \code{nthreads}:
-#' }
-#'
-#' @keywords internal
-set.init = function (init) {
-
-  default = list()
-  default$method = "svd"
-  default$type = "deviance"
-  default$values = list()
-  default$niter = 5
-  default$normalize = TRUE
-  default$verbose = FALSE
-  default$parallel = FALSE
-  default$nthreads = 1
-
-  if (check.class(init$method, "character")) {
-    if (init$method %in% c("glm", "svd", "random", "values")) {
-      default$method = init$method
-    }
-  }
-  if (check.class(init$type, "character")) {
-    if (init$type %in% c("deviance", "pearson", "working")) {
-      default$type = init$type
-    }
-  }
-  if (check.class(init$niter, "numeric")) {
-    if (floor(init$niter) >= 0) {
-      default$niter = floor(init$niter)
-    }
-  }
-  if (check.class(init$normalize, "logical")) {
-    default$normalize = init$normalize
-  }
-  if (check.class(init$verbose, "logical")) {
-    default$verbose = init$verbose
-  }
-  if (check.class(init$values, "list")) {
-    default$values = init$values
-  }
-  if (check.class(init$parallel, "logical")) {
-    default$parallel = init$parallel
-  }
-  if (check.class(init$nthreads, "numeric")) {
-    if (floor(init$nthreads) >= 0) {
-      default$nthreads = floor(init$nthreads)
-    }
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the AIRWLS algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' \itemize{
-#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
-#' \item \code{maxiter}: maximum number of iterations (default \code{100})
-#' \item \code{nstep}: number of IRWLS steps in each inner loop of AIRWLS (default \code{1})
-#' \item \code{stepsize}: step-size parameter scaling each IRWLS step (default \code{0.1})
-#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
-#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
-#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
-#' \item \code{damping}: regularization parameter which is added to the diagonal of the Hessian to ensure numerical stability (default \code{1e-03})
-#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
-#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
-#' \item \code{parallel}: if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP} (default \code{FALSE})
-#' \item \code{nthreads}: number of cores to be used in parallel (only if \code{parallel=TTUE}, default \code{1})
-#' }
-#'
-#' @keywords internal
-set.control.airwls = function (control) {
-  # Set the default control parameters
-  default = list()
-  default$normalize = TRUE
-  default$maxiter = 100
-  default$nstep = 1
-  default$stepsize = 0.1
-  default$eps = 1e-08
-  default$nafill = 1
-  default$tol = 1e-05
-  default$damping = 1e-03
-  default$verbose = TRUE
-  default$frequency = 10
-  default$parallel = FALSE
-  default$nthreads = 1
-
-  if (!is.null(control)) {
-    # Standard safety checks
-    if (check.bool(control$normalize)) default$normalize = control$normalize
-    if (check.int(control$maxiter)) default$maxiter = floor(control$maxiter)
-    if (check.int(control$nsteps)) default$nsteps = floor(control$nsteps)
-    if (check.pos(control$stepsize)) default$stepsize = control$stepsize
-    if (check.pos(control$eps)) default$eps = control$eps
-    if (check.int(control$nafill)) default$nafill = floor(control$nafill)
-    if (check.pos(control$tol)) default$tol = control$tol
-    if (check.pos(control$damping)) default$damping = control$damping
-    if (check.bool(control$verbose)) default$verbose = control$verbose
-    if (check.int(control$frequency)) default$frequency = floor(control$frequency)
-    if (check.bool(control$parallel)) default$parallel = control$parallel
-    if (check.int(control$nthreads)) default$nthreads = floor(control$nthreads)
-
-    # Addional consistency checks
-    if (default$stepsize > 1) default$stepsize = 1
-    if (default$eps > 1e-01) default$eps = 1e-01
-    if (default$frequency > default$maxiter) default$frequency = default$maxiter
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the Newton algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' \itemize{
-#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
-#' \item \code{maxiter}: maximum number of iterations (default \code{500})
-#' \item \code{stepsize}: step-size parameter scaling each IRWLS step (default \code{0.01})
-#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
-#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
-#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
-#' \item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
-#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
-#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
-#' \item \code{parallel}: if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP} (default \code{FALSE})
-#' \item \code{nthreads}: number of cores to be used in parallel (only if \code{parallel=TTUE}, default \code{1})
-#' }
-#'
-#' @keywords internal
-set.control.newton = function (control) {
-  # Set the default control parameters
-  default = list()
-  default$normalize = TRUE
-  default$maxiter = 500
-  default$stepsize = 0.01
-  default$eps = 1e-08
-  default$nafill = 1
-  default$tol = 1e-05
-  default$damping = 1e-03
-  default$verbose = TRUE
-  default$frequency = 50
-  default$parallel = FALSE
-  default$nthreads = 1
-
-  if (!is.null(control)) {
-    # Standard safety checks
-    if (check.bool(control$normalize)) default$normalize = control$normalize
-    if (check.int(control$maxiter)) default$maxiter = floor(control$maxiter)
-    if (check.pos(control$stepsize)) default$stepsize = control$stepsize
-    if (check.pos(control$eps)) default$eps = control$eps
-    if (check.int(control$nafill)) default$nafill = floor(control$nafill)
-    if (check.pos(control$tol)) default$tol = control$tol
-    if (check.pos(control$damping)) default$damping = control$damping
-    if (check.bool(control$verbose)) default$verbose = control$verbose
-    if (check.int(control$frequency)) default$frequency = control$frequency
-    if (check.bool(control$parallel)) default$parallel = control$parallel
-    if (check.int(control$nthreads)) default$nthreads = floor(control$nthreads)
-
-    # Addional consistency checks
-    if (default$stepsize > 1) default$stepsize = 1
-    if (default$eps > 1e-01) default$eps = 1e-01
-    if (default$frequency > default$maxiter) default$frequency = default$maxiter
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the memoized-SGD algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' @keywords internal
-set.control.msgd = function (control) {
-  # Set the default control parameters
-  defualt = list()
-  default$normalize = TRUE
-  default$maxiter = 100
-  default$eps = 1e-08
-  default$nafill = 10
-  default$tol = 1e-05
-  default$size = 100
-  default$burn = 90
-  default$rate0 = 0.01
-  default$decay = 1.0
-  default$damping = 1e-04
-  default$rate1 = 0.05
-  default$rate2 = 0.01
-  default$parallel = FALSE
-  default$nthreads = 1
-  default$verbose = TRUE
-  default$frequency = 10
-  default$progress = FALSE
-
-  if (!is.null(control)) {
-    # Standard safety checks
-    if (check.bool(control$normalize)) default$normalize = control$normalize
-    if (check.int(control$maxiter)) default$maxiter = floor(control$maxiter)
-    if (check.pos(control$eps)) default$eps = control$eps
-    if (check.int(control$nafill)) default$nafill = floor(control$nafill)
-    if (check.pos(control$tol)) default$tol = control$tol
-    if (check.int(control$size)) default$size = floor(control$size)
-    if (check.int(control$burn)) default$burn = floor(control$burn)
-    if (check.pos(control$rate0)) default$rate0 = control$rate0
-    if (check.pos(control$decay)) default$decay = control$decay
-    if (check.pos(control$damping)) default$damping = control$damping
-    if (check.pos(control$rate1)) default$rate1 = control$rate1
-    if (check.pos(control$rate2)) default$rate2 = control$rate2
-    if (check.bool(control$parallel)) default$parallel = control$parallel
-    if (check.int(control$nthreads)) default$nthreads = floor(control$nthreads)
-    if (check.bool(control$verbose)) default$verbose = control$verbose
-    if (check.int(control$frequency)) default$frequency = floor(control$frequency)
-    if (check.bool(control$progress)) default$progress = control$progress
-
-    # Addional consistency checks
-    if (default$nafill > default$maxiter) default$nafill = default$maxiter
-    if (default$eps > 1e-01) default$eps = 1e-01
-    if (default$rate1 > 1 - 1e-08) default$rate1 = 1 - 1e-08
-    if (default$rate2 > 1 - 1e-08) default$rate2 = 1 - 1e-08
-    if (default$burn > default$maxiter) default$burn = default$maxiter
-    if (default$frequency > default$maxiter) default$frequency = default$maxiter
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the coordinate-SGD algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' \itemize{
-#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
-#' \item \code{maxiter}: maximum number of iterations (default \code{1000})
-#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
-#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{1})
-#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
-#' \item \code{size}: mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample (default \code{c(100, 100)})
-#' \item \code{burn}: percentage of iterations to ignore before performing Polyak averaging (default \code{0.75})
-#' \item \code{rate0}: initial learning rate (default \code{0.01})
-#' \item \code{decay}: learning rate decay (default \code{0.01})
-#' \item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
-#' \item \code{rate1}: exponential decay rate for the moment estimate of the gradient (default \code{0.1})
-#' \item \code{rate2}: exponential decay rate for the moment estimate of the Hessian (default \code{0.01})
-#' \item \code{parallel}: ...
-#' \item \code{nthreads}: ...
-#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
-#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
-#' \item \code{progress}: if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
-#' }
-#'
-#' @keywords internal
-set.control.csgd = function (control) {
-  # Set the default control parameters
-  default = list()
-  default$normalize = TRUE
-  default$maxiter = 1000
-  default$eps = 1e-08
-  default$nafill = 10
-  default$tol = 1e-08
-  default$size = c(100, 100)
-  default$burn = 0.75
-  default$rate0 = 0.01
-  default$decay = 0.01
-  default$damping = 1e-03
-  default$rate1 = 0.1
-  default$rate2 = 0.01
-  default$parallel = FALSE
-  default$nthreads = 1
-  default$verbose = TRUE
-  default$frequency = 250
-  default$progress = FALSE
-
-  if (!is.null(control)) {
-    # Standard safety checks
-    if (check.bool(control$normalize)) default$normalize = control$normalize
-    if (check.int(control$maxiter)) default$maxiter = floor(control$maxiter)
-    if (check.pos(control$eps)) default$eps = control$eps
-    if (check.int(control$nafill)) default$nafill = floor(control$nafill)
-    if (check.pos(control$tol)) default$tol = control$tol
-    if (check.int(control$size)) default$size = floor(control$size[1:2])
-    if (check.int(control$burn)) default$burn = floor(control$burn)
-    if (check.pos(control$rate0)) default$rate0 = control$rate0
-    if (check.pos(control$decay)) default$decay = control$decay
-    if (check.pos(control$damping)) default$damping = control$damping
-    if (check.pos(control$rate1)) default$rate1 = control$rate1
-    if (check.pos(control$rate2)) default$rate2 = control$rate2
-    if (check.bool(control$parallel)) default$parallel = control$parallel
-    if (check.int(control$nthreads)) default$nthreads = floor(control$nthreads)
-    if (check.bool(control$verbose)) default$verbose = control$verbose
-    if (check.int(control$frequency)) default$frequency = floor(control$frequency)
-    if (check.bool(control$progress)) default$progress = control$progress
-
-    # Addional consistency checks
-    if (default$nafill > default$maxiter) default$nafill = default$maxiter
-    if (default$eps > 1e-01) default$eps = 1e-01
-    if (default$rate1 > 1 - 1e-08) default$rate1 = 1 - 1e-08
-    if (default$rate2 > 1 - 1e-08) default$rate2 = 1 - 1e-08
-    if (default$burn > default$maxiter) default$burn = default$maxiter
-    if (default$frequency > default$maxiter) default$frequency = default$maxiter
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the rowwise-SGD algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' @keywords internal
-set.control.rsgd = function (control) {
-  # Set the default control parameters
-  defualt = list()
-  default$normalize = TRUE
-  default$maxiter = 100
-  default$eps = 1e-08
-  default$nafill = 10
-  default$tol = 1e-05
-  default$size = 100
-  default$burn = 90
-  default$rate0 = 0.01
-  default$decay = 1.0
-  default$damping = 1e-04
-  default$rate1 = 0.05
-  default$rate2 = 0.01
-  default$parallel = FALSE
-  default$nthreads = 1
-  default$verbose = TRUE
-  default$frequency = 10
-  default$progress = FALSE
-
-  if (!is.null(control)) {
-    # Standard safety checks
-    if (check.bool(control$normalize)) default$normalize = control$normalize
-    if (check.int(control$maxiter)) default$maxiter = floor(control$maxiter)
-    if (check.pos(control$eps)) default$eps = control$eps
-    if (check.int(control$nafill)) default$nafill = floor(control$nafill)
-    if (check.pos(control$tol)) default$tol = control$tol
-    if (check.int(control$size)) default$size = floor(control$size)
-    if (check.int(control$burn)) default$burn = floor(control$burn)
-    if (check.pos(control$rate0)) default$rate0 = control$rate0
-    if (check.pos(control$decay)) default$decay = control$decay
-    if (check.pos(control$damping)) default$damping = control$damping
-    if (check.pos(control$rate1)) default$rate = control$rate1
-    if (check.pos(control$rate2)) default$rate = control$rate2
-    if (check.bool(control$parallel)) default$parallel = control$parallel
-    if (check.int(control$nthreads)) default$nthreads = floor(control$nthreads)
-    if (check.bool(control$verbose)) default$verbose = control$verbose
-    if (check.int(control$frequency)) default$frequency = floor(control$frequency)
-    if (check.bool(control$progress)) default$progress = control$progress
-
-    # Addional consistency checks
-    if (default$nafill > default$maxiter) default$nafill = default$maxiter
-    if (default$eps > 1e-01) default$eps = 1e-01
-    if (default$rate1 > 1 - 1e-08) default$rate1 = 1 - 1e-08
-    if (default$rate2 > 1 - 1e-08) default$rate2 = 1 - 1e-08
-    if (default$burn > default$maxiter) default$burn = default$maxiter
-    if (default$frequency > default$maxiter) default$frequency = default$maxiter
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the blockwise-SGD algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' \itemize{
-#' \item \code{normalize}: if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal (default \code{TRUE})
-#' \item \code{maxiter}: maximum number of iterations (default \code{1000})
-#' \item \code{eps}: how much shrinkage has to be introduced on extreme predictions lying outside of the data range (default \code{1e-08})
-#' \item \code{nafill}: how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm (default \code{10})
-#' \item \code{tol}: tolerance threshold for the stopping criterion (default \code{1e-05})
-#' \item \code{size}: mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample (default \code{c(100, 100)})
-#' \item \code{burn}: percentage of iterations to ignore before performing Polyak averaging (default \code{0.75})
-#' \item \code{rate0}: initial learning rate (default \code{0.01})
-#' \item \code{decay}: learning rate decay (default \code{0.01})
-#' \item \code{damping}: regularization parameter which is added to the Hessian to ensure numerical stability (default \code{1e-03})
-#' \item \code{rate1}: exponential decay rate for the moment estimate of the gradient (default \code{0.1})
-#' \item \code{rate2}: exponential decay rate for the moment estimate of the Hessian (default \code{0.01})
-#' \item \code{parallel}: ...
-#' \item \code{nthreads}: ...
-#' \item \code{verbose}: if \code{TRUE}, print the optimization status (default \code{TRUE})
-#' \item \code{frequency}: how often the optimization status is printed (only if \code{verbose=TRUE}, default \code{10})
-#' \item \code{progress}: if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
-#' }
-#'
-#' @keywords internal
-set.control.bsgd = function (control) {
-  # Set the default control parameters
-  default = list()
-  default$normalize = TRUE
-  default$maxiter = 1000
-  default$eps = 1e-08
-  default$nafill = 10
-  default$tol = 1e-08
-  default$size = c(100, 100)
-  default$burn = 0.75
-  default$rate0 = 0.01
-  default$decay = 0.01
-  default$damping = 1e-03
-  default$rate1 = 0.1
-  default$rate2 = 0.01
-  default$parallel = FALSE
-  default$nthreads = 1
-  default$verbose = TRUE
-  default$frequency = 250
-  default$progress = FALSE
-
-  if (!is.null(control)) {
-    # Standard safety checks
-    if (check.bool(control$normalize)) default$normalize = control$normalize
-    if (check.int(control$maxiter)) default$maxiter = floor(control$maxiter)
-    if (check.pos(control$eps)) default$eps = control$eps
-    if (check.int(control$nafill)) default$nafill = floor(control$nafill)
-    if (check.pos(control$tol)) default$tol = control$tol
-    if (check.int(control$size)) default$size = floor(control$size[1:2])
-    if (check.int(control$burn)) default$burn = floor(control$burn)
-    if (check.pos(control$rate0)) default$rate0 = control$rate0
-    if (check.pos(control$decay)) default$decay = control$decay
-    if (check.pos(control$damping)) default$damping = control$damping
-    if (check.pos(control$rate1)) default$rate1 = control$rate1
-    if (check.pos(control$rate2)) default$rate2 = control$rate2
-    if (check.bool(control$parallel)) default$parallel = control$parallel
-    if (check.int(control$nthreads)) default$nthreads = floor(control$nthreads)
-    if (check.bool(control$verbose)) default$verbose = control$verbose
-    if (check.int(control$frequency)) default$frequency = floor(control$frequency)
-    if (check.bool(control$progress)) default$progress = control$progress
-
-    # Addional consistency checks
-    if (default$nafill > default$maxiter) default$nafill = default$maxiter
-    if (default$eps > 1e-01) default$eps = 1e-01
-    if (default$rate1 > 1 - 1e-08) default$rate1 = 1 - 1e-08
-    if (default$rate2 > 1 - 1e-08) default$rate2 = 1 - 1e-08
-    if (default$burn > default$maxiter) default$burn = default$maxiter
-    if (default$frequency > default$maxiter) default$frequency = default$maxiter
-  }
-
-  return (default)
-}
-
-#' @title Check and set the control parameters for the select optimization algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' @param method optimization method: \code{"airwls"}, \code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}
-#' @param control list of algorithm-specific control parameters
-#'
-#' @details
-#' It is not necessary to provide a complete list of control parameters, one can
-#' just specify a list containing the parameters he/she needs to change from the
-#' default values. Wrongly specified parameters are ignored or set to default values.
-#' For a detailed description of all the algorithm-specific control parameters,
-#' please refer to
-#' \code{\link{set.control.airwls}} (\code{method="airwls"}),
-#' \code{\link{set.control.newton}} (\code{method="newton"}),
-#' \code{\link{set.control.csgd}} (\code{method="csgd"}),
-#' \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
-#'
-#' @keywords internal
-set.control = function (method, control) {
-
-  if (!(method %in% c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"))) {
-    stop("The specified optimization method is not implemented yet.")
-  }
-
-  # Set the input values for the control parameters, check whether the
-  # they are allowed and, if they aren't, set them to default values
-  if (method == "airwls") control = set.control.airwls(control)
-  if (method == "newton") control = set.control.newton(control)
-  if (method == "msgd") control = set.control.msgd(control)
-  if (method == "csgd") control = set.control.csgd(control)
-  if (method == "rsgd") control = set.control.rsgd(control)
-  if (method == "bsgd") control = set.control.bsgd(control)
-
-  return (control)
-}
 
 #' @title Set the jittering function for mapping the data
 #'
@@ -667,3 +116,602 @@ set.jitter = function (family) {
   }
   return (f)
 }
+
+#' @title Check and set the penalty parameters
+#'
+#' @description
+#' Check if the input penalty parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined penalty parameters.
+#'
+#' @param B penalty parameter of \code{B}
+#' @param A penalty parameter of \code{A}
+#' @param U penalty parameter of \code{U}
+#' @param V penalty parameter of \code{V}
+#'
+#' @export
+set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
+  penalty = c(0, 0, 1, 0)
+  if (is.numeric(B) && B >= .0) penalty[1] = B
+  if (is.numeric(A) && A >= .0) penalty[2] = A
+  if (is.numeric(U) && U >= .0) penalty[3] = U
+  if (is.numeric(V) && V >= .0) penalty[4] = V
+  if (sum(abs(penalty[3:4])) == 0) penalty[3] = 1.
+  return (penalty)
+}
+
+#' @title Check and set the initialization parameters
+#'
+#' @description
+#' Check if the input initialization parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined initialization parameters.
+#'
+#' @param method initialization method
+#' @param type residual type to be decomposed in the \code{"glm"} method
+#' @param values list of custom initialization parameters fixed by the user
+#' @param niter number if refinement iterations in the \code{"svd"} method
+#' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to orthogonal \code{U} and lower triangular \code{V}
+#' @param verbose if \code{TRUE}, print the initialization state
+#' @param parallel if \code{TRUE}, use parallel computing for the \code{"glm"} method
+#' @param nthreads number of cores to be used in the \code{"glm"} method
+#'
+#' @details
+#' It takes in input a list of options which define how to initialize the GMF model
+#' parameters. It returns a list of safe initialization parameters containing the
+#' following elements:
+#'
+#' @export
+set.control.init = function (
+    method = c("svd", "glm", "random", "values"),
+    type = c("deviance", "pearson", "working"),
+    values = list(),
+    niter = 5,
+    normalize = TRUE,
+    verbose = FALSE,
+    parallel = FALSE,
+    nthreads = 1
+) {
+  ctr = list()
+  ctr$method = match.arg(method)
+  ctr$type = match.arg(type)
+  ctr$values = list()
+  ctr$niter = 5
+  ctr$normalize = TRUE
+  ctr$verbose = FALSE
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+
+  if (is.list(values)) ctr$values = values
+  if (is.numeric(niter) && niter > 0) ctr$niter = floor(niter)
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads > 0) ctr$nthreads = floor(nthreads)
+
+  return (ctr)
+}
+
+#' @title Check and set the control parameters for the AIRWLS algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
+#' @param maxiter maximum number of iterations
+#' @param nstep number of IRWLS steps in each inner loop of AIRWLS
+#' @param stepsize step-size parameter scaling each IRWLS step
+#' @param eps how much shrinkage has to be introduced on extreme predictions lying outside of the data range
+#' @param nafill how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm
+#' @param tol tolerance threshold for the stopping criterion
+#' @param damping regularization parameter which is added to the diagonal of the Hessian to ensure numerical stability
+#' @param verbose if \code{TRUE}, print the optimization status (default \code{TRUE})
+#' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
+#' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
+#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#'
+#' @export
+set.control.airwls = function (
+    normalize = TRUE,
+    maxiter = 100,
+    nstep = 1,
+    stepsize = 0.1,
+    eps = 1e-08,
+    nafill = 1,
+    tol = 1e-05,
+    damping = 1e-03,
+    verbose = TRUE,
+    frequency = 10,
+    parallel = FALSE,
+    nthreads = 1
+) {
+  # Set the default control parameters
+  ctr = list()
+  ctr$normalize = TRUE
+  ctr$maxiter = 100
+  ctr$nstep = 1
+  ctr$stepsize = 0.1
+  ctr$eps = 1e-08
+  ctr$nafill = 1
+  ctr$tol = 1e-05
+  ctr$damping = 1e-03
+  ctr$verbose = TRUE
+  ctr$frequency = 10
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+
+  # Standard safety checks
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
+  if (is.numeric(nstep) && nstep >= 1) ctr$nstep = floor(nstep)
+  if (is.numeric(stepsize) && stepsize > 0) ctr$stepsize = stepsize
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol
+  if (is.numeric(damping) && damping >= 0) ctr$damping = damping
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+
+  # Additional safety checks
+  if (ctr$stepsize > 1) ctr$stepsize = 1
+  if (ctr$eps > 1e-01) ctr$eps = 1e-01
+  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+
+  # Return the checked parameters
+  return (ctr)
+}
+
+
+#' @title Check and set the control parameters for the Newton algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
+#' @param maxiter maximum number of iterations
+#' @param stepsize step-size parameter scaling each IRWLS step
+#' @param eps how much shrinkage has to be introduced on extreme predictions lying outside of the data range
+#' @param nafill how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm
+#' @param tol tolerance threshold for the stopping criterion
+#' @param damping regularization parameter which is added to the Hessian to ensure numerical stability
+#' @param verbose if \code{TRUE}, print the optimization status
+#' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE}
+#' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
+#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TTUE})
+#'
+#' @export
+set.control.newton = function (
+    normalize = TRUE,
+    maxiter = 500,
+    stepsize = 0.01,
+    eps = 1e-08,
+    nafill = 1,
+    tol = 1e-05,
+    damping = 1e-03,
+    verbose = TRUE,
+    frequency = 50,
+    parallel = FALSE,
+    nthreads = 1
+) {
+  # Set the default control parameters
+  ctr = list()
+  ctr$normalize = TRUE
+  ctr$maxiter = 500
+  ctr$stepsize = 0.01
+  ctr$eps = 1e-08
+  ctr$nafill = 1
+  ctr$tol = 1e-05
+  ctr$damping = 1e-03
+  ctr$verbose = TRUE
+  ctr$frequency = 50
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+
+  # Standard safety checks
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
+  if (is.numeric(stepsize) && stepsize > 0) ctr$stepsize = stepsize
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+
+  # Additional consistency checks
+  if (ctr$stepsize > 1) ctr$stepsize = 1
+  if (ctr$eps > 1e-01) ctr$eps = 1e-01
+  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+
+  # Return the checked parameters
+  return (ctr)
+}
+
+
+#' @title Check and set the control parameters for the memoized-SGD algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @export
+set.control.msgd = function (
+    normalize = TRUE,
+    maxiter = 100,
+    eps = 1e-08,
+    nafill = 10,
+    tol = 1e-05,
+    size = 100,
+    burn = 90,
+    rate0 = 0.01,
+    decay = 1.0,
+    damping = 1e-04,
+    rate1 = 0.05,
+    rate2 = 0.01,
+    parallel = FALSE,
+    nthreads = 1,
+    verbose = TRUE,
+    frequency = 10,
+    progress = FALSE
+) {
+  # Set the default control parameters
+  ctr = list()
+  ctr$normalize = TRUE
+  ctr$maxiter = 100
+  ctr$eps = 1e-08
+  ctr$nafill = 10
+  ctr$tol = 1e-05
+  ctr$size = 100
+  ctr$burn = 90
+  ctr$rate0 = 0.01
+  ctr$decay = 1.0
+  ctr$damping = 1e-04
+  ctr$rate1 = 0.05
+  ctr$rate2 = 0.01
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+  ctr$verbose = TRUE
+  ctr$frequency = 10
+  ctr$progress = FALSE
+
+  # Standard safety checks
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol
+  if (is.numeric(size) && size >= 1) ctr$size = floor(size)
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
+  if (is.logical(progress)) ctr$progress = progress
+
+  # Addional consistency checks
+  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
+  if (ctr$eps > 1e-01) ctr$eps = 1e-01
+  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
+  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
+  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+
+  # Return the checked parameters
+  return (ctr)
+}
+
+#' @title Check and set the control parameters for the coordinate-SGD algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
+#' @param maxiter maximum number of iterations
+#' @param eps how much shrinkage has to be introduced on extreme predictions lying outside of the data range
+#' @param nafill how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm
+#' @param tol tolerance threshold for the stopping criterion
+#' @param size mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample
+#' @param burn percentage of iterations to ignore before performing Polyak averaging
+#' @param rate0 initial learning rate
+#' @param decay learning rate decay
+#' @param damping regularization parameter which is added to the Hessian to ensure numerical stability
+#' @param rate1 exponential decay rate for the moment estimate of the gradient
+#' @param rate2 exponential decay rate for the moment estimate of the Hessian
+#' @param parallel ...
+#' @param nthreads ...
+#' @param verbose if \code{TRUE}, print the optimization status
+#' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
+#' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#'
+#' @export
+set.control.csgd = function (
+    normalize = TRUE,
+    maxiter = 1000,
+    eps = 1e-08,
+    nafill = 10,
+    tol = 1e-08,
+    size = c(100, 100),
+    burn = 1,
+    rate0 = 0.01,
+    decay = 0.01,
+    damping = 1e-03,
+    rate1 = 0.1,
+    rate2 = 0.01,
+    parallel = FALSE,
+    nthreads = 1,
+    verbose = TRUE,
+    frequency = 250,
+    progress = FALSE
+) {
+  # Set the default control parameters
+  ctr = list()
+  ctr$normalize = TRUE
+  ctr$maxiter = 1000
+  ctr$eps = 1e-08
+  ctr$nafill = 10
+  ctr$tol = 1e-08
+  ctr$size = c(100, 100)
+  ctr$burn = 1
+  ctr$rate0 = 0.01
+  ctr$decay = 0.01
+  ctr$damping = 1e-03
+  ctr$rate1 = 0.1
+  ctr$rate2 = 0.01
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+  ctr$verbose = TRUE
+  ctr$frequency = 250
+  ctr$progress = FALSE
+
+  # Standard safety checks
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol
+  if (is.numeric(size) && all(size >= 1)) ctr$size = floor(size[1:2])
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
+  if (is.logical(progress)) ctr$progress = progress
+
+  # Additional consistency checks
+  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
+  if (ctr$eps > 1e-01) ctr$eps = 1e-01
+  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
+  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
+  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+
+  # Return the corrected control parameters
+  return (ctr)
+}
+
+#' @title Check and set the control parameters for the rowwise-SGD algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @export
+set.control.rsgd = function (control) {
+  # Set the default control parameters
+  ctr = list()
+  ctr$normalize = TRUE
+  ctr$maxiter = 100
+  ctr$eps = 1e-08
+  ctr$nafill = 10
+  ctr$tol = 1e-05
+  ctr$size = 100
+  ctr$burn = 90
+  ctr$rate0 = 0.01
+  ctr$decay = 1.0
+  ctr$damping = 1e-04
+  ctr$rate1 = 0.05
+  ctr$rate2 = 0.01
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+  ctr$verbose = TRUE
+  ctr$frequency = 10
+  ctr$progress = FALSE
+
+  # Standard safety checks
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol
+  if (is.numeric(size) && size >= 1) ctr$size = floor(size)
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate = rate1
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate = rate2
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
+  if (is.logical(progress)) ctr$progress = progress
+
+  # Additional consistency checks
+  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
+  if (ctr$eps > 1e-01) ctr$eps = 1e-01
+  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
+  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
+  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+
+  # Return the corrected control parameters
+  return (ctr)
+}
+
+#' @title Check and set the control parameters for the blockwise-SGD algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
+#' @param maxiter maximum number of iterations
+#' @param eps how much shrinkage has to be introduced on extreme predictions lying outside of the data range
+#' @param nafill how frequently the \code{NA} values are filled, by default \code{NA} values are filled at each iteration of the algorithm
+#' @param tol tolerance threshold for the stopping criterion
+#' @param size mini-batch size, the first value is for row sub-sample, the second value is for column sub-sample
+#' @param burn percentage of iterations to ignore before performing Polyak averaging
+#' @param rate0 initial learning rate
+#' @param decay learning rate decay
+#' @param damping regularization parameter which is added to the Hessian to ensure numerical stability
+#' @param rate1 exponential decay rate for the moment estimate of the gradient
+#' @param rate2 exponential decay rate for the moment estimate of the Hessian
+#' @param parallel ...
+#' @param nthreads ...
+#' @param verbose if \code{TRUE}, print the optimization status
+#' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
+#' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#'
+#' @export
+set.control.bsgd = function (
+    normalize = TRUE,
+    maxiter = 1000,
+    eps = 1e-08,
+    nafill = 10,
+    tol = 1e-08,
+    size = c(100, 100),
+    burn = 1,
+    rate0 = 0.01,
+    decay = 0.01,
+    damping = 1e-03,
+    rate1 = 0.1,
+    rate2 = 0.01,
+    parallel = FALSE,
+    nthreads = 1,
+    verbose = TRUE,
+    frequency = 250,
+    progress = FALSE
+) {
+  # Set the default control parameters
+  ctr = list()
+  ctr$normalize = TRUE
+  ctr$maxiter = 1000
+  ctr$eps = 1e-08
+  ctr$nafill = 10
+  ctr$tol = 1e-08
+  ctr$size = c(100, 100)
+  ctr$burn = 1
+  ctr$rate0 = 0.01
+  ctr$decay = 0.01
+  ctr$damping = 1e-03
+  ctr$rate1 = 0.1
+  ctr$rate2 = 0.01
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
+  ctr$verbose = TRUE
+  ctr$frequency = 250
+  ctr$progress = FALSE
+
+  # Standard safety checks
+  if (is.logical(normalize)) ctr$normalize = normalize
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol
+  if (is.numeric(size) & all(size >= 1)) ctr$size = floor(size[1:2])
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  if (is.logical(verbose)) ctr$verbose = verbose
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
+  if (is.logical(progress)) ctr$progress = progress
+
+  # Additional consistency checks
+  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
+  if (ctr$eps > 1e-01) ctr$eps = 1e-01
+  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
+  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
+  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+
+  # Return the check control parameters
+  return (ctr)
+}
+
+#' @title Check and set the control parameters for the select optimization algorithm
+#'
+#' @description
+#' Check if the input control parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined control parameters.
+#'
+#' @param method optimization method: \code{"airwls"}, \code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}
+#' @param control list of algorithm-specific control parameters
+#'
+#' @details
+#' It is not necessary to provide a complete list of control parameters, one can
+#' just specify a list containing the parameters he/she needs to change from the
+#' default values. Wrongly specified parameters are ignored or set to default values.
+#' For a detailed description of all the algorithm-specific control parameters,
+#' please refer to
+#' \code{\link{set.control.airwls}} (\code{method="airwls"}),
+#' \code{\link{set.control.newton}} (\code{method="newton"}),
+#' \code{\link{set.control.csgd}} (\code{method="csgd"}),
+#' \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
+#'
+#' @export
+set.control.alg = function (
+    method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
+    control = list()
+) {
+  # Check the optimization method
+  method = match.arg(method)
+
+  # Set the input values for the control parameters, check whether the
+  # they are allowed and, if they aren't, set them to default values
+  if (method == "airwls") control = do.call("set.control.airwls", control)
+  if (method == "newton") control = do.call("set.control.newton", control)
+  if (method == "msgd") control = do.call("set.control.msgd", control)
+  if (method == "csgd") control = do.call("set.control.csgd", control)
+  if (method == "rsgd") control = do.call("set.control.rsgd", control)
+  if (method == "bsgd") control = do.call("set.control.bsgd", control)
+
+  # Return the corrected control parameters
+  return (control)
+}
+
+
+#' @title Check and set the cross-validation parameters
+#'
+#' @description
+#' Check if the input cross-validation parameters are allowed and set them to default
+#' values if they are not. Returns a list of well-defined cross-validation parameters.
+#'
+#' @param nfolds number of cross-validation folds
+#' @param parallel if \code{TRUE}, allows for parallel computing
+#' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})
+#'
+#' @export
+set.control.cv = function (nfolds = 5, parallel = FALSE, nthreads = 1) {
+  ctr = list(nfolds = 5, parallel = FALSE, nthreads = 1)
+  if (is.numeric(nfolds) && nfolds >= 1) ctr$nfolds = floor(nfolds)
+  if (is.logical(parallel)) ctr$parallel = parallel
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  return (ctr)
+}
+
