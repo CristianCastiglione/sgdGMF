@@ -8,7 +8,7 @@
 #' @param X matrix of row fixed effects (\eqn{n \times p})
 #' @param Z matrix of column fixed effects (\eqn{q \times m})
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
-#' @param ncomp rank of the latent matrix factorization (default 2)
+#' @param ncomps rank of the latent matrix factorization (default 2)
 #' @param method estimation method to minimize the negative penalized log-likelihood
 #' @param penalty list of penalty parameters (see \code{\link{set.penalty}} for more details)
 #' @param control.init list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)
@@ -24,8 +24,6 @@
 #' @references
 #' ...
 #'
-#' @importFrom svd propack.svd
-#'
 #' @examples
 #' ...
 #'
@@ -35,7 +33,7 @@ sgdgmf.cv = function (
     X = NULL,
     Z = NULL,
     family = poisson(),
-    ncomp = 2,
+    ncomps = seq(from = 1, to = 10, by = 1),
     method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
     penalty = list(),
     control.init = list(),
@@ -54,7 +52,8 @@ sgdgmf.cv = function (
   f = 0.3
 
   # Maximum rank
-  maxcomp = ncomp
+  ncomps = floor(ncomps)
+  maxcomp = max(ncomps)
   nfolds = control.cv$nfolds
   parallel = control.cv$parallel
   nthreads = control.cv$nthreads
@@ -69,10 +68,10 @@ sgdgmf.cv = function (
 
     # Initialize the summary data-frame
     cv = data.frame(ncomp = c(), fold = c(), df = c(),
-                    aic = c(), bic = c(), dev = c())
+                    aic = c(), bic = c(), cbic = c(), dev = c())
 
     # Estimation loop
-    for (ncomp in 1:maxcomp) {
+    for (ncomp in ncomps) {
 
       # Effective number of parameters
       df = m * p + n * q + (n + m) * ncomp
@@ -97,16 +96,13 @@ sgdgmf.cv = function (
         dev.test = matrix.deviance(mu = mu, y = data[[fold]]$test, family = family)
         aic.train = dev.train + 2 * df
         bic.train = dev.train + 2 * df * log(n.train)
+        cbic.train = dev.train + 2 * df * log(log(n.train))
 
         # Summary data-frame
-        cv = rbind(cv,
-          data.frame(
-            ncomp = ncomp,
-            fold = fold,
-            df = df,
-            aic = aic.train / n.train,
-            bic = bic.train / n.train,
-            dev = dev.test / n.test
+        cv = rbind(cv, data.frame(
+            ncomp = ncomp, fold = fold, df = df,
+            aic = aic.train / n.train, bic = bic.train / n.train,
+            cbic = cbic.train / n.train, dev = dev.test / n.test
           )
         )
       }
@@ -117,17 +113,19 @@ sgdgmf.cv = function (
       avgcv = data.frame(ncomp = c(), fold = c(), df = c(), aic = c(), bic = c(), dev = c())
       for (ncomp in 1:maxcomp) {
         for (fold in 1:nfolds) {
-          df = mean(cv$df[(cv$ncomp == ncomp) & (cv$fold == fold)])
-          aic = mean(cv$aic[(cv$ncomp == ncomp) & (cv$fold == fold)])
-          bic = mean(cv$bic[(cv$ncomp == ncomp) & (cv$fold == fold)])
-          dev = mean(cv$dev[(cv$ncomp == ncomp) & (cv$fold == fold)])
-          avgstat = data.frame(ncomp = ncomp, df = df, aic = aic, bic = bic, dev = dev)
+          idx = (cv$ncomp == ncomp) & (cv$fold == fold)
+          df = mean(cv$df[idx])
+          aic = mean(cv$aic[idx])
+          bic = mean(cv$bic[idx])
+          cbic = mean(cv$cbic[idx])
+          dev = mean(cv$dev[idx])
+          avgstat = data.frame(ncomp = ncomp, df = df, aic = aic, bic = bic, cbic, cbic, dev = dev)
           avgcv = rbind(avgcv, avgstat)
         }
       }
       ncomp = avgcv$ncomp[which.min(avgcv$dev)]
     } else {
-      ncomp = vc$ncomp[which.min(cv$dev)]
+      ncomp = cv$ncomp[which.min(cv$dev)]
     }
   }
 
@@ -142,7 +140,7 @@ sgdgmf.cv = function (
   fit$control.cv = control.cv
 
   # Return the cross-validation statistics
-  fit$cv.stat = cv
+  fit$summary.cv = cv
 
   # Return the fitted model
   return (fit)
