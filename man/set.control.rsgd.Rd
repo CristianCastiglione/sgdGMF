@@ -10,4 +10,3 @@ set.control.rsgd(control)
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.
 }
-\keyword{internal}
