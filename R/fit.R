@@ -266,6 +266,7 @@ sgdgmf.fit = function (
   out$objective = fit$objective
   out$aic = fit$deviance + 2 * df
   out$bic = fit$deviance + 2 * df * log(nm)
+  out$cbic = fit$deviance + 2 * df * log(log(nm))
   out$exe.time = fit$exe.time
   out$trace = as.data.frame(fit$trace)
   colnames(out$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
