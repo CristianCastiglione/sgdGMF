@@ -4,7 +4,7 @@
 \alias{normalize.uv}
 \title{Normalize the matrices U and V}
 \usage{
-normalize.uv(U, V, method = c("svd", "qr"))
+normalize.uv(U, V, method = c("qr", "svd"))
 }
 \description{
 Rotate U and V in such a way that the transformed matrices
