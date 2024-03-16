@@ -50,31 +50,43 @@ set.family = function (family) {
     # Gaussian family
     if (family$family == "gaussian") {
       if (family$link == "identity") {
+        family$initialize = function (y) y
+        attr(familt$initialize, "srcref") = NULL
         flag = FALSE
       }
     }
     # Binomial family
     if (family$family %in% c("binomial", "quasibinomial")) {
       if (family$link %in% c("logit", "probit", "cauchit", "cloglog")) {
+        family$initialize = function (y) jitter(2 * y - 1, amount = 0.25)
+        attr(familt$initialize, "srcref") = NULL
         flag = FALSE
       }
     }
     # Poisson family
     if (family$family %in% c("poisson", "quasipoisson")) {
       if (family$link == "log") {
+        family$initialize = function (y) family$linkfun(y + 0.1)
+        attr(familt$initialize, "srcref") = NULL
         flag = FALSE
       }
     }
     # Gamma family
-    if (family$family == "gamma") {
+    if (family$family %in% c("gamma", "Gamma")) {
       if (family$link %in% c("inverse", "log", "sqrt")) {
+        family$family = "gamma"
+        family$initialize = function (y) family$linkfun(y)
+        attr(familt$initialize, "srcref") = NULL
         flag = FALSE
       }
     }
-    # Negtive Binomial family
-    if (family$family == "Negative Binomial" | substring(family$family, 1, 17) == "Negative Binomial") {
+    # Negative Binomial family
+
+    if (family$family == "negbinom" | substring(family$family, 1, 17) == "Negative Binomial") {
       if (family$link %in% c("inverse", "log", "sqrt")) {
         family$family = "negbinom"
+        family$initialize = function (y) family$linkfun(y + (y == 0) / 6)
+        attr(familt$initialize, "srcref") = NULL
         flag = FALSE
       }
     }
@@ -87,7 +99,7 @@ set.family = function (family) {
 }
 
 
-#' @title Set the jittering function for mapping the data
+#' @title Set the jittering function for mapping the data (DEPRECATED!)
 #'
 #' @description
 #' Return a function f which maps the original data y into the perturbed data
@@ -180,12 +192,18 @@ set.control.init = function (
   ctr$parallel = FALSE
   ctr$nthreads = 1
 
-  if (is.list(values)) ctr$values = values
   if (is.numeric(niter) && niter > 0) ctr$niter = floor(niter)
   if (is.logical(normalize)) ctr$normalize = normalize
   if (is.logical(verbose)) ctr$verbose = verbose
   if (is.logical(parallel)) ctr$parallel = parallel
   if (is.numeric(nthreads) && nthreads > 0) ctr$nthreads = floor(nthreads)
+
+  if (is.list(values) && c("B", "A", "U", "V") %in% names(values)) {
+    if (is.numeric(values$B) && is.matrix(values$B)) ctr$values$B = values$B
+    if (is.numeric(values$A) && is.matrix(values$A)) ctr$values$A = values$A
+    if (is.numeric(values$U) && is.matrix(values$U)) ctr$values$U = values$U
+    if (is.numeric(values$V) && is.matrix(values$V)) ctr$values$V = values$V
+  }
 
   return (ctr)
 }
@@ -509,7 +527,25 @@ set.control.csgd = function (
 #' values if they are not. Returns a list of well-defined control parameters.
 #'
 #' @export
-set.control.rsgd = function (control) {
+set.control.rsgd = function (
+    normalize = TRUE,
+    maxiter = 100,
+    eps = 1e-08,
+    nafill = 10,
+    tol = 1e-05,
+    size = 100,
+    burn = 90,
+    rate0 = 0.01,
+    decay = 1.0,
+    damping = 1e-04,
+    rate1 = 0.05,
+    rate2 = 0.01,
+    parallel = FALSE,
+    nthreads = 1,
+    verbose = TRUE,
+    frequency = 10,
+    progress = FALSE
+) {
   # Set the default control parameters
   ctr = list()
   ctr$normalize = TRUE
