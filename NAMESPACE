@@ -2,8 +2,8 @@
 
 S3method(factors,sgdgmf)
 S3method(loadings,sgdgmf)
+S3method(predict,sgdgmf)
 export(init.param)
-export(predict.sgdgmf)
 export(set.control.airwls)
 export(set.control.alg)
 export(set.control.bsgd)
