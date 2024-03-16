@@ -139,14 +139,7 @@ whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor"
     W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
   }
 
-  result = list()
-
-  colnames(W) = colnames(sigma)
-  rownames(W) = paste0("L", 1:ncol(sigma))
-  attr(W, "method") = method
-  result$W = W
-
-  return(result)
+  return(W)
 }
 
 #' @title Normalize the matrices U and V
@@ -156,7 +149,7 @@ whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor"
 #' are such that U is orthogonal and V is lower triangular
 #'
 #' @keywords internal
-normalize.uv = function (U, V, method = c("svd", "qr")) {
+normalize.uv = function (U, V, method = c("qr", "svd")) {
 
   method = match.arg(method)
 
