@@ -159,18 +159,15 @@ init.param.svd = function (
 
   # Select the data transformation to use for
   # the initialization of the working data
-  f = set.jitter(family)
+  fam = set.family(family)
 
   # Compute the transformed data
   if (verbose) cat(" Initialization: working data \n")
   isna = is.na(Y)
   y = matrix(NA, nrow = n, ncol = m)
-  # y[!isna] = f(Y[!isna])
-  # y[isna] = mean(y[!isna])
-
   y[] = apply(Y, 2, function (x) {
     x[is.na(x)] = mean(x, na.rm = TRUE)
-    return (f(x))
+    return (fam$initialize(x))
   })
 
   # Initialize the parameters and sufficient statistics
@@ -596,7 +593,7 @@ init.param.glm3 = function (
 #' \code{\link{init.param.svd}}. See \code{\link{init.param}} for more details.
 #'
 #' @keywords internal
-init.param.custom = function (
+init.param.values = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -606,126 +603,34 @@ init.param.custom = function (
     verbose = FALSE
 ) {
 
+  # Set the covariate matrices
+  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+
   # Data dimensions
   n = nrow(Y)
   m = ncol(Y)
+  p = ncol(X)
+  q = ncol(Z)
   d = ncomp
 
-  # Select the data transformation to use for
-  # the initialization of the working data
-  f = set.jitter(family)
+  # Set the error message
+  error.message = function (mat, nr, nc)
+    gettextf("Incompatible dimensions: dim(%s) != c(%d, %d).", mat, nr, nc)
 
-  # Compute the transformed data and fill the NA values with the column means
-  if (verbose) cat(" Initialization: working data \n")
-  isna = is.na(Y)
-  y = matrix(NA, nrow = n, ncol = m)
-  y[] = apply(Y, 2, function (x) {
-    x[is.na(x)] = mean(x, na.rm = TRUE)
-    return (f(x))
-  })
-
-  # Initialize the parameters and sufficient statistics
-  A = B = U = V = NULL
-  xtx = ztz = NULL
-  xty = zty = NULL
-  xb = az = uv = 0
-
-  # Safety checks and parameter assignement
-  if (is.list(values)) {
-    if (check.dim(values$U, n, d)) U = values$U
-    if (check.dim(values$V, m, d)) V = values$V
-    if (check.dim(values$A, n, ncol(Z))) A = values$A
-    if (check.dim(values$B, m, ncol(X))) B = values$B
-    if (!is.null(U) & !is.null(V)) uv = tcrossprod(U, V)
-    if (!is.null(A) & !is.null(Z)) az = tcrossprod(A, Z)
-    if (!is.null(X) & !is.null(B)) xb = tcrossprod(X, B)
-
-  }
-
-  # Compute the initial column-specific regression parameters (if any)
-  if (!is.null(X)) {
-    if (is.null(B)) {
-      if (verbose) cat(" Initialization: column-specific covariates \n")
-      m = ncol(Y)
-      p = ncol(X)
-      B = matrix(NA, nrow = m, ncol = p)
-      xtx = crossprod(X)
-      xty = crossprod(X, y - az - uv)
-      B[] = t(solve(xtx, xty))
-    }
-    xb = tcrossprod(X, B)
-  }
-
-  # Compute the initial row-specific regression parameter (if any)
-  if (!is.null(Z)) {
-    if (is.null(A)) {
-      if (verbose) cat(" Initialization: row-specific covariates \n")
-      n = nrow(Y)
-      q = ncol(Z)
-      A = matrix(NA, nrow = m, ncol = q)
-      ztz = crossprod(Z)
-      zty = crossprod(Z, t(y - xb - uv))
-      A[] = t(solve(ztz, zty))
-    }
-    az = tcrossprod(A, Z)
-  }
-
-  # If both U and V are provided, orthogonalize them via incomplete SVD
-  if (!is.null(U) & !is.null(V)) {
-    uv = tcrossprod(U, V)
-    s = RSpectra::svds(uv, k = d)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-  }
-
-  # If U is unspecified, compute it via penalized least squares
-  if (!is.null(U) & is.null(V)) {
-    if (verbose) cat(" Initialization: latent scores \n")
-    # Compute the unnormalized U via penalized least squares
-    vtv = crossprod(V) + diag(d)
-    vty = crossprod(V, t(y - xb - za))
-    U = t(solve(vtv, vty))
-    # Orthogonalize U and V via incomplete SVD
-    uv = tcrossprod(U, V)
-    s = RSpectra::svds(uv, k = d)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-  }
-
-  # If V is unspecified, compute it via least squares
-  if (is.null(U) & !is.null(V)) {
-    if (verbose) cat(" Initialization: latent loadings \n")
-    # Compute the unnormalized V via penalized least squares
-    utu = crossprod(U)
-    uty = crossprod(U, t(y - xb - za))
-    V = t(solve(utu, uty))
-    # Orthogonalize U and V via incomplete SVD
-    uv = tcrossprod(U, V)
-    s = RSpectra::svds(uv, k = d)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-  }
-
-  # If both U and V are unspecified, compute them via incomplete SVD
-  # calculated over the regression residuals
-  if (is.null(U) & is.null(V)) {
-    if (verbose) cat(" Initialization: latent scores and loadings \n")
-    s = RSpectra::svds(y - xb - az, k = d)
-    U = s$u %*% diag(sqrt(s$d))
-    V = s$v %*% diag(sqrt(s$d))
-    uv = tcrossprod(U, V)
-  }
+  # Check if all the dimensions are compatible
+  if (dim(values$B) == c(m, p)) stop(error.message("B", m, p))
+  if (dim(values$A) == c(n, q)) stop(error.message("A", n, q))
+  if (dim(values$U) == c(n, d)) stop(error.message("U", n, d))
+  if (dim(values$V) == c(m, d)) stop(error.message("V", m, d))
 
   # Compute the initial vector of dispersion parameters
-  mu = family$linkinv(xb + az + uv)
+  eta = tcrossprod(cbind(X, values$A, values$U), cbind(values$B, Z, values$V))
+  mu = family$linkinv(eta)
   var = family$variance(mu)
-  phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
-
-  # Regression matrices initialization when there are no covariates
-  if (is.null(X)) B = matrix(0, nrow = m, ncol = 0)
-  if (is.null(Z)) A = matrix(0, nrow = n, ncol = 0)
+  values$phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
 
   # Return the obtained initial values
-  list(U = U, V = V, A = A, B = B, phi = phi)
+  return(values)
 }
 
