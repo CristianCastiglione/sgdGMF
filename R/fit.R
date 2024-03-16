@@ -248,11 +248,13 @@ sgdgmf.fit = function (
   # Output list
   out = list()
   out$method = method
-  out$family = familyname
-  out$link = linkname
+  out$family = family
   out$ncomp = ncomp
   out$control.init = control.init
   out$control.alg = control.alg
+  out$Y = Y
+  out$X = X
+  out$Z = Z
   out$A = fit$U[, idxA]
   out$B = fit$V[, idxB]
   out$U = fit$U[, idxU]
