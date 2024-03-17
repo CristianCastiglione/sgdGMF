@@ -2,7 +2,7 @@
 % Please edit documentation in R/control.R
 \name{set.jitter}
 \alias{set.jitter}
-\title{Set the jittering function for mapping the data}
+\title{Set the jittering function for mapping the data (DEPRECATED!)}
 \usage{
 set.jitter(family)
 }
