@@ -487,12 +487,6 @@ init.param.glm3 = function (
     verbose = FALSE,
     nthreads = 1
 ) {
-  # Require the needed packages
-  # suppressPackageStartupMessages({
-  #   require(parallel)
-  #   require(doParallel)
-  #   require(foreach)
-  # })
 
   # Model dimensions
   n = nrow(Y)
