@@ -50,24 +50,21 @@ set.family = function (family) {
     # Gaussian family
     if (family$family == "gaussian") {
       if (family$link == "identity") {
-        family$initialize = function (y) y
-        attr(familt$initialize, "srcref") = NULL
+        family$transform = function (y) y
         flag = FALSE
       }
     }
     # Binomial family
     if (family$family %in% c("binomial", "quasibinomial")) {
       if (family$link %in% c("logit", "probit", "cauchit", "cloglog")) {
-        family$initialize = function (y) jitter(2 * y - 1, amount = 0.25)
-        attr(familt$initialize, "srcref") = NULL
+        family$transform = function (y) jitter(2 * y - 1, amount = 0.25)
         flag = FALSE
       }
     }
     # Poisson family
     if (family$family %in% c("poisson", "quasipoisson")) {
       if (family$link == "log") {
-        family$initialize = function (y) family$linkfun(y + 0.1)
-        attr(familt$initialize, "srcref") = NULL
+        family$transform = function (y) family$linkfun(y + 0.1)
         flag = FALSE
       }
     }
@@ -75,21 +72,19 @@ set.family = function (family) {
     if (family$family %in% c("gamma", "Gamma")) {
       if (family$link %in% c("inverse", "log", "sqrt")) {
         family$family = "gamma"
-        family$initialize = function (y) family$linkfun(y)
-        attr(familt$initialize, "srcref") = NULL
+        family$transform = function (y) family$linkfun(y)
         flag = FALSE
       }
     }
     # Negative Binomial family
-
     if (family$family == "negbinom" | substring(family$family, 1, 17) == "Negative Binomial") {
       if (family$link %in% c("inverse", "log", "sqrt")) {
         family$family = "negbinom"
-        family$initialize = function (y) family$linkfun(y + (y == 0) / 6)
-        attr(familt$initialize, "srcref") = NULL
+        family$transform = function (y) family$linkfun(y + (y == 0) / 6)
         flag = FALSE
       }
     }
+    attr(family$transform, "srcref") = NULL
   }
   if (flag) {
     stop("Family not available")
@@ -198,11 +193,17 @@ set.control.init = function (
   if (is.logical(parallel)) ctr$parallel = parallel
   if (is.numeric(nthreads) && nthreads > 0) ctr$nthreads = floor(nthreads)
 
-  if (is.list(values) && c("B", "A", "U", "V") %in% names(values)) {
-    if (is.numeric(values$B) && is.matrix(values$B)) ctr$values$B = values$B
-    if (is.numeric(values$A) && is.matrix(values$A)) ctr$values$A = values$A
-    if (is.numeric(values$U) && is.matrix(values$U)) ctr$values$U = values$U
-    if (is.numeric(values$V) && is.matrix(values$V)) ctr$values$V = values$V
+  if (is.list(values)) {
+    if (length(values) > 0) {
+      if (c("B", "A", "U", "V") %in% names(values)) {
+        if (is.numeric(values$B) && is.matrix(values$B)) ctr$values$B = values$B
+        if (is.numeric(values$A) && is.matrix(values$A)) ctr$values$A = values$A
+        if (is.numeric(values$U) && is.matrix(values$U)) ctr$values$U = values$U
+        if (is.numeric(values$V) && is.matrix(values$V)) ctr$values$V = values$V
+      } else {
+        values = list()
+      }
+    }
   }
 
   return (ctr)
