@@ -32,7 +32,7 @@
 #' @slot trace data frame collecting the optimization history
 #' @slot summary.cv data frame collecting the cross-validation history
 #'
-#' @import methods
+## @import methods
 #' @export
 setClass("sgdgmf",
   slots = list(
@@ -63,6 +63,23 @@ setClass("sgdgmf",
     trace = "data.frame",
     summary.cv = "data.frame"
 ))
+
+#' @title Print the fundamental characteristics of a GMF
+#'
+#' @description ...
+#'
+#' @param object an object of class \code{sgdgmf}
+#'
+#' @method print sgdgmf
+#' @export
+print.sgdgmf = function (object) {
+  # n, m, p, q, d
+  # family, penalty
+  # missing values
+  # explained deviance
+  # effective degrees of freedom
+  # execution time
+}
 
 #' @title Extract the coefficient of a GMF model
 #'
@@ -254,7 +271,7 @@ predict.sgdgmf = function (
       "link" = tcrossprod(
         cbind(newX, newA, newU),
         cbind(object$B, object$Z, object$V)),
-      "response" = f$linkinv(tcrossprod(
+      "response" = family$linkinv(tcrossprod(
         cbind(newX, newA, newU),
         cbind(object$B, object$Z, object$V))),
       "terms" = list(
