@@ -191,7 +191,7 @@ sgdgmf.fit = function (
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       size = alg$size, burn = alg$burn, rate0 = alg$rate0, decay = alg$decay,
       damping = alg$damping, rate1 = control$rate1, rate2 = alg$rate2,
-      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
       frequency = alg$frequency, progress = alg$progress
     )
   }
@@ -203,7 +203,7 @@ sgdgmf.fit = function (
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
       decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
       frequency = alg$frequency, progress = alg$progress
     )
   }
@@ -215,7 +215,7 @@ sgdgmf.fit = function (
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
       decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
       frequency = alg$frequency, progress = alg$progress
     )
   }
@@ -227,7 +227,7 @@ sgdgmf.fit = function (
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
       decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = alg$parallel, nthreads = alg$nthreads, verbose = alg$verbose,
+      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
       frequency = alg$frequency, progress = alg$progress
     )
   }
@@ -252,6 +252,7 @@ sgdgmf.fit = function (
   out$ncomp = ncomp
   out$control.init = control.init
   out$control.alg = control.alg
+  out$control.cv = list()
   out$Y = Y
   out$X = X
   out$Z = Z
@@ -271,6 +272,7 @@ sgdgmf.fit = function (
   out$cbic = fit$deviance + 2 * df * log(log(nm))
   out$exe.time = fit$exe.time
   out$trace = as.data.frame(fit$trace)
+  out$summary.cv = data.frame()
   colnames(out$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
 
   # Normalize the latent factors
