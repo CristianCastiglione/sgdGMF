@@ -17,8 +17,6 @@ set.control.bsgd(
   damping = 0.001,
   rate1 = 0.1,
   rate2 = 0.01,
-  parallel = FALSE,
-  nthreads = 1,
   verbose = TRUE,
   frequency = 250,
   progress = FALSE
@@ -48,10 +46,6 @@ set.control.bsgd(
 \item{rate1}{exponential decay rate for the moment estimate of the gradient}
 
 \item{rate2}{exponential decay rate for the moment estimate of the Hessian}
-
-\item{parallel}{...}
-
-\item{nthreads}{...}
 
 \item{verbose}{if \code{TRUE}, print the optimization status}
 
