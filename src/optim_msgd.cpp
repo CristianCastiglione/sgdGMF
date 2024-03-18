@@ -20,7 +20,6 @@ void MSGD::summary () {
     std::printf(" damping = %.5f \n", this->damping);
     std::printf(" rate1 = %.5f \n", this->rate1);
     std::printf(" rate2 = %.5f \n", this->rate2);
-    std::printf(" parallel = %s \n", this->parallel ? "true" : "false");
     std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
     std::printf(" frequency = %i \n", this->frequency);
     std::printf(" progress = %s \n", this->progress ? "true" : "false");
