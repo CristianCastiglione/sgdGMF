@@ -167,7 +167,7 @@ init.param.svd = function (
   y = matrix(NA, nrow = n, ncol = m)
   y[] = apply(Y, 2, function (x) {
     x[is.na(x)] = mean(x, na.rm = TRUE)
-    return (fam$initialize(x))
+    return (fam$transform(x))
   })
 
   # Initialize the parameters and sufficient statistics
