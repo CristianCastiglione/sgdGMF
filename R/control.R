@@ -445,8 +445,6 @@ set.control.msgd = function (
 #' @param damping regularization parameter which is added to the Hessian to ensure numerical stability
 #' @param rate1 exponential decay rate for the moment estimate of the gradient
 #' @param rate2 exponential decay rate for the moment estimate of the Hessian
-#' @param parallel ...
-#' @param nthreads ...
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
@@ -465,8 +463,6 @@ set.control.csgd = function (
     damping = 1e-03,
     rate1 = 0.1,
     rate2 = 0.01,
-    parallel = FALSE,
-    nthreads = 1,
     verbose = TRUE,
     frequency = 250,
     progress = FALSE
@@ -485,8 +481,6 @@ set.control.csgd = function (
   ctr$damping = 1e-03
   ctr$rate1 = 0.1
   ctr$rate2 = 0.01
-  ctr$parallel = FALSE
-  ctr$nthreads = 1
   ctr$verbose = TRUE
   ctr$frequency = 250
   ctr$progress = FALSE
@@ -504,8 +498,6 @@ set.control.csgd = function (
   if (is.numeric(damping) && damping > 0) ctr$damping = damping
   if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
   if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
   if (is.logical(verbose)) ctr$verbose = verbose
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
   if (is.logical(progress)) ctr$progress = progress
@@ -541,8 +533,6 @@ set.control.rsgd = function (
     damping = 1e-04,
     rate1 = 0.05,
     rate2 = 0.01,
-    parallel = FALSE,
-    nthreads = 1,
     verbose = TRUE,
     frequency = 10,
     progress = FALSE
@@ -561,8 +551,6 @@ set.control.rsgd = function (
   ctr$damping = 1e-04
   ctr$rate1 = 0.05
   ctr$rate2 = 0.01
-  ctr$parallel = FALSE
-  ctr$nthreads = 1
   ctr$verbose = TRUE
   ctr$frequency = 10
   ctr$progress = FALSE
@@ -580,8 +568,6 @@ set.control.rsgd = function (
   if (is.numeric(damping) && damping > 0) ctr$damping = damping
   if (is.numeric(rate1) && rate1 > 0) ctr$rate = rate1
   if (is.numeric(rate2) && rate2 > 0) ctr$rate = rate2
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
   if (is.logical(verbose)) ctr$verbose = verbose
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
   if (is.logical(progress)) ctr$progress = progress
@@ -615,8 +601,6 @@ set.control.rsgd = function (
 #' @param damping regularization parameter which is added to the Hessian to ensure numerical stability
 #' @param rate1 exponential decay rate for the moment estimate of the gradient
 #' @param rate2 exponential decay rate for the moment estimate of the Hessian
-#' @param parallel ...
-#' @param nthreads ...
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
@@ -635,8 +619,6 @@ set.control.bsgd = function (
     damping = 1e-03,
     rate1 = 0.1,
     rate2 = 0.01,
-    parallel = FALSE,
-    nthreads = 1,
     verbose = TRUE,
     frequency = 250,
     progress = FALSE
@@ -655,8 +637,6 @@ set.control.bsgd = function (
   ctr$damping = 1e-03
   ctr$rate1 = 0.1
   ctr$rate2 = 0.01
-  ctr$parallel = FALSE
-  ctr$nthreads = 1
   ctr$verbose = TRUE
   ctr$frequency = 250
   ctr$progress = FALSE
@@ -674,8 +654,6 @@ set.control.bsgd = function (
   if (is.numeric(damping) && damping > 0) ctr$damping = damping
   if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
   if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
   if (is.logical(verbose)) ctr$verbose = verbose
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
   if (is.logical(progress)) ctr$progress = progress
