@@ -7,14 +7,24 @@ Author:
     person("Cristian", "Castiglione", email = "cristian.castiglione@unipd.it", 
            role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
     person("Davide", "Risso", email = "davide.risso@unipd.it", 
-           role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012"))
+           role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012")),
+    person("Alexandre", "Segers", email = "alexandre.segers@ugent.be", 
+           role = c("ctb"), comment = c(ORCID = "0009-0004-2028-7595"))
 Maintainer: Cristian Castiglione <cristian.castiglione@unipd.it>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
-Depends: 
-    Rcpp (>= 1.0.10),
-    RcppArmadillo
+Description: The sgdGMF package provides an efficient infrastructure 
+    to estimate high-dimensional generalized matrix factorization (GMF) models using
+    penalized maximum likelihood under a dispersion exponential family specification.
+    Either deterministic and stochastic methods are implemented for the numerical 
+    maximization. In particular, the package implements an 
+    original stochastic gradient descent (SGD) algorithm with a blocking minibatch strategy
+    to speed up the computations and an efficient adaptive learning rate schedule to
+    stabilize the convergence. Other methods considered for the optimization are the
+    alternated iterative re-weighted least squares (AIRWLS) and the quasi-Newton method
+    with diagonal approximation of the Fisher information matrix.
+License: MIT
 Imports: 
+    Rcpp (>= 1.0.10),
+    RcppArmadillo,
     RSpectra, 
     svd, 
     whitening, 
@@ -29,8 +39,8 @@ Suggests:
     Rtsne,
     dplyr,
     ggplot2,
-    reshape2,
     ggpubr,
+    reshape2,
     knitr,
     rmarkdown
 Config/testthat/edition: 3
