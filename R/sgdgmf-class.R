@@ -333,17 +333,78 @@ simulate.sgdgmf = function (
 
 }
 
+#' @title Spectrum method for GMF models
+#'
+#' @description
+#' Compute the latent spectrum of a GMF model evaluated on the GLM residual scale.
+#'
+#' @param object an object of class \code{sgdgmf}
+#' @param ncomp number of eigenvalues to compute
+#' @param type the type of residual which should be returned
+#' @param normalize if \code{TRUE}, standardize the residuals column-by-column
+#'
+#' @details
+#' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top} be the linear predictor of a
+#' GMF model where the latent factorization \eqn{U V^\top} is not included into the
+#' model specification. Let \eqn{R} be the correspondent partial residual matrix.
+#' Either deviance, \eqn{r_{ij} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}},
+#' or Pearson, \eqn{r_{ij} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}}, residuals
+#' can be considered. Finally, we define \eqn{\Sigma} as the empirical variance-covariance
+#' matrix of \eqn{R}, being \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, we define
+#' the latent spectrum of the model as the collection of eigenvalues of \eqn{\Sigma}.
+#' Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
+#' component analysis on the regression residuals, whose eigenvalues can be used to
+#' infer how much signal can be explained by each principal component. Similarly,
+#' we can use the latent spectrum in non-Gaussian data settings to infer the correct
+#' number of principal components to include into the GMF model.
+#'
+#' @method spectrum sgdgmf
+#' @export
 spectrum.sgdgmf = function (
-    object, ncomp = object$ncomp, type = c("deviance", "pearson", "working")
+    object, ncomp = object$ncomp,
+    type = c("deviance", "pearson", "working"),
+    normalize = FALSE
 ) {
-
+  # Compute the model residuals
   type = match.arg(type)
+  family = object$family
   eta = tcrossprod(cbind(object$X, object$A), cbind(object$B, object$Z))
-  mu = object$family$linkinv(eta)
+  mu = family$linkinv(eta)
   res = switch(type,
-    "deviance" = ,
-    "pearson" = ,
-    "working" = )
+    "deviance" = sign(object$Y - mu) * sqrt(family$dev.resid(object$Y, mu, 1)),
+    "pearson" = (object$Y - mu) / sqrt(family$variance(mu)),
+    "working" = (object$Y - mu) / family$mu.eta(eta))
+
+  # Fill the missing values using Gaussian random values
+  if (anyNA(res)) {
+    res = apply(res, 2, function (x) {
+      na = which(is.na(x))
+      rx = length(na)
+      mx = mean(x, na.rm = TRUE)
+      sx = sd(x, na.rm = TRUE)
+      x[na] = rnorm(rx, mean = mx, sd = sx)
+      return (x)
+    })
+  }
+
+  # Standardize the residuals column-by-column
+  if (normalize) {
+    res = scale(res, center = TRUE, scale = TRUE)
+  }
+
+  # Decompose the residuals using incomplete SVD
+  pca = RSpectra::svds(res, ncomp)
+  uv = tcrossprod(pca$u, pca$v %*% diag(pca$d))
+
+  # Estimate the explained and residual variance
+  var.eig = pca$d^2 / nrow(res)
+  var.tot = sum(colVars(res))
+  var.exp = sum(var.eig)
+  var.res = var.tot - var.exp
+
+  # Return the spectrum
+  list(spectrum = var.eig, explained = var.exp,
+       reminder = var.res, total = var.tot)
 }
 
 
