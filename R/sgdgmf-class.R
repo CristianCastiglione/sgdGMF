@@ -8,6 +8,7 @@
 #' @slot method estimation method to minimize the negative penalized log-likelihood
 #' @slot family a \code{glm} family (see \code{\link{family}} for more details)
 #' @slot ncomp rank of the latent matrix factorization
+#' @slot npar number of parameters in the model
 #' @slot control.init list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)
 #' @slot control.alg list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)
 #' @slot control.cv list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)
@@ -39,6 +40,7 @@ setClass("sgdgmf",
     method = "character",
     family = "list",
     ncomp = "numeric",
+    npar = "numeric",
     control.init = "list",
     control.alg = "list",
     control.cv = "list",
@@ -73,12 +75,27 @@ setClass("sgdgmf",
 #' @method print sgdgmf
 #' @export
 print.sgdgmf = function (object) {
-  # n, m, p, q, d
-  # family, penalty
-  # missing values
-  # explained deviance
-  # effective degrees of freedom
-  # execution time
+  # Percentage of explained deviance
+  dev.fit  = matrix.deviance(object$mu, object$Y, object$family)
+  dev.null = matrix.deviance(mean(object$Y, na.rm = TRUE), object$Y, object$family)
+  dev.exp  = 100 * (1 - dev.fit / dev.null)
+
+  # Print the output
+  cat(gettextf("\n Number of samples: %d", nrow(object$Y)))
+  cat(gettextf("\n Number of features: %d", ncol(object$Y)))
+  cat(gettextf("\n Data sparsity: %.2f %%", 100 * mean(is.na(object$Y))))
+  cat(gettextf("\n Column covariates: %d", ncol(object$X)))
+  cat(gettextf("\n Row covariates: %d", ncol(object$Z)))
+  cat(gettextf("\n Latent space rank: %d", object$ncomp))
+  cat(gettextf("\n Number of parameters: %d", object$npar))
+  cat(gettextf("\n Model family: %s", object$family$family))
+  cat(gettextf("\n Model link: %s", object$family$link))
+  cat(gettextf("\n Estimation method: %s", object$method))
+  cat(gettextf("\n Explained deviance: %.2f %%", dev.exp))
+  cat(gettextf("\n Initialization exe. time: %.2f s (%.2f m)", 0, 0))
+  cat(gettextf("\n Optimization exe. time: %.2f s (%.2f m)", object$exe.time, object$exe.time/60))
+  cat(gettextf("\n Total execution time: %.2f s (%.2f m)", object$exe.time, object$exe.time/60))
+  cat("\n")
 }
 
 #' @title Extract the coefficient of a GMF model
@@ -287,5 +304,46 @@ predict.sgdgmf = function (
   return (pred)
 }
 
+
+#' @title Simulate method for GMF models
+#'
+#' @description
+#' Simulate new data from a fitted generalized matrix factorization models
+#'
+#' @param object an object of class \code{sgdgmf}
+#' @param newdata optionally, a list containing new values for \code{X} and \code{Z}
+#' @param type the type of prediction which should be returned
+#' @param parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach}
+#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#'
+#' @details
+#' If \code{newY} and \code{newX} are omitted, the predictions are based on the data
+#' used for the fit. In that case, the predictions corresponds to the fitted values.
+#' If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
+#' \code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
+#' By doing so, \code{B} and \code{V} are kept fixed.
+#'
+#' @method simulate sgdgmf
+#' @export
+simulate.sgdgmf = function (
+    object, newY = NULL, newX = NULL,
+    type = c("link", "response", "terms", "coef"),
+    parallel = FALSE, nthreads = 1
+) {
+
+}
+
+spectrum.sgdgmf = function (
+    object, ncomp = object$ncomp, type = c("deviance", "pearson", "working")
+) {
+
+  type = match.arg(type)
+  eta = tcrossprod(cbind(object$X, object$A), cbind(object$B, object$Z))
+  mu = object$family$linkinv(eta)
+  res = switch(type,
+    "deviance" = ,
+    "pearson" = ,
+    "working" = )
+}
 
 
