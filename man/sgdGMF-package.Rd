@@ -6,6 +6,6 @@
 \alias{sgdGMF-package}
 \title{sgdGMF: Estimation of generalized matrix factorization models via stochastic gradient descent}
 \description{
-More about what it does (maybe more than one line)
+The sgdGMF package provides an efficient infrastructure to estimate high-dimensional generalized matrix factorization (GMF) models using penalized maximum likelihood under a dispersion exponential family specification. Either deterministic and stochastic methods are implemented for the numerical maximization. In particular, the package implements an original stochastic gradient descent (SGD) algorithm with a blocking minibatch strategy to speed up the computations and an efficient adaptive learning rate schedule to stabilize the convergence. Other methods considered for the optimization are the alternated iterative re-weighted least squares (AIRWLS) and the quasi-Newton method with diagonal approximation of the Fisher information matrix.
 }
 \keyword{internal}
