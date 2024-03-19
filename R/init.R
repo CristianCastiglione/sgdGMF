@@ -203,7 +203,6 @@ init.param.svd = function (
 
   # Compute the initial latent factors via incomplete SVD
   if (verbose) cat(" Initialization: latent scores and loadings \n")
-  # sv = svd::propack.svd(y - xb - az, neig = ncomp)
   s = RSpectra::svds(y - xb - az, k = d, nu = d, nv = d)
   if (d == 1) {
     U = s$u %*% sqrt(s$d)
