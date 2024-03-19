@@ -127,6 +127,12 @@ sgdgmf.fit = function (
   X = set.mat.X(X, nrow(Y), "X")
   Z = set.mat.X(Z, ncol(Y), "Z")
 
+  # Set the model dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+  p = ncol(X)
+  q = ncol(Z)
+
   # Check the model family
   family = set.family(family)
   familyname = family$family
@@ -250,6 +256,7 @@ sgdgmf.fit = function (
   out$method = method
   out$family = family
   out$ncomp = ncomp
+  out$npar = m*p + n*q + (n+m)*ncomp
   out$control.init = control.init
   out$control.alg = control.alg
   out$control.cv = list()
