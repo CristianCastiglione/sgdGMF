@@ -16,6 +16,8 @@ A short description...
 
 \item{\code{ncomp}}{rank of the latent matrix factorization}
 
+\item{\code{npar}}{number of parameters in the model}
+
 \item{\code{control.init}}{list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)}
 
 \item{\code{control.alg}}{list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)}
