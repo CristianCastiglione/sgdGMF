@@ -331,9 +331,14 @@ init.param.glm = function (
   mu[] = family$linkinv(eta)
 
   # Compute the residuals
-  if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
-  if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
-  if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
+  res[] = switch(type,
+    "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
+    "pearson" = (Y - mu) / sqrt(family$variance(mu)),
+    "working" = (Y - mu) / family$mu.eta(eta))
+
+  # if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
+  # if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
+  # if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
 
   # Initialize the latent factors via residual SVD
   if (verbose) cat(" Initialization: latent scores \n")
@@ -380,12 +385,6 @@ init.param.glm2 = function (
     type = c("deviance", "pearson", "working"),
     verbose = FALSE
 ) {
-  # Require the needed packages
-  # suppressPackageStartupMessages({
-  #   require(parallel)
-  #   require(doParallel)
-  #   require(foreach)
-  # })
 
   # Model dimensions
   n = nrow(Y)
@@ -437,9 +436,14 @@ init.param.glm2 = function (
   mu[] = family$linkinv(eta)
 
   # Compute the residuals
-  if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
-  if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
-  if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
+  res[] = switch(type,
+    "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
+    "pearson" = (Y - mu) / sqrt(family$variance(mu)),
+    "working" = (Y - mu) / family$mu.eta(eta))
+
+  # if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
+  # if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
+  # if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
 
   # Initialize the latent factors via residual SVD
   if (verbose) cat(" Initialization: latent scores \n")
@@ -543,9 +547,14 @@ init.param.glm3 = function (
   mu[] = family$linkinv(eta)
 
   # Compute the residuals
-  if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
-  if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
-  if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
+  res[] = switch(type,
+    "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
+    "pearson" = (Y - mu) / sqrt(family$variance(mu)),
+    "working" = (Y - mu) / family$mu.eta(eta))
+
+  # if (type == "deviance") res[] = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1))
+  # if (type == "pearson") res[] = (Y - mu) / sqrt(family$variance(mu))
+  # if (type == "working") res[] = (Y - mu) / family$mu.eta(eta)
 
   # Initialize the latent factors via residual SVD
   if (verbose) cat(" Initialization: latent scores \n")
