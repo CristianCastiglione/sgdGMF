@@ -10,6 +10,8 @@ sgdgmf.cv(
   Z = NULL,
   family = poisson(),
   ncomps = seq(from = 1, to = 10, by = 1),
+  weights = NULL,
+  offset = NULL,
   method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
   penalty = list(),
   control.init = list(),
@@ -27,6 +29,10 @@ sgdgmf.cv(
 \item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
 
 \item{ncomps}{rank of the latent matrix factorization (default 2)}
+
+\item{weights}{an optional matrix of weights (\eqn{n \times m})}
+
+\item{offset}{an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.}
 
 \item{method}{estimation method to minimize the negative penalized log-likelihood}
 
