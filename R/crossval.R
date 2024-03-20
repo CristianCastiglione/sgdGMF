@@ -9,6 +9,8 @@
 #' @param Z matrix of column fixed effects (\eqn{q \times m})
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
 #' @param ncomps rank of the latent matrix factorization (default 2)
+#' @param weights an optional matrix of weights (\eqn{n \times m})
+#' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.
 #' @param method estimation method to minimize the negative penalized log-likelihood
 #' @param penalty list of penalty parameters (see \code{\link{set.penalty}} for more details)
 #' @param control.init list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)
@@ -34,6 +36,8 @@ sgdgmf.cv = function (
     Z = NULL,
     family = poisson(),
     ncomps = seq(from = 1, to = 10, by = 1),
+    weights = NULL,
+    offset = NULL,
     method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
     penalty = list(),
     control.init = list(),
