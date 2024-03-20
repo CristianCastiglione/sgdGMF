@@ -10,7 +10,7 @@
 #' @importFrom stats gaussian quasi
 #' @importFrom stats binomial quasibinomial
 #' @importFrom stats poisson quasipoisson
-#' @importFrom stats Gamma invese.gaussian
+#' @importFrom stats Gamma inverse.gaussian
 #' @importFrom MASS neg.bin negative.binomial
 #' @importFrom svd propack.svd
 #' @importFrom RSpectra eigs svds
