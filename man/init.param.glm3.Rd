@@ -9,7 +9,7 @@ init.param.glm3(
   X = NULL,
   Z = NULL,
   ncomp = 2,
-  family = poisson(),
+  family = gaussian(),
   type = c("deviance", "pearson", "working"),
   verbose = FALSE,
   nthreads = 1
