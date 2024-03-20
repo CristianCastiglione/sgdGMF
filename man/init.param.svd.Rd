@@ -9,7 +9,7 @@ init.param.svd(
   X = NULL,
   Z = NULL,
   ncomp = 2,
-  family = poisson(),
+  family = gaussian(),
   niter = 0,
   verbose = FALSE
 )
