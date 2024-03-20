@@ -4,7 +4,7 @@
 \alias{init.param.random}
 \title{Random initialization}
 \usage{
-init.param.random(Y, X = NULL, Z = NULL, ncomp = 2, family = poisson())
+init.param.random(Y, X = NULL, Z = NULL, ncomp = 2, family = gaussian())
 }
 \description{
 Initialize the parameters of a GMF model sampling them from an independent
