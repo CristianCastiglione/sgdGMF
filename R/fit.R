@@ -162,14 +162,17 @@ sgdgmf.fit = function (
   alg = control.alg
 
   # Initialize the parameters
+  time.init = proc.time()
   init = init.param(
     Y = Y, X = X, Z = Z, ncomp = ncomp,
     family = family, method = control.init$method,
     type = control.init$type, niter = control.init$niter,
     values = control.init$values,verbose = control.init$verbose,
     parallel = control.init$parallel, nthreads = control.init$threads)
+  time.init = as.numeric(proc.time() - time.init)[3]
 
   # Select the correct estimation method
+  time.optim = proc.time()
   if (method == "airwls") {
     # AIRWLS algorithm
     fit = cpp.fit.airwls(
@@ -241,6 +244,9 @@ sgdgmf.fit = function (
       frequency = alg$frequency, progress = alg$progress
     )
   }
+  time.optim = as.numeric(proc.time() - time.optim)[3]
+  time.tot = time.init + time.optim
+  exe.time = c(init = time.init, optim = time.optim, tot = time.tot)
 
   # Model dimensions
   n = nrow(Y); m = ncol(Y)
@@ -254,6 +260,9 @@ sgdgmf.fit = function (
   idxB = seq(from = 1, to = p)
   idxU = seq(from = p+q+1, to = p+q+ncomp)
   idxV = seq(from = p+q+1, to = p+q+ncomp)
+
+  # Set the optimization history
+  colnames(fit$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
 
   # Output list
   out = list()
@@ -281,10 +290,9 @@ sgdgmf.fit = function (
   out$aic = fit$deviance + 2 * df
   out$bic = fit$deviance + 2 * df * log(nm)
   out$cbic = fit$deviance + 2 * df * log(log(nm))
-  out$exe.time = fit$exe.time
+  out$exe.time = exe.time
   out$trace = as.data.frame(fit$trace)
   out$summary.cv = data.frame()
-  colnames(out$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
 
   # Normalize the latent factors
   if (alg$normalize) {
