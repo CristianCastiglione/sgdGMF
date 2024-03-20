@@ -35,6 +35,6 @@ the latent spectrum of the model as the collection of eigenvalues of \eqn{\Sigma
 Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
 component analysis on the regression residuals, whose eigenvalues can be used to
 infer how much signal can be explained by each principal component. Similarly,
-we use the latent spectrum in non-Gaussian data settings to infer the correct
+we can use the latent spectrum in non-Gaussian data settings to infer the correct
 number of principal components to include into the GMF model.
 }
