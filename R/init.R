@@ -66,28 +66,10 @@ init.param = function (
     parallel = FALSE,
     nthreads = 1
 ) {
-
+  # Set the initialization method
   method = match.arg(method)
 
   # Initialize U, V and beta using the selected method
-  # init = NULL
-  # if (method == "svd") {
-  #   # init = init.param.svd(Y, X, Z, ncomp, family, niter, verbose)
-  #   init = init.param.svd2(Y, X, Z, ncomp, family, type, verbose)
-  # } else if (method == "glm") {
-  #   if (parallel) {
-  #     init = init.param.glm3(Y, X, Z, ncomp, family, type, verbose, nthreads)
-  #   } else {
-  #     init = init.param.glm2(Y, X, Z, ncomp, family, type, verbose)
-  #   }
-  # } else if (method == "random") {
-  #   init = init.param.random(Y, X, Z, ncomp)
-  # } else if (method == "values") {
-  #   init = init.param.custom(Y, X, Z, ncomp, family, values, verbose)
-  # } else {
-  #   stop("Not allowed initialization method.")
-  # }
-
   if (parallel) {
     init = switch(method,
       "svd" = init.param.svd2(Y, X, Z, ncomp, family, type, verbose),
@@ -102,8 +84,7 @@ init.param = function (
       "values" = init.param.custom(Y, X, Z, ncomp, family, values, verbose))
   }
 
-
-
+  # Return the initial estimates
   return (init)
 }
 
@@ -119,7 +100,7 @@ init.param.random = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson()
+    family = gaussian()
 ) {
 
   # Derive data dimensions
@@ -165,7 +146,7 @@ init.param.svd = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson(),
+    family = gaussian(),
     niter = 0,
     verbose = FALSE
 ) {
@@ -188,21 +169,16 @@ init.param.svd = function (
   # Compute the transformed data
   if (verbose) cat(" Initialization: working data \n")
   anyna = anyNA(Y)
+  y = matrix(NA, nrow = n, ncol = m)
   if (anyna) {
     isna = is.na(Y)
-    Y[] = apply(Y, 2, function (x) {
+    y[] = apply(Y, 2, function (x) {
       x[is.na(x)] = mean(x, na.rm = TRUE)
-      return (x)
+      return (fam$transform(x))
     })
+  } else {
+    y[] = fam$transform(Y)
   }
-  y = fam$transform(Y)
-
-  ## isna = is.na(Y)
-  ## y = matrix(NA, nrow = n, ncol = m)
-  ## y[] = apply(Y, 2, function (x) {
-  ##   x[is.na(x)] = mean(x, na.rm = TRUE)
-  ##   return (fam$transform(x))
-  ## })
 
   # Initialize the parameters
   B = matrix(NA, nrow = m, ncol = p)
@@ -227,8 +203,8 @@ init.param.svd = function (
   # Compute the initial latent factors via incomplete SVD
   if (verbose) cat(" Initialization: latent scores and loadings \n")
   pca = RSpectra::svds(y - XB - AZ, ncomp)
-  V[] = ifelse(d == 1, pca$v %*% pca$d, pca$v %*% diag(pca$d))
   U[] = pca$u
+  V[] = sweep(pca$v, 2, pca$d, "*")
   UV = tcrossprod(U, V)
 
   # Refinement loop (it might be useful if there are many missing values)
@@ -242,9 +218,9 @@ init.param.svd = function (
       if (anyna) y[isna] = XB[isna] + AZ[isna] + UV[isna]
 
       # Refine the initial column-specific regression parameters (if any)
-      XtY = crossprod(X, y - az - uv)
+      XtY = crossprod(X, y - AZ - UV)
       B[] = t(solve(XtX, XtY))
-      XB[] = tcrossprod(X, B)
+      XB = tcrossprod(X, B)
 
       # Refine the initial row-specific regression parameter (if any)
       ZtY = crossprod(Z, t(y - XB - UV))
@@ -253,8 +229,8 @@ init.param.svd = function (
 
       # Refine the initial latent factors via incomplete SV
       pca = RSpectra::svds(y - XB - AZ, ncomp)
-      V[] = ifelse(d == 1, pca$v %*% pca$d, pca$v %*% diag(pca$d))
       U[] = pca$u
+      V[] = sweep(pca$v, 2, pca$d, "*")
       UV = tcrossprod(U, V)
     }
     if (verbose) cat("| \n")
@@ -283,7 +259,7 @@ init.param.svd2 = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson(),
+    family = gaussian(),
     type = c("deviance", "pearson", "working"),
     verbose = FALSE
 ) {
@@ -375,7 +351,7 @@ init.param.glm = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson(),
+    family = gaussian(),
     type = c("deviance", "pearson", "working"),
     verbose = FALSE
 ) {
@@ -482,7 +458,7 @@ init.param.glm2 = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson(),
+    family = gaussian(),
     type = c("deviance", "pearson", "working"),
     verbose = FALSE
 ) {
@@ -585,7 +561,7 @@ init.param.glm3 = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson(),
+    family = gaussian(),
     type = c("deviance", "pearson", "working"),
     verbose = FALSE,
     nthreads = 1
@@ -699,7 +675,7 @@ init.param.values = function (
     X = NULL,
     Z = NULL,
     ncomp = 2,
-    family = poisson(),
+    family = gaussian(),
     values = list(),
     verbose = FALSE
 ) {
