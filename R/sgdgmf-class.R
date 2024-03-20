@@ -61,7 +61,7 @@ setClass("sgdgmf",
     aic = "numeric",
     bic = "numeric",
     cbic = "numeric",
-    exe.time = "numeric",
+    exe.time = "vector",
     trace = "data.frame",
     summary.cv = "data.frame"
 ))
@@ -80,6 +80,11 @@ print.sgdgmf = function (object) {
   dev.null = matrix.deviance(mean(object$Y, na.rm = TRUE), object$Y, object$family)
   dev.exp  = 100 * (1 - dev.fit / dev.null)
 
+  # Elapsed execution time
+  time.init = object$exe.time[1]
+  time.opt = object$exe.time[2]
+  time.tot = object$exe.time[3]
+
   # Print the output
   cat(gettextf("\n Number of samples: %d", nrow(object$Y)))
   cat(gettextf("\n Number of features: %d", ncol(object$Y)))
@@ -92,9 +97,9 @@ print.sgdgmf = function (object) {
   cat(gettextf("\n Model link: %s", object$family$link))
   cat(gettextf("\n Estimation method: %s", object$method))
   cat(gettextf("\n Explained deviance: %.2f %%", dev.exp))
-  cat(gettextf("\n Initialization exe. time: %.2f s (%.2f m)", 0, 0))
-  cat(gettextf("\n Optimization exe. time: %.2f s (%.2f m)", object$exe.time, object$exe.time/60))
-  cat(gettextf("\n Total execution time: %.2f s (%.2f m)", object$exe.time, object$exe.time/60))
+  cat(gettextf("\n Initialization exe. time: %.2f s (%.2f m)", time.init, time.init/60))
+  cat(gettextf("\n Optimization exe. time: %.2f s (%.2f m)", time.opt, time.opt/60))
+  cat(gettextf("\n Total execution time: %.2f s (%.2f m)", time.tot, time.tot/60))
   cat("\n")
 }
 
@@ -330,7 +335,7 @@ simulate.sgdgmf = function (
     type = c("link", "response", "terms", "coef"),
     parallel = FALSE, nthreads = 1
 ) {
-
+  type = match.arg(type)
 }
 
 #' @title Spectrum method for GMF models
@@ -406,5 +411,3 @@ spectrum.sgdgmf = function (
   list(spectrum = var.eig, explained = var.exp,
        reminder = var.res, total = var.tot)
 }
-
-
