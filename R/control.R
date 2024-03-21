@@ -138,11 +138,17 @@ set.jitter = function (family) {
 #' @export
 set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
   penalty = c(0, 0, 1, 0)
-  if (is.numeric(B) && B >= .0) penalty[1] = B
-  if (is.numeric(A) && A >= .0) penalty[2] = A
-  if (is.numeric(U) && U >= .0) penalty[3] = U
-  if (is.numeric(V) && V >= .0) penalty[4] = V
+
+  message = function (var)
+    warning(paste0("Penalty parameter: '", var, "' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
+  if (is.numeric(B) && B >= .0) penalty[1] = B else message("B")
+  if (is.numeric(A) && A >= .0) penalty[2] = A else message("A")
+  if (is.numeric(U) && U >= .0) penalty[3] = U else message("U")
+  if (is.numeric(V) && V >= .0) penalty[4] = V else message("V")
   if (sum(abs(penalty[3:4])) == 0) penalty[3] = 1.
+
   return (penalty)
 }
 
@@ -187,11 +193,15 @@ set.control.init = function (
   ctr$parallel = FALSE
   ctr$nthreads = 1
 
-  if (is.numeric(niter) && niter > 0) ctr$niter = floor(niter)
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads > 0) ctr$nthreads = floor(nthreads)
+  message = function (var)
+    warning(paste0("Init. control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
+  if (is.numeric(niter) && niter > 0) ctr$niter = floor(niter) else message("niter")
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
+  if (is.numeric(nthreads) && nthreads > 0) ctr$nthreads = floor(nthreads) else message("nthreads")
 
   if (is.list(values)) {
     if (length(values) > 0) {
@@ -258,24 +268,28 @@ set.control.airwls = function (
   ctr$parallel = FALSE
   ctr$nthreads = 1
 
+  message = function (var)
+    warning(paste0("AIRWLS control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
   # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
-  if (is.numeric(nstep) && nstep >= 1) ctr$nstep = floor(nstep)
-  if (is.numeric(stepsize) && stepsize > 0) ctr$stepsize = stepsize
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol
-  if (is.numeric(damping) && damping >= 0) ctr$damping = damping
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
+  if (is.numeric(nstep) && nstep >= 1) ctr$nstep = floor(nstep) else message("nstep")
+  if (is.numeric(stepsize) && stepsize > 0) ctr$stepsize = stepsize else message("stepsize")
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
+  if (is.numeric(damping) && damping >= 0) ctr$damping = damping else message("damping")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
+  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
 
   # Additional safety checks
-  if (ctr$stepsize > 1) ctr$stepsize = 1
-  if (ctr$eps > 1e-01) ctr$eps = 1e-01
-  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+  if (ctr$stepsize > 1) {ctr$stepsize = 1; message("stepsize")}
+  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
+  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
   # Return the checked parameters
   return (ctr)
@@ -328,23 +342,27 @@ set.control.newton = function (
   ctr$parallel = FALSE
   ctr$nthreads = 1
 
+  message = function (var)
+    warning(paste0("Newton control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
   # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
-  if (is.numeric(stepsize) && stepsize > 0) ctr$stepsize = stepsize
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
+  if (is.numeric(stepsize) && stepsize > 0) ctr$stepsize = stepsize else message("stepsize")
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
+  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
 
   # Additional consistency checks
-  if (ctr$stepsize > 1) ctr$stepsize = 1
-  if (ctr$eps > 1e-01) ctr$eps = 1e-01
-  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+  if (ctr$stepsize > 1) {ctr$stepsize = 1; message("stepsize")}
+  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
+  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
   # Return the checked parameters
   return (ctr)
@@ -641,29 +659,33 @@ set.control.bsgd = function (
   ctr$frequency = 250
   ctr$progress = FALSE
 
+  message = function (var)
+    warning(paste0("B-SGD control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
   # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol
-  if (is.numeric(size) & all(size >= 1)) ctr$size = floor(size[1:2])
-  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
-  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
-  if (is.numeric(decay) && decay > 0) ctr$decay = decay
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping
-  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
-  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
-  if (is.logical(progress)) ctr$progress = progress
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
+  if (is.numeric(size) & all(size >= 1)) ctr$size = floor(size[1:2]) else message("size")
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn else message("burn")
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0 else message("rate0")
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay else message("decay")
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1 else message("rate1")
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2 else message("rate2")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
+  if (is.logical(progress)) ctr$progress = progress else message("progress")
 
   # Additional consistency checks
-  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
-  if (ctr$eps > 1e-01) ctr$eps = 1e-01
-  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
-  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
-  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+  if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("nafill")}
+  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
+  if (ctr$rate1 > 1 - 1e-08) {ctr$rate1 = 1 - 1e-08; message("rate1")}
+  if (ctr$rate2 > 1 - 1e-08) {ctr$rate2 = 1 - 1e-08; message("rate2")}
+  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("frequency")}
 
   # Return the check control parameters
   return (ctr)
@@ -724,9 +746,15 @@ set.control.alg = function (
 #' @export
 set.control.cv = function (nfolds = 5, parallel = FALSE, nthreads = 1) {
   ctr = list(nfolds = 5, parallel = FALSE, nthreads = 1)
-  if (is.numeric(nfolds) && nfolds >= 1) ctr$nfolds = floor(nfolds)
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
+
+  message = function (var)
+    warning(paste0("Cross-validation control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
+  if (is.numeric(nfolds) && nfolds >= 1) {ctr$nfolds = floor(nfolds); message("nfolds")}
+  if (is.logical(parallel)) {ctr$parallel = parallel; message("parallel")}
+  if (is.numeric(nthreads) && nthreads >= 1) {ctr$nthreads = floor(nthreads); message("nthreads")}
+
   return (ctr)
 }
 
