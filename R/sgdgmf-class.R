@@ -376,9 +376,9 @@ spectrum.sgdgmf = function (
   eta = tcrossprod(cbind(object$X, object$A), cbind(object$B, object$Z))
   mu = family$linkinv(eta)
   res = switch(type,
-    "deviance" = sign(object$Y - mu) * sqrt(family$dev.resid(object$Y, mu, 1)),
-    "pearson" = (object$Y - mu) / sqrt(family$variance(mu)),
-    "working" = (object$Y - mu) / family$mu.eta(eta))
+    "deviance" = sign(object$Y - mu) * sqrt(abs(family$dev.resid(object$Y, mu, 1))),
+    "pearson" = (object$Y - mu) / sqrt(abs(family$variance(mu))),
+    "working" = (object$Y - mu) / abs(family$mu.eta(eta)))
 
   # Fill the missing values using Gaussian random values
   if (anyNA(res)) {
@@ -399,7 +399,7 @@ spectrum.sgdgmf = function (
 
   # Decompose the residuals using incomplete SVD
   pca = RSpectra::svds(res, ncomp)
-  uv = tcrossprod(pca$u, pca$v %*% diag(pca$d))
+  # uv = tcrossprod(pca$u, pca$v %*% diag(pca$d))
 
   # Estimate the explained and residual variance
   var.eig = pca$d^2 / nrow(res)
