@@ -11,7 +11,7 @@ init.param(
   ncomp = 2,
   family = gaussian(),
   method = c("svd", "glm", "random", "values"),
-  type = c("deviance", "pearson", "working"),
+  type = c("deviance", "pearson", "working", "link"),
   niter = 0,
   values = list(),
   verbose = FALSE,
