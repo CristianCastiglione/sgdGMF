@@ -416,30 +416,30 @@ set.control.msgd = function (
   ctr$progress = FALSE
 
   # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol
-  if (is.numeric(size) && size >= 1) ctr$size = floor(size)
-  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
-  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
-  if (is.numeric(decay) && decay > 0) ctr$decay = decay
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping
-  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
-  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
-  if (is.logical(parallel)) ctr$parallel = parallel
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads)
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
-  if (is.logical(progress)) ctr$progress = progress
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
+  if (is.numeric(size) && size >= 1) ctr$size = floor(size) else message("size")
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn else message("burn")
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0 else message("rate0")
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay else message("decay")
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1 else message("rate1")
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2 else message("rate2")
+  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
+  if (is.logical(progress)) ctr$progress = progress else message("progress")
 
   # Addional consistency checks
-  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
-  if (ctr$eps > 1e-01) ctr$eps = 1e-01
-  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
-  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
-  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+  if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("nafill")}
+  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
+  if (ctr$rate1 > 1 - 1e-08) {ctr$rate1 = 1 - 1e-08; message("rate1")}
+  if (ctr$rate2 > 1 - 1e-08) {ctr$rate2 = 1 - 1e-08; message("rate2")}
+  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("frequency")}
 
   # Return the checked parameters
   return (ctr)
@@ -503,29 +503,33 @@ set.control.csgd = function (
   ctr$frequency = 250
   ctr$progress = FALSE
 
+  message = function (var)
+    warning(paste0("C-SGD control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
   # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol
-  if (is.numeric(size) && all(size >= 1)) ctr$size = floor(size[1:2])
-  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
-  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
-  if (is.numeric(decay) && decay > 0) ctr$decay = decay
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping
-  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1
-  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
-  if (is.logical(progress)) ctr$progress = progress
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
+  if (is.numeric(size) && all(size >= 1)) ctr$size = floor(size[1:2]) else message("size")
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn else message("burn")
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0 else message("rate0")
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay else message("decay")
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1 else message("rate1")
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2 else message("rate2")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
+  if (is.logical(progress)) ctr$progress = progress else message("progress")
 
   # Additional consistency checks
-  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
-  if (ctr$eps > 1e-01) ctr$eps = 1e-01
-  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
-  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
-  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+  if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("maxiter")}
+  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
+  if (ctr$rate1 > 1 - 1e-08) {ctr$rate1 = 1 - 1e-08; message("rate1")}
+  if (ctr$rate2 > 1 - 1e-08) {ctr$rate2 = 1 - 1e-08; message("rate2")}
+  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("frequency")}
 
   # Return the corrected control parameters
   return (ctr)
@@ -573,29 +577,33 @@ set.control.rsgd = function (
   ctr$frequency = 10
   ctr$progress = FALSE
 
+  message = function (var)
+    warning(paste0("R-SGD control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
   # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter)
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill)
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol
-  if (is.numeric(size) && size >= 1) ctr$size = floor(size)
-  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn
-  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0
-  if (is.numeric(decay) && decay > 0) ctr$decay = decay
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping
-  if (is.numeric(rate1) && rate1 > 0) ctr$rate = rate1
-  if (is.numeric(rate2) && rate2 > 0) ctr$rate = rate2
-  if (is.logical(verbose)) ctr$verbose = verbose
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency)
-  if (is.logical(progress)) ctr$progress = progress
+  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
+  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
+  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
+  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
+  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
+  if (is.numeric(size) && size >= 1) ctr$size = floor(size) else message("size")
+  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn else message("burn")
+  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0 else message("rate0")
+  if (is.numeric(decay) && decay > 0) ctr$decay = decay else message("decay")
+  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
+  if (is.numeric(rate1) && rate1 > 0) ctr$rate = rate1 else message("rate1")
+  if (is.numeric(rate2) && rate2 > 0) ctr$rate = rate2 else message("rate2")
+  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
+  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
+  if (is.logical(progress)) ctr$progress = progress else message("progress")
 
   # Additional consistency checks
-  if (ctr$nafill > ctr$maxiter) ctr$nafill = ctr$maxiter
-  if (ctr$eps > 1e-01) ctr$eps = 1e-01
-  if (ctr$rate1 > 1 - 1e-08) ctr$rate1 = 1 - 1e-08
-  if (ctr$rate2 > 1 - 1e-08) ctr$rate2 = 1 - 1e-08
-  if (ctr$frequency > ctr$maxiter) ctr$frequency = ctr$maxiter
+  if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("nafill")}
+  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
+  if (ctr$rate1 > 1 - 1e-08) {ctr$rate1 = 1 - 1e-08; message("rate1")}
+  if (ctr$rate2 > 1 - 1e-08) {ctr$rate2 = 1 - 1e-08; message("rate2")}
+  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("frequency")}
 
   # Return the corrected control parameters
   return (ctr)
