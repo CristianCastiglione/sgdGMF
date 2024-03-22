@@ -10,7 +10,7 @@ init.param.svd2(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
-  type = c("deviance", "pearson", "working"),
+  type = c("deviance", "pearson", "working", "link"),
   verbose = FALSE
 )
 }
