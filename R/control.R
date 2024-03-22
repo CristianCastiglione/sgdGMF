@@ -46,7 +46,7 @@ set.mat.X = function (X, n, mat = "X") {
 set.family = function (family) {
 
   flag = TRUE
-  if (check.class(family, "family")) {
+  if (class(family) == "family") {
     # Gaussian family
     if (family$family == "gaussian") {
       if (family$link == "identity") {
