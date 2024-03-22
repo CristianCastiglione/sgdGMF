@@ -59,7 +59,7 @@ init.param = function (
     ncomp = 2,
     family = gaussian(),
     method = c("svd", "glm", "random", "values"),
-    type = c("deviance", "pearson", "working"),
+    type = c("deviance", "pearson", "working", "link"),
     niter = 0,
     values = list(),
     verbose = FALSE,
@@ -152,8 +152,8 @@ init.param.svd = function (
 ) {
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
 
   # Set the model dimensions
   n = nrow(Y)
@@ -260,15 +260,19 @@ init.param.svd2 = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
-    type = c("deviance", "pearson", "working"),
+    type = c("deviance", "pearson", "working", "link"),
     verbose = FALSE
 ) {
   # Set the residual type
   type = match.arg(type)
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+  # Set the minimum and maximum of the data
+  minY = min(Y)
+  maxY = max(Y)
 
   # Set the model dimensions
   n = nrow(Y)
@@ -313,11 +317,18 @@ init.param.svd2 = function (
   AZ = tcrossprod(A, Z)
 
   # Compute the GLM residuals to be decompose via PCA
-  mu = family$linkinv(XB + AZ)
+  eta = XB + AZ
+  mu = family$linkinv(eta)
+  mu[mu > maxY] = maxY
+  mu[mu < minY] = minY
+
   res = switch(type,
-    "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
+    "deviance" = sign(Y - mu) * sqrt(abs(family$dev.resids(Y, mu, 1))),
     "pearson" = (Y - mu) / sqrt(family$variance(mu)),
-    "working" = (Y - mu) / family$mu.eta(eta))
+    "working" = (Y - mu) / abs(family$mu.eta(eta)),
+    "link" = y - eta)
+
+  if (anyNA(res)) res[is.nan(res) | is.na(res)] = 0
 
   # Compute the initial latent factors via incomplete SVD
   if (verbose) cat(" Initialization: latent scores \n")
@@ -370,8 +381,12 @@ init.param.glm = function (
   }
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+  # Set the minimum and maximum of the data
+  minY = min(Y)
+  maxY = max(Y)
 
   # Set the model dimensions
   n = nrow(Y)
@@ -415,12 +430,16 @@ init.param.glm = function (
   # Update the linear predictor
   eta[] = eta + tcrossprod(A, Z)
   mu[] = family$linkinv(eta)
+  mu[mu > maxY] = maxY
+  mu[mu < minY] = minY
 
   # Compute the residuals
   res[] = switch(type,
     "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
     "pearson" = (Y - mu) / sqrt(family$variance(mu)),
     "working" = (Y - mu) / family$mu.eta(eta))
+
+  if (anyNA(res)) res[is.na(res) | is.nan(res)] = 0
 
   # Initialize the latent factors via residual SVD
   if (verbose) cat(" Initialization: latent scores \n")
@@ -482,8 +501,12 @@ init.param.glm2 = function (
   }
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+  # Set the minimum and maximum of the data
+  minY = min(Y)
+  maxY = max(Y)
 
   # Initialize the mean and variance matrices
   eta = matrix(NA, nrow = n, ncol = m)
@@ -515,11 +538,16 @@ init.param.glm2 = function (
   eta[] = eta + tcrossprod(A, Z)
   mu[] = family$linkinv(eta)
 
+  mu[mu > maxY] = maxY
+  mu[mu < minY] = minY
+
   # Compute the residuals
   res[] = switch(type,
     "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
     "pearson" = (Y - mu) / sqrt(family$variance(mu)),
     "working" = (Y - mu) / family$mu.eta(eta))
+
+  if (anyNA(res)) res[is.na(res) | is.nan(res)] = 0
 
   # Initialize the latent factors via residual SVD
   if (verbose) cat(" Initialization: latent scores \n")
@@ -586,8 +614,12 @@ init.param.glm3 = function (
   }
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+  # Set the minimum and maximum of the data
+  minY = min(Y)
+  maxY = max(Y)
 
   # Initialize the mean and variance matrices
   eta = matrix(NA, nrow = n, ncol = m)
@@ -625,11 +657,16 @@ init.param.glm3 = function (
   eta[] = eta + tcrossprod(A, Z)
   mu[] = family$linkinv(eta)
 
+  mu[mu > maxY] = maxY
+  mu[mu < minY] = minY
+
   # Compute the residuals
   res[] = switch(type,
-    "deviance" = sign(Y - mu) * sqrt(family$dev.resids(Y, mu, 1)),
-    "pearson" = (Y - mu) / sqrt(family$variance(mu)),
+    "deviance" = sign(Y - mu) * sqrt(abs(family$dev.resids(Y, mu, 1))),
+    "pearson" = (Y - mu) / sqrt(abs(family$variance(mu))),
     "working" = (Y - mu) / family$mu.eta(eta))
+
+  if (anyNA(res)) res[is.na(res) | is.nan(res)] = 0
 
   # Initialize the latent factors via residual SVD
   if (verbose) cat(" Initialization: latent scores \n")
@@ -652,10 +689,6 @@ init.param.glm3 = function (
   mu[] = family$linkinv(eta)
   var[] = family$variance(mu)
   phi = colMeans((Y - mu)^2 / var, na.rm = TRUE)
-
-  # Initialization of the regression effects when there are no covariates
-  if (is.null(X)) B = matrix(0, nrow = ncol(Y), ncol = 0)
-  if (is.null(Z)) A = matrix(0, nrow = nrow(Y), ncol = 0)
 
   # Output
   list(U = U, V = V, A = A, B = B, phi = phi)
