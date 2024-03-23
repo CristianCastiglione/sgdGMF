@@ -94,36 +94,6 @@ set.family = function (family) {
 }
 
 
-#' @title Set the jittering function for mapping the data (DEPRECATED!)
-#'
-#' @description
-#' Return a function f which maps the original data y into the perturbed data
-#' z = f(y) such that z is a real number having the same scale of eta = linkinv(mu).
-#' This is useful for initialization purposes.
-#'
-#' @keywords internal
-set.jitter = function (family) {
-  f = NULL
-  if (family$family %in% c("gaussian", "quasi")) {
-    f = function(x) x
-  }
-  if (family$family %in% c("binomial", "quasibinomial")) {
-    f = function(x) jitter(2 * x - 1, amount = 0.25)
-  }
-  if (family$family %in% c("poisson", "quasipoisson")) {
-    f = function(x) family$linkfun(x + 0.1)
-  }
-  if (family$family %in% c("Gamma", "inverse.gaussian")) {
-    f = function(x) family$linkfun(x)
-  }
-  if (family$family == "negbinom" |
-      family$family == "Negative Binomial" |
-      substring(family$family, first = 1, last = 17) == "Negative Binomial") {
-    f = function(x) family$linkfun(x + (x == 0) / 6)
-  }
-  return (f)
-}
-
 #' @title Check and set the penalty parameters
 #'
 #' @description
