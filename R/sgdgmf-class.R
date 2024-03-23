@@ -383,7 +383,7 @@ spectrum.sgdgmf = function (
   # Fill the missing values using Gaussian random values
   if (anyNA(res)) {
     res = apply(res, 2, function (x) {
-      na = which(is.na(x))
+      na = which(is.na(x) | is.nan(x))
       rx = length(na)
       mx = mean(x, na.rm = TRUE)
       sx = sd(x, na.rm = TRUE)
@@ -398,12 +398,12 @@ spectrum.sgdgmf = function (
   }
 
   # Decompose the residuals using incomplete SVD
-  pca = RSpectra::svds(res, ncomp)
-  # uv = tcrossprod(pca$u, pca$v %*% diag(pca$d))
+  S = cov(res)
+  pca = RSpectra::eigs_sym(S, ncomp)
 
   # Estimate the explained and residual variance
-  var.eig = pca$d^2 / nrow(res)
-  var.tot = sum(colVars(res))
+  var.eig = pca$values
+  var.tot = sum(diag(S))
   var.exp = sum(var.eig)
   var.res = var.tot - var.exp
 
