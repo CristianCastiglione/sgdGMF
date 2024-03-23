@@ -10,7 +10,7 @@ init.param(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
-  method = c("svd", "glm", "random", "values"),
+  method = c("svd", "ols", "glm", "random", "values"),
   type = c("deviance", "pearson", "working", "link"),
   niter = 0,
   values = list(),
@@ -22,9 +22,9 @@ init.param(
 \arguments{
 \item{Y}{matrix of responses (\eqn{n \times m})}
 
-\item{X}{matrix of row fixed effects (\eqn{n \times p})}
+\item{X}{matrix of row-specific fixed effects (\eqn{n \times p})}
 
-\item{Z}{matrix of column fixed effects (\eqn{q \times m})}
+\item{Z}{matrix of column-specific fixed effects (\eqn{q \times m})}
 
 \item{ncomp}{rank of the latent matrix factorization (default 2)}
 
