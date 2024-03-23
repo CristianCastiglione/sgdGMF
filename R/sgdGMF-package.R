@@ -12,8 +12,7 @@
 #' @importFrom stats poisson quasipoisson
 #' @importFrom stats Gamma inverse.gaussian
 #' @importFrom MASS neg.bin negative.binomial
-#' @importFrom svd propack.svd
-#' @importFrom RSpectra eigs svds
+#' @importFrom RSpectra svds eigs eigs_sym
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach %do% %dopar% foreach
