@@ -22,19 +22,19 @@
 #'
 #' @references
 #' Onatski, A. (2010).
-#' Determining the number of factors from empirical distribution of eigenvalues.
+#' \emph{Determining the number of factors from empirical distribution of eigenvalues.}
 #' Review of Economics and Statistics, 92(4): 1004-1016
 #'
-#' Fan, J., Guo, j. and Zheng, S. (2020)
-#' Estimating number of factors by adjusted eigenvalues thresholding
+#' Fan, J., Guo, j. and Zheng, S. (2020).
+#' \emph{Estimating number of factors by adjusted eigenvalues thresholding.}
 #' Journal of the American Statistical Association, 117(538): 852--861
 #'
-#' Wang, L. and Carvalho, L. (2023)
-#' Deviance matrix factorization
+#' Wang, L. and Carvalho, L. (2023).
+#' \emph{Deviance matrix factorization.}
 #' Electronic Journal of Statistics, 17(2): 3762-3810
 #'
-#' @export select.rank
-select.rank = function (
+#' @export sgdgmf.rank
+sgdgmf.rank = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -99,24 +99,6 @@ select.rank = function (
   # Close the connection to the clusters
   if (parallel) parallel::stopCluster(clust)
 
-  ## # Initialize the regression coefficients
-  ## eta = matrix(NA, nrow = n, ncol = m)
-  ## mu  = matrix(NA, nrow = n, ncol = m)
-  ## res = matrix(NA, nrow = n, ncol = m)
-  ## B = foreach(j = 1:m, .combine = "rbind") %do% {
-  ##   yj = as.vector(Y[,j])
-  ##   fit = stats::glm.fit(x = X, y = yj, family = family)
-  ##   t(fit$coefficients)
-  ## }
-  ## #
-  ## eta[] = tcrossprod(X, B)
-  ## A = foreach(i = 1:n, .combine = "rbind") %do% {
-  ##   yi = as.vector(Y[i,])
-  ##   oi = as.vector(eta[i,])
-  ##   fit = stats::glm.fit(x = Z, y = yi, family = family, offset = oi)
-  ##   fit$coefficients
-  ## }
-
   # Initialize the linear predictor and the conditional mean matrix
   eta[] = eta + tcrossprod(A, Z)
   mu[] = family$linkinv(eta)
@@ -129,7 +111,7 @@ select.rank = function (
   # Select the optimal rank
   ncomp = switch(method,
     "onatski" = select.rank.onatski(res, maxcomp, maxiter)$ncomp,
-    "act" = select.rank.act(res, maxcomp))
+    "act" = select.rank.act(res, maxcomp)$ncomp)
 
   # Return the selected rank
   return (ncomp)
@@ -148,11 +130,11 @@ select.rank = function (
 #'
 #' @references
 #' Onatski, A. (2010).
-#' Determining the number of factors from empirical distribution of eigenvalues.
+#' \emph{Determining the number of factors from empirical distribution of eigenvalues.}
 #' Review of Economics and Statistics, 92(4): 1004-1016
 #'
 #' @keywords internal
-select.rank.onatski = function (Y, maxcomp = 50, maxiter = 100) {
+eigengap.onatski = function (Y, maxcomp = 50, maxiter = 100) {
 
   # Set the matrix dimension
   n = nrow(Y)
@@ -192,7 +174,7 @@ select.rank.onatski = function (Y, maxcomp = 50, maxiter = 100) {
   success = iter < maxiter
 
   # Return the selected rank
-  list(ncomp = ncomp, delta = delta,
+  list(ncomp = ncomp, lambdas = lambdas, delta = delta,
        niter = iter, success = success)
 }
 
@@ -207,12 +189,12 @@ select.rank.onatski = function (Y, maxcomp = 50, maxiter = 100) {
 #' @param maxcomp maximum number of eigenvalues to compute
 #'
 #' @references
-#' Fan, J., Guo, j. and Zheng, S. (2020)
-#' Estimating number of factors by adjusted eigenvalues thresholding
+#' Fan, J., Guo, j. and Zheng, S. (2020).
+#' \emph{Estimating number of factors by adjusted eigenvalues thresholding.}
 #' Journal of the American Statistical Association, 117(538): 852--861
 #'
 #' @keywords internal
-select.rank.act = function (Y, maxcomp = NULL) {
+eigengap.act = function (Y, maxcomp = NULL) {
   # Set the data dimensions
   n = nrow(Y); p = ncol(Y); d = maxcomp
   d = ifelse(is.null(maxcomp), p, d)
@@ -238,10 +220,11 @@ select.rank.act = function (Y, maxcomp = NULL) {
   rho = (d - 1:(d-1)) / (n-1)
   m1 = rho * m - (1 - rho) / lambdas[1:(d-1)]
   adj.lambdas = - 1 / m1
-  ncomp = sum(adj.lambdas > 1 + sqrt(d / n))
+  thr = 1 + sqrt(d / n)
+  ncomp = sum(adj.lambdas > thr)
   ncomp = max(1, ncomp)
 
   # Return the selected rank
-  return (ncomp)
+  list(ncomp = ncomp, lambdas = lambdas, adj.lambdas, threshold = thr)
 }
 
