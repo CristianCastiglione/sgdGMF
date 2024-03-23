@@ -5,7 +5,7 @@
 \title{Check and set the initialization parameters}
 \usage{
 set.control.init(
-  method = c("svd", "glm", "random", "values"),
+  method = c("ols", "glm", "random", "values"),
   type = c("deviance", "pearson", "working"),
   values = list(),
   niter = 5,
@@ -18,7 +18,7 @@ set.control.init(
 \arguments{
 \item{method}{initialization method}
 
-\item{type}{residual type to be decomposed in the \code{"glm"} method}
+\item{type}{residual type to be decomposed}
 
 \item{values}{list of custom initialization parameters fixed by the user}
 
