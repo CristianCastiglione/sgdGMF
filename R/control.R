@@ -42,7 +42,7 @@ set.mat.X = function (X, n, mat = "X") {
 #'
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
 #'
-#' @export
+#' @keywords internal
 set.family = function (family) {
 
   flag = TRUE
@@ -135,7 +135,7 @@ set.jitter = function (family) {
 #' @param U penalty parameter of \code{U}
 #' @param V penalty parameter of \code{V}
 #'
-#' @export
+#' @keywords internal
 set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
   penalty = c(0, 0, 1, 0)
 
@@ -159,7 +159,7 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #' values if they are not. Returns a list of well-defined initialization parameters.
 #'
 #' @param method initialization method
-#' @param type residual type to be decomposed in the \code{"glm"} method
+#' @param type residual type to be decomposed
 #' @param values list of custom initialization parameters fixed by the user
 #' @param niter number if refinement iterations in the \code{"svd"} method
 #' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to orthogonal \code{U} and lower triangular \code{V}
@@ -172,9 +172,9 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #' parameters. It returns a list of safe initialization parameters containing the
 #' following elements:
 #'
-#' @export
+#' @export set.control.init
 set.control.init = function (
-    method = c("svd", "glm", "random", "values"),
+    method = c("ols", "glm", "random", "values"),
     type = c("deviance", "pearson", "working"),
     values = list(),
     niter = 5,
@@ -238,7 +238,7 @@ set.control.init = function (
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
 #'
-#' @export
+#' @export set.control.airwls
 set.control.airwls = function (
     normalize = TRUE,
     maxiter = 100,
@@ -314,7 +314,7 @@ set.control.airwls = function (
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TTUE})
 #'
-#' @export
+#' @export set.control.newton
 set.control.newton = function (
     normalize = TRUE,
     maxiter = 500,
@@ -375,7 +375,7 @@ set.control.newton = function (
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
 #'
-#' @export
+#' @export set.control.msgd
 set.control.msgd = function (
     normalize = TRUE,
     maxiter = 100,
@@ -467,7 +467,7 @@ set.control.msgd = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
 #'
-#' @export
+#' @export set.control.csgd
 set.control.csgd = function (
     normalize = TRUE,
     maxiter = 1000,
@@ -541,7 +541,7 @@ set.control.csgd = function (
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
 #'
-#' @export
+#' @export set.control.rsgd
 set.control.rsgd = function (
     normalize = TRUE,
     maxiter = 100,
@@ -631,7 +631,7 @@ set.control.rsgd = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
 #'
-#' @export
+#' @export set.control.bsgd
 set.control.bsgd = function (
     normalize = TRUE,
     maxiter = 1000,
@@ -719,7 +719,7 @@ set.control.bsgd = function (
 #' \code{\link{set.control.csgd}} (\code{method="csgd"}),
 #' \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
 #'
-#' @export
+#' @export set.control.alg
 set.control.alg = function (
     method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
     control = list()
@@ -751,7 +751,7 @@ set.control.alg = function (
 #' @param parallel if \code{TRUE}, allows for parallel computing
 #' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})
 #'
-#' @export
+#' @export set.control.cv
 set.control.cv = function (nfolds = 5, parallel = FALSE, nthreads = 1) {
   ctr = list(nfolds = 5, parallel = FALSE, nthreads = 1)
 
