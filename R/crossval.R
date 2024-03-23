@@ -29,7 +29,7 @@
 #' @examples
 #' ...
 #'
-#' @export
+#' @export sgdgmf.cv
 sgdgmf.cv = function (
     Y,
     X = NULL,
