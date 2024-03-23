@@ -55,8 +55,8 @@ vglm.fit.coef = function (
       t(fit$coefficients)
     }
 
-    ## # Alternatively, we may use the following R code,
-    ## # which do not depend on the forach operator %do%
+    ## # As an alternative, we may use the following R code,
+    ## # which does not depend on the foreach package
     ## coefs = matrix(NA, nrow = m, ncol = p)
     ## for (j in 1:m) {
     ##   yj = as.vector(Y[,j])
