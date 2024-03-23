@@ -2,7 +2,7 @@
 % Please edit documentation in R/init.R
 \name{init.param.glm}
 \alias{init.param.glm}
-\title{GLM-SVD initialization (DEPRECATED)}
+\title{GLM-SVD initialization}
 \usage{
 init.param.glm(
   Y,
@@ -11,7 +11,9 @@ init.param.glm(
   ncomp = 2,
   family = gaussian(),
   type = c("deviance", "pearson", "working"),
-  verbose = FALSE
+  verbose = FALSE,
+  parallel = FALSE,
+  nthreads = 1
 )
 }
 \description{
