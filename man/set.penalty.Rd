@@ -19,3 +19,4 @@ set.penalty(B = 0, A = 0, U = 1, V = 0)
 Check if the input penalty parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined penalty parameters.
 }
+\keyword{internal}
