@@ -34,14 +34,19 @@
 #' In particular, the returned object collects the following information:
 #' \itemize{
 #'   \item \code{method}: the selected estimation method
-#'   \item \code{family}: the model family name
-#'   \item \code{link}: the link function name
-#'   \item \code{idu}: a vector of indices identify the columns of the augmented
-#'     matrix \eqn{U_* = [X, \Gamma, U]} corresponding to \eqn{\Gamma} and \eqn{U}
-#'   \item \code{idv}: a vector of indices identify the columns of the augmented
-#'     matrix \eqn{V_* = [B, Z, V]} corresponding to \eqn{B} and \eqn{V}
-#'   \item \code{U}: the estimated factor matrix \eqn{\hat{U}_* = [X, \hat{\Gamma}, \hat{U}]}
-#'   \item \code{V}: the estimated loading matrix \eqn{\hat{V}_* = [\hat{B}, Z, \hat{V}]}
+#'   \item \code{family}: the model family
+#'   \item \code{ncomp}:
+#'   \item \code{npar}:
+#'   \item \code{control.init}:
+#'   \item \code{control.alg}:
+#'   \item \code{control.cv}:
+#'   \item \code{Y}:
+#'   \item \code{X}:
+#'   \item \code{Z}:
+#'   \item \code{B}: the estimated col-specific coefficient matrix
+#'   \item \code{A}: the estimated row-specific coefficient matrix
+#'   \item \code{U}: the estimated factor matrix
+#'   \item \code{V}: the estimated loading matrix
 #'   \item \code{eta}: the estimated linear predictor
 #'   \item \code{mu}: the estimated mean matrix
 #'   \item \code{var}: the estimated variance matrix
@@ -49,10 +54,13 @@
 #'   \item \code{penalty}: the penalty value at the end of the optimization
 #'   \item \code{deviance}: the deviance value at the end of the optimization
 #'   \item \code{objective}: the penalized objective function at the end of the optimization
+#'   \item \code{aic}:
+#'   \item \code{bic}:
+#'   \item \code{cbic}:
 #'   \item \code{exe.time}: the total execution time in seconds
 #'   \item \code{trace}: a trace matrix recording the optimization history
+#'   \item \code{summary.cv}:
 #' }
-#'
 #'
 #' @details
 #' The model we consider is defined as follows.
@@ -61,7 +69,7 @@
 #' \eqn{(y_{ij} \mid \theta_{ij}) \sim EF(\theta_{ij}, \phi)}, where \eqn{\theta_{ij}} is the
 #' natural parameter and \eqn{\phi} is the dispersion parameter.
 #' Recall that the conditional probability density function of \eqn{y_{ij}} is given by
-#' \deqn{f (y_{ij}; \psi) = \exp \big[ \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi) \big],}
+#' \deqn{f (y_{ij}; \psi) = \exp \big[ w_{ij} \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi) \big],}
 #' where \eqn{\psi} is the vector of unknown parameters to be estimated,
 #' \eqn{b(\cdot)} is a convex twice differentiable log-partition function,
 #' and \eqn{c(\cdot,\cdot)} is the cumulant function of the family.
@@ -85,7 +93,7 @@
 #'
 #' The estimation of the model parameters is performed by minimizing the penalized negative log-likelihood function
 #' \deqn{\ell_\lambda (\psi; y) = - 2 \sum_{i,j = 1}^{n,m} \log f(y_{ij}; \psi) + \lambda \| U \|_F^2 + \lambda \| V \|_F^2,}
-#' where \eqn{\lambda > 0} is a regularization parameter and \eqn{\|\cdot\|} is the Frobenious norm.
+#' where \eqn{\lambda > 0} is a regularization parameter and \eqn{\|\cdot\|_F} is the Frobenious norm.
 #' Quasi-likelihood models, where \eqn{f(y; \psi)} is substituted by
 #' \eqn{Q(y, \mu) = \exp \big[ \int_y^\mu \{(y - t) / \phi \nu(t)\} \,dt \big] / \phi},
 #' can also be considered.
@@ -104,9 +112,13 @@
 #' }
 #'
 #' @references
-#' ...
+#' Kidzinnski, L., Hui, F.K.C., Warton, D.I. and Hastie, J.H. (2022).
+#' \emph{Generalized Matrix Factorization: efficient algorithms for fitting generalized linear latent variable models to large data arrays.}
+#' Journal of Machine Learning Research, 23: 1-29.
 #'
-#' @importFrom svd propack.svd
+#' Wang, L. and Carvalho, L. (2023).
+#' \emph{Deviance matrix factorization.}
+#' Electronic Journal of Statistics, 17(2): 3762-3810.
 #'
 #' @examples
 #' ...
