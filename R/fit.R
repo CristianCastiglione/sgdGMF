@@ -111,7 +111,7 @@
 #' @examples
 #' ...
 #'
-#' @export
+#' @export sgdgmf.fit
 sgdgmf.fit = function (
     Y,
     X = NULL,
