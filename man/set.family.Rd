@@ -13,3 +13,4 @@ set.family(family)
 Check if the model family is allowed and return it eventually with a
 different family name for compatibility with the \code{C++} implementation
 }
+\keyword{internal}
