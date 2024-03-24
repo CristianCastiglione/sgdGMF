@@ -6,10 +6,7 @@ ols.fit.coef = function (
     Y, X, family, offset = NULL
 ) {
   # Set the offset matrix
-  if (is.null(offset)) {
-    n = nrow(Y); m = ncol(Y)
-    offset = matrix(0, nrow = n, ncol = m)
-  }
+  if (is.null(offset)) offset = 0
 
   # Parameter estimation
   XtX = crossprod(X)
