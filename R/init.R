@@ -197,7 +197,7 @@ init.param.ols = function (
   res = switch(type,
     "deviance" = sign(Y - mu) * sqrt(abs(family$dev.resids(Y, mu, 1))),
     "pearson" = (Y - mu) / sqrt(family$variance(mu)),
-    "working" = (Y - mu) / abs(family$mu.eta(eta)),
+    "working" = (Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
     "link" = (gY - eta))
 
   if (anyNA(res)) res[is.nan(res) | is.na(res)] = 0
@@ -305,7 +305,7 @@ init.param.glm = function (
   res[] = switch(type,
     "deviance" = sign(Y - mu) * sqrt(abs(family$dev.resids(Y, mu, 1))),
     "pearson" = (Y - mu) / sqrt(abs(family$variance(mu))),
-    "working" = (Y - mu) / abs(family$mu.eta(eta)))
+    "working" = (Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)))
 
   if (anyNA(res)) res[is.na(res) | is.nan(res)] = 0
 
