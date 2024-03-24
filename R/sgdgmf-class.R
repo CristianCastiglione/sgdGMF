@@ -127,27 +127,111 @@ coefficients.sgdgmf = function (
 
 #' @title Extract the residuals of a GMF model
 #'
-#' @description ...
+#' @description
+#' Extract the residuals of a GMF model and, if required, compute the eigenvalues
+#' of the partial residuals obtained by excluding the matrix decomposition from
+#' the linear predictor.
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of residuals which should be returned
+#' @param partial if \code{TRUE}, compute the residuals excluding the matrix factorization from the linear predictor
+#' @param normalize if \code{TRUE}, standardize the residuals column-by-column
+#' @param fillna if \code{TRUE}, fill \code{NA} values column-by-column
+#' @param spectrum if \code{TRUE}, returns the eigenvalues of the residual covariance matrix
+#' @param ncomp number of eigenvalues to be calculated (only if \code{spectrum=TRUE})
+#'
+#' @details
+#' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top} be the linear predictor of a
+#' GMF model. Let \eqn{R = (r_{ij})} be the correspondent partial residual matrix.
+#' The following residuals can be considered:
+#' \itemize{
+#' \item deviance: \eqn{r_{ij}^{_D} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}};
+#' \item Pearson: \eqn{r_{ij}^{_P} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}};
+#' \item working: \eqn{r_{ij}^{_W} = (y_{ij} - \mu_{ij}) / \{g'(\mu_{ij}) \,\nu(\mu_{ij})\}};
+#' \item link: \eqn{r_{ij}^{_G} = g(y_{ij}) - \eta_{ij}}.
+#' }
+#' Finally, we define \eqn{\Sigma} as the empirical variance-covariance matrix of
+#' \eqn{R}, being \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, we define
+#' the latent spectrum of the model as the collection of eigenvalues of \eqn{\Sigma}.
+#' Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
+#' component analysis on the regression residuals, whose eigenvalues can be used to
+#' infer how much signal can be explained by each principal component. Similarly,
+#' we can use the latent spectrum in non-Gaussian data settings to infer the correct
+#' number of principal components to include into the GMF model.
 #'
 #' @method residuals sgdgmf
 #' @export
 residuals.sgdgmf = function (
-    object, type = c("deviance", "pearson", "working", "response")
+    object, type = c("deviance", "pearson", "working", "response", "link"),
+    partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
-
+  # Set the residual type
   type = match.arg(type)
-  y = object$Y
-  mu = object$mu
-  family = object$family
 
-  switch(type,
+  # Compute the predicted values
+  y = object$Y
+  family = object$family
+  if (partial) {
+    U = cbind(object$X, object$A)
+    V = cbind(object$B, object$Z)
+    eta = tcrossprod(U, V)
+    mu = family$linkinv(eta)
+  } else {
+    eta = object$eta
+    mu = object$mu
+  }
+
+  # Compute the residuals
+  res = switch(type,
     "deviance" = sign(y - mu) * sqrt(abs(family$dev.resids(y, mu, 1))),
     "pearson" = (y - mu) / sqrt(abs(family$variance(mu))),
     "working" = (y - mu) * family$mu.eta(mu) / abs(family$variance(mu)),
-    "response" = (y - mu))
+    "response" = (y - mu),
+    "link" = (family$transform(y) - eta))
+
+  # Fill the missing values using Gaussian random values
+  if (anyNA(res) & (fillna | spectrum)) {
+    res = apply(res, 2, function (x) {
+      if (anyNA(x)) {
+        na = which(is.na(x) | is.nan(x))
+        r = length(na)
+        m = mean(x, na.rm = TRUE)
+        s = sd(x, na.rm = TRUE)
+        x[na] = rnorm(r, mean = m, sd = s)
+      }
+      return (x)
+    })
+  }
+
+  # Standardize the residuals column-by-column
+  if (normalize) {
+    res = scale(res, center = TRUE, scale = TRUE)
+  }
+
+  # Decompose the residuals using incomplete SVD
+  if (spectrum) {
+    rcov = cov(res)
+    ncomp = max(1, min(ncomp, ncol(res)))
+    pca = RSpectra::eigs_sym(rcov, ncomp)
+
+    # Estimate the explained and residual variance
+    var.eig = pca$values
+    var.tot = sum(diag(rcov))
+    var.exp = sum(var.eig)
+    var.res = var.tot - var.exp
+  }
+
+  # Return the residuals and the corresponding spectrum
+  if (!spectrum) {
+    return (res)
+  } else {
+    return (
+      list(residuals = res,
+           spectrum = var.eig,
+           explained.var = var.exp,
+           reminder.var = var.res,
+           total.var = var.tot))
+  }
 }
 
 
@@ -346,6 +430,7 @@ simulate.sgdgmf = function (
 #' @param object an object of class \code{sgdgmf}
 #' @param ncomp number of eigenvalues to compute
 #' @param type the type of residual which should be returned
+#' @param stat the type of statistics to use (covariance or correlation)
 #' @param normalize if \code{TRUE}, standardize the residuals column-by-column
 #'
 #' @details
@@ -363,15 +448,17 @@ simulate.sgdgmf = function (
 #' we can use the latent spectrum in non-Gaussian data settings to infer the correct
 #' number of principal components to include into the GMF model.
 #'
-#' @method spectrum sgdgmf
 #' @export
-spectrum.sgdgmf = function (
+eigenval.sgdgmf = function (
     object, ncomp = object$ncomp,
     type = c("deviance", "pearson", "working", "link"),
     normalize = FALSE
 ) {
-  # Compute the model residuals
+  # Set the type and stat parameters
   type = match.arg(type)
+  stat = match.arg(stat)
+
+  # Compute the model residuals
   family = object$family
   eta = tcrossprod(cbind(object$X, object$A), cbind(object$B, object$Z))
   mu = family$linkinv(eta)
@@ -385,10 +472,10 @@ spectrum.sgdgmf = function (
   if (anyNA(res)) {
     res = apply(res, 2, function (x) {
       na = which(is.na(x) | is.nan(x))
-      rx = length(na)
-      mx = mean(x, na.rm = TRUE)
-      sx = sd(x, na.rm = TRUE)
-      x[na] = rnorm(rx, mean = mx, sd = sx)
+      r = length(na)
+      m = mean(x, na.rm = TRUE)
+      s = sd(x, na.rm = TRUE)
+      x[na] = rnorm(r, mean = m, sd = s)
       return (x)
     })
   }
@@ -399,8 +486,7 @@ spectrum.sgdgmf = function (
   }
 
   # Decompose the residuals using incomplete SVD
-  S = cov(res)
-  pca = RSpectra::eigs_sym(S, ncomp)
+  pca = RSpectra::eigs_sym(cov(res), ncomp)
 
   # Estimate the explained and residual variance
   var.eig = pca$values
@@ -412,3 +498,4 @@ spectrum.sgdgmf = function (
   list(spectrum = var.eig, explained = var.exp,
        reminder = var.res, total = var.tot)
 }
+
