@@ -57,6 +57,10 @@ sgdgmf.rank = function (
   # Set the family-specific data transformation
   family = set.family(family)
 
+  # Data dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+
   # Fill the missing values
   Y[] = apply(Y, 2, function (x) {
     x[is.na(x)] = mean(x, na.rm = TRUE)
@@ -68,7 +72,7 @@ sgdgmf.rank = function (
 
   # Set the covariate matrices
   if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = m, ncol = 1)
 
   # Register and open the connection to the clusters
   clust = NULL
