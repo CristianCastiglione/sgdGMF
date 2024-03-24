@@ -40,6 +40,7 @@ testthat::test_that("QR orthogonalization", {
   testthat::expect_equal(new$V[upper.tri(new$V)], rep(0, floor(d * (d-1) / 2)))
 })
 
+
 testthat::test_that("SVD orthogonalization", {
   n = 100; m = 10; d = 5
 
