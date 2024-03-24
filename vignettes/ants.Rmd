@@ -1,0 +1,103 @@
+---
+title: "intro"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+# library(sgdGMF)
+devtools::load_all()
+```
+
+```{r data}
+library(raster)
+library(mvabund)
+library(ggplot2)
+```
+
+```{r}
+data(antTraits)
+
+Y = as.matrix(antTraits$abund)
+X = as.matrix(antTraits$env[,-3])
+Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+family = poisson()
+```
+
+
+```{r}
+family = poisson()
+ncomp = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family)
+print(ncomp)
+```
+
+```{r}
+ctr = list(verbose = FALSE)
+
+gmf.airwls = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "airwls", control.alg = ctr)
+gmf.newton = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "newton", control.alg = ctr)
+gmf.csgd = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "csgd", control.alg = ctr)
+gmf.bsgd = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "bsgd", control.alg = ctr)
+```
+
+
+```{r}
+cat("\n AIRWLS: ", 100 * round(cor(c(Y), c(gmf.airwls$mu)), 4))
+cat("\n Newton: ", 100 * round(cor(c(Y), c(gmf.newton$mu)), 4))
+cat("\n C-SGD:  ", 100 * round(cor(c(Y), c(gmf.csgd$mu)), 4))
+cat("\n B-SGD:  ", 100 * round(cor(c(Y), c(gmf.bsgd$mu)), 4))
+```
+
+
+```{r}
+eig.airwls = residuals(gmf.airwls, partial = TRUE, spectrum = TRUE, ncomp = 20)
+eig.newton = residuals(gmf.newton, partial = TRUE, spectrum = TRUE, ncomp = 20)
+eig.csgd = residuals(gmf.csgd, partial = TRUE, spectrum = TRUE, ncomp = 20)
+eig.bsgd = residuals(gmf.bsgd, partial = TRUE, spectrum = TRUE, ncomp = 20)
+
+plot(0, 0, type = "n", xlim = c(1,20), ylim = c(0,0.5), 
+     xlab = "Number of components", ylab = "Explained variance")
+lines(1:20, eig.airwls$spectrum / eig.airwls$total.var, col = 2, type = "b", pch = 19)
+lines(1:20, eig.newton$spectrum / eig.newton$total.var, col = 3, type = "b", pch = 19)
+lines(1:20, eig.csgd$spectrum / eig.csgd$total.var, col = 4, type = "b", pch = 19)
+lines(1:20, eig.bsgd$spectrum / eig.bsgd$total.var, col = 7, type = "b", pch = 19)
+```
+
+
+
+
+```{r}
+par(mfrow = c(1,5))
+cuts = c(0,5,10,15,20,25,30)
+maxy = max(cuts)
+plot(raster(Y), lab.breaks = cuts, zlim = c(0,max(cuts)), main = "Abundance data")
+plot(raster(gmf.airwls$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "AIRWLS")
+plot(raster(gmf.newton$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "Newton")
+plot(raster(gmf.csgd$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "C-SGD")
+plot(raster(gmf.bsgd$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "B-SGD")
+par(mfrow = c(1,1))
+```
+
+
+```{r}
+plot(gmf.airwls$U, xlab = "PC 1", ylab = "PC 2", main = "AIRWLS")
+plot(gmf.newton$U, xlab = "PC 1", ylab = "PC 2", main = "Newton")
+plot(gmf.csgd$U, xlab = "PC 1", ylab = "PC 2", main = "C-SGD")
+plot(gmf.bsgd$U, xlab = "PC 1", ylab = "PC 2", main = "B-SGD")
+```
+
+
+
+
+
