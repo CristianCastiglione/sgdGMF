@@ -144,10 +144,10 @@ residuals.sgdgmf = function (
   family = object$family
 
   switch(type,
-    "deviance" = sign(y - mu) * sqrt(family$dev.resids(y, mu, 1)),
-    "pearson" = (y - mu) / sqrt(family$variance(mu)),
-    "working" = (y - mu) / family$mu.eta(mu),
-    "response" = y - mu)
+    "deviance" = sign(y - mu) * sqrt(abs(family$dev.resids(y, mu, 1))),
+    "pearson" = (y - mu) / sqrt(abs(family$variance(mu))),
+    "working" = (y - mu) * family$mu.eta(mu) / abs(family$variance(mu)),
+    "response" = (y - mu))
 }
 
 
@@ -367,7 +367,7 @@ simulate.sgdgmf = function (
 #' @export
 spectrum.sgdgmf = function (
     object, ncomp = object$ncomp,
-    type = c("deviance", "pearson", "working"),
+    type = c("deviance", "pearson", "working", "link"),
     normalize = FALSE
 ) {
   # Compute the model residuals
@@ -378,7 +378,8 @@ spectrum.sgdgmf = function (
   res = switch(type,
     "deviance" = sign(object$Y - mu) * sqrt(abs(family$dev.resid(object$Y, mu, 1))),
     "pearson" = (object$Y - mu) / sqrt(abs(family$variance(mu))),
-    "working" = (object$Y - mu) / abs(family$mu.eta(eta)))
+    "working" = (object$Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
+    "link" = (family$transform(objec$Y) - eta))
 
   # Fill the missing values using Gaussian random values
   if (anyNA(res)) {
