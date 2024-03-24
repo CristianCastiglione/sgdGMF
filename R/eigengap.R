@@ -105,7 +105,7 @@ sgdgmf.rank = function (
   res[] = switch(type.res,
     "deviance" = sign(Y - mu) * sqrt(abs(family$dev.resids(Y, mu, 1))),
     "pearson" = (Y - mu) / sqrt(abs(family$variance(mu))),
-    "working" = (Y - mu) / abs(family$mu.eta(eta)),
+    "working" = (Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
     "link" = (gY - eta))
 
   # Select the optimal rank
