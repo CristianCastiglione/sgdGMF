@@ -42,7 +42,7 @@ sgdgmf.rank = function (
     family = gaussian(),
     weights = NULL,
     offset = NULL,
-    method = c("onatski", "act"),
+    method = c("act", "onatski"),
     type.reg = c("ols", "glm"),
     type.res = c("deviance", "pearson", "working", "link"),
     maxiter = 10,
@@ -110,8 +110,8 @@ sgdgmf.rank = function (
 
   # Select the optimal rank
   ncomp = switch(method,
-    "onatski" = select.rank.onatski(res, maxcomp, maxiter)$ncomp,
-    "act" = select.rank.act(res, maxcomp)$ncomp)
+    "onatski" = eigengap.onatski(res, maxcomp, maxiter)$ncomp,
+    "act" = eigengap.act(res, maxcomp)$ncomp)
 
   # Return the selected rank
   return (ncomp)
