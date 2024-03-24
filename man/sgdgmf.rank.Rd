@@ -12,7 +12,7 @@ sgdgmf.rank(
   family = gaussian(),
   weights = NULL,
   offset = NULL,
-  method = c("onatski", "act"),
+  method = c("act", "onatski"),
   type.reg = c("ols", "glm"),
   type.res = c("deviance", "pearson", "working", "link"),
   maxiter = 10,
