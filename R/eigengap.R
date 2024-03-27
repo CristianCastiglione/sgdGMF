@@ -16,9 +16,12 @@
 #' @param method rank selection method
 #' @param type.reg regression method to be used to profile out the covariate effects
 #' @param type.res residual type to be decomposed
+#' @param normalize if \code{TRUE}, standardize column-by-column the residual matrix
 #' @param maxiter maximum number of iterations
 #' @param parallel if \code{TRUE}, allows for parallel computing using \code{foreach}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @param return.res if \code{TRUE}, return the residual matrix
+#' @param return.cov if \code{TRUE}, return the covariance matrix of the residuals
 #'
 #' @references
 #' Onatski, A. (2010).
@@ -42,12 +45,15 @@ sgdgmf.rank = function (
     family = gaussian(),
     weights = NULL,
     offset = NULL,
-    method = c("act", "onatski"),
+    method = c("onatski", "act"),
     type.reg = c("ols", "glm"),
     type.res = c("deviance", "pearson", "working", "link"),
+    normalize = FALSE,
     maxiter = 10,
     parallel = FALSE,
-    nthreads = 1
+    nthreads = 1,
+    return.res = FALSE,
+    return.cov = FALSE
 ) {
   # Set the selection method
   method = match.arg(method)
@@ -112,13 +118,26 @@ sgdgmf.rank = function (
     "working" = (Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
     "link" = (gY - eta))
 
+  # Compute the covariance/correlation matrix of the residuals
+  covmat = if (normalize) cor(res) else cov(res)
+
   # Select the optimal rank
-  ncomp = switch(method,
-    "onatski" = eigengap.onatski(res, maxcomp, maxiter)$ncomp,
-    "act" = eigengap.act(res, maxcomp)$ncomp)
+  eigengap = switch(method,
+    "onatski" = eigengap.onatski(covmat, min(maxcomp, n-6, m-6), maxiter),
+    "act" = eigengap.act(covmat, n, maxcomp))
+
+  # Build the output
+  out = list()
+
+  out$method = method
+  out$ncomp = eigengap$ncomp
+  out$lambdas = eigengap$lambdas
+
+  if (return.cov) out$covmat = covmat
+  if (return.res) out$resmat = res
 
   # Return the selected rank
-  return (ncomp)
+  return (out)
 }
 
 
@@ -128,7 +147,7 @@ sgdgmf.rank = function (
 #' Select the number of significant principal components of a matrix via the
 #' Onatski method
 #'
-#' @param Y matrix to be decomposed
+#' @param covmat matrix to be decomposed
 #' @param maxcomp maximum number of eigenvalues to compute
 #' @param maxiter maximum number of iterations
 #'
@@ -138,21 +157,23 @@ sgdgmf.rank = function (
 #' Review of Economics and Statistics, 92(4): 1004-1016
 #'
 #' @keywords internal
-eigengap.onatski = function (Y, maxcomp = 50, maxiter = 100) {
+eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
 
   # Set the matrix dimension
-  n = nrow(Y)
-  m = ncol(Y)
+  # n = nrow(Y)
+  m = ncol(covmat)
 
   # Safety check for the number of maximum components
   if (maxcomp > m - 5) {
-    maxcomp = m - 6
+    # maxcomp = m - 6
+    maxcomp = floor(m / 2)
     warning("Rank selection: 'maxcomp' set to default value.",
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
 
   # Compute the spectrum of the covariance matrix of Y
-  lambdas = eigen(cov(Y))$values
+  # lambdas = eigen(cov(Y))$values
+  lambdas = eigen(covmat)$values
 
   # Initialize the loop parameters
   tol = 1e+03
@@ -176,6 +197,7 @@ eigengap.onatski = function (Y, maxcomp = 50, maxiter = 100) {
 
   # Check if the search was successful
   success = iter < maxiter
+  ncomp = max(1, ncomp)
 
   # Return the selected rank
   list(ncomp = ncomp, lambdas = lambdas, delta = delta,
@@ -198,16 +220,21 @@ eigengap.onatski = function (Y, maxcomp = 50, maxiter = 100) {
 #' Journal of the American Statistical Association, 117(538): 852--861
 #'
 #' @keywords internal
-eigengap.act = function (Y, maxcomp = NULL) {
+eigengap.act = function (covmat, nobs, maxcomp = NULL) {
   # Set the data dimensions
-  n = nrow(Y); p = ncol(Y); d = maxcomp
+  n = nobs;
+  p = ncol(covmat);
+  d = maxcomp
   d = ifelse(is.null(maxcomp), p, d)
+
+  # Convert the covariance matrix to a correlation matrix
+  cormat = cov2cor(covmat)
 
   # Compute the spectrum of the correlation matrix of Y
   if (p == d) {
-    lambdas = eigen(cor(Y))$values
+    lambdas = eigen(cormat)$values
   } else {
-    lambdas = RSpectra::eigs_sym(cor(Y), d)$values
+    lambdas = RSpectra::eigs_sym(cormat, d)$values
     lambda0 = p - sum(lambdas)
     lambdas = c(lambdas, rep(lambda0, p - d))
   }
@@ -229,6 +256,7 @@ eigengap.act = function (Y, maxcomp = NULL) {
   ncomp = max(1, ncomp)
 
   # Return the selected rank
-  list(ncomp = ncomp, lambdas = lambdas, adj.lambdas, threshold = thr)
+  list(ncomp = ncomp, lambdas = lambdas,
+       adj.lambdas = adj.lambdas, threshold = thr)
 }
 
