@@ -1,100 +1,179 @@
 ---
-title: "intro"
+title: "Ant traits data"
+author: "Cristian Castiglione"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{intro}
+  %\VignetteIndexEntry{ants}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+## Workspace setup
+
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-```{r setup}
+Load the \code{sgdGMF} package in the workspace.
+
+```{r sgdgmf}
 # library(sgdGMF)
 devtools::load_all()
 ```
 
-```{r data}
-library(raster)
+Load other useful packages in the workspace.
+
+```{r libraries}
 library(mvabund)
 library(ggplot2)
+library(ggpubr)
+library(reshape2)
+library(viridis)
 ```
 
-```{r}
+## Ant traits data
+
+Load the ant traits data in the workspace and define the response and covariate matrices.
+
+```{r data}
 data(antTraits)
 
 Y = as.matrix(antTraits$abund)
 X = as.matrix(antTraits$env[,-3])
 Z = matrix(1, nrow = ncol(Y), ncol = 1)
 
+n = nrow(Y)
+m = ncol(Y)
+```
+
+## Model specification
+
+Set the model family to Poisson since the response matrix contain count data.
+
+```{r family}
 family = poisson()
 ```
 
+Select the optimal number of latent factors using the function \code{sgdgmf.rank},
+which employs an adjusted eigenvalue thresholding method to identify the optimal
+elbow point of a screeplot.
 
-```{r}
-family = poisson()
-ncomp = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family)
-print(ncomp)
+```{r rank}
+ncomp = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family)$ncomp
+cat("Selected rank: ", ncomp)
 ```
 
-```{r}
+## Model estimation
+
+Estimate a Poisson GMF model using iterated least squares, diagonal quasi-Newton and
+stochastic gradient descent algorithms.
+
+```{r fit}
 ctr = list(verbose = FALSE)
 
-gmf.airwls = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "airwls", control.alg = ctr)
-gmf.newton = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "newton", control.alg = ctr)
-gmf.csgd = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "csgd", control.alg = ctr)
-gmf.bsgd = sgdgmf.fit(Y, X, Z, ncomp = 2, family = family, method = "bsgd", control.alg = ctr)
+gmf.airwls = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "airwls", control.alg = ctr)
+gmf.newton = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "newton", control.alg = ctr)
+gmf.bsgd = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "bsgd", control.alg = ctr)
 ```
 
+## Model validation
 
-```{r}
+Compute the correlation between the observed data and the predicted values.
+
+```{r cor}
+{
 cat("\n AIRWLS: ", 100 * round(cor(c(Y), c(gmf.airwls$mu)), 4))
 cat("\n Newton: ", 100 * round(cor(c(Y), c(gmf.newton$mu)), 4))
-cat("\n C-SGD:  ", 100 * round(cor(c(Y), c(gmf.csgd$mu)), 4))
 cat("\n B-SGD:  ", 100 * round(cor(c(Y), c(gmf.bsgd$mu)), 4))
+}
+```
+Compute the partial deviance residuals holding out from the model the estimated 
+matrix factorization. Additionally, compute the spectrum of such a residual matrix.
+
+```{r resid}
+eig.airwls = residuals(gmf.airwls, partial = FALSE, spectrum = TRUE, ncomp = 20)
+eig.newton = residuals(gmf.newton, partial = FALSE, spectrum = TRUE, ncomp = 20)
+eig.bsgd = residuals(gmf.bsgd, partial = FALSE, spectrum = TRUE, ncomp = 20)
 ```
 
+Analyze the residual distribution.
 
-```{r}
-eig.airwls = residuals(gmf.airwls, partial = TRUE, spectrum = TRUE, ncomp = 20)
-eig.newton = residuals(gmf.newton, partial = TRUE, spectrum = TRUE, ncomp = 20)
-eig.csgd = residuals(gmf.csgd, partial = TRUE, spectrum = TRUE, ncomp = 20)
-eig.bsgd = residuals(gmf.bsgd, partial = TRUE, spectrum = TRUE, ncomp = 20)
+```{r hist, fig.width = 6, fig.height = 5}
+get.factor = function (levels, nrep) factor(rep(levels, each = nrep), levels = levels)
 
-plot(0, 0, type = "n", xlim = c(1,20), ylim = c(0,0.5), 
-     xlab = "Number of components", ylab = "Explained variance")
-lines(1:20, eig.airwls$spectrum / eig.airwls$total.var, col = 2, type = "b", pch = 19)
-lines(1:20, eig.newton$spectrum / eig.newton$total.var, col = 3, type = "b", pch = 19)
-lines(1:20, eig.csgd$spectrum / eig.csgd$total.var, col = 4, type = "b", pch = 19)
-lines(1:20, eig.bsgd$spectrum / eig.bsgd$total.var, col = 7, type = "b", pch = 19)
+df = data.frame(
+  residuals = c(eig.airwls$residuals, eig.newton$residuals, eig.bsgd$residuals),
+  fitted = c(gmf.airwls$mu, gmf.newton$mu, gmf.bsgd$mu),
+  model = get.factor(c("AIRWLS", "Newton", "SGD"), n)
+)
+
+plt.res.vs.fit = ggplot(data = df, map = aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.5) + facet_grid(cols = vars(model)) + 
+  geom_hline(yintercept = 0, col = 2, lty = 2) + theme_grey()
+
+plt.res.hist = ggplot(data = df, map = aes(x = residuals, y = after_stat(density))) +
+  geom_histogram(bins = 30) + facet_grid(cols = vars(model)) + 
+  geom_vline(xintercept = 0, col = 2, lty = 2) + theme_grey()
+
+ggpubr::ggarrange(plt.res.vs.fit, plt.res.hist, nrow = 2)
+
 ```
 
+Plot the variance explained by each principal component of the residual matrix.
 
+```{r spectrum, fig.width = 6, fig.height = 2.5}
+df = data.frame(
+  components = rep(1:20, 3),
+  variance = c(eig.airwls$spectrum / eig.airwls$total.var, 
+               eig.newton$spectrum / eig.newton$total.var, 
+               eig.bsgd$spectrum / eig.bsgd$total.var),
+  model = get.factor(c("AIRWLS", "Newton", "SGD"), 20)
+)
 
-
-```{r}
-par(mfrow = c(1,5))
-cuts = c(0,5,10,15,20,25,30)
-maxy = max(cuts)
-plot(raster(Y), lab.breaks = cuts, zlim = c(0,max(cuts)), main = "Abundance data")
-plot(raster(gmf.airwls$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "AIRWLS")
-plot(raster(gmf.newton$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "Newton")
-plot(raster(gmf.csgd$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "C-SGD")
-plot(raster(gmf.bsgd$mu), lab.breaks = cuts, zlim = c(0, maxy), main = "B-SGD")
-par(mfrow = c(1,1))
+ggplot(data = df, map = aes(x = components, y = variance)) +
+  geom_col() + facet_grid(cols = vars(model)) + theme_grey()
 ```
 
+## Observations vs fitted values
 
-```{r}
-plot(gmf.airwls$U, xlab = "PC 1", ylab = "PC 2", main = "AIRWLS")
-plot(gmf.newton$U, xlab = "PC 1", ylab = "PC 2", main = "Newton")
-plot(gmf.csgd$U, xlab = "PC 1", ylab = "PC 2", main = "C-SGD")
-plot(gmf.bsgd$U, xlab = "PC 1", ylab = "PC 2", main = "B-SGD")
+Plot the abundance predicted by each method comparing it with the observed matrix.
+
+```{r pred, fig.width = 6, fig.height = 5}
+colnames(gmf.airwls$mu) = colnames(Y)
+colnames(gmf.newton$mu) = colnames(Y)
+colnames(gmf.bsgd$mu) = colnames(Y)
+
+df = rbind(
+  reshape2::melt(Y, varnames = c("environments", "species"), value.name = "abundance"),
+  reshape2::melt(gmf.airwls$mu, varnames = c("environments", "species"), value.name = "abundance"),
+  reshape2::melt(gmf.newton$mu, varnames = c("environments", "species"), value.name = "abundance"),
+  reshape2::melt(gmf.bsgd$mu, varnames = c("environments", "species"), value.name = "abundance"))
+
+df$model = get.factor(c("Data", "AIRWLS", "Newton", "SGD"), n*m)
+
+ggplot(data = df, map = aes(x = species, y = environments, fill = abundance)) + 
+  geom_raster() + facet_wrap(vars(model), nrow = 2, ncol = 2) + 
+  scale_fill_viridis() + theme(axis.text = element_blank(), axis.ticks = element_blank()) +
+  labs(x = "Species", y = "Environmens", fill = "Abundance", title = "Ant abundance")
+```
+
+## Latent scores and low-dimensional representation
+
+```{r scores, fig.width = 6, fig.height = 2.5}
+df = data.frame(
+  idx = rep(1:n, times = 3),
+  pc1 = c(gmf.airwls$U[,1], gmf.newton$U[,1], gmf.bsgd$U[,1]),
+  pc2 = c(gmf.airwls$U[,2], gmf.newton$U[,2], gmf.bsgd$U[,2]),
+  model = get.factor(c("AIRWLS", "Newton", "SGD"), n)
+)
+
+ggplot(data = df, map = aes(x = pc1, y = pc2, color = idx)) +
+  geom_point() + facet_grid(cols = vars(model)) + 
+  scale_color_viridis() + theme_grey() +
+  labs(x = "PC 1", y = "PC 2", color = "Index")
 ```
 
 
