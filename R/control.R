@@ -729,9 +729,9 @@ set.control.cv = function (nfolds = 5, parallel = FALSE, nthreads = 1) {
     warning(paste0("Cross-validation control: '", var,"' was set to default value."),
             call. = FALSE, immediate. = TRUE, domain = NULL)
 
-  if (is.numeric(nfolds) && nfolds >= 1) {ctr$nfolds = floor(nfolds); message("nfolds")}
-  if (is.logical(parallel)) {ctr$parallel = parallel; message("parallel")}
-  if (is.numeric(nthreads) && nthreads >= 1) {ctr$nthreads = floor(nthreads); message("nthreads")}
+  if (is.numeric(nfolds) && nfolds >= 1) ctr$nfolds = floor(nfolds) else message("nfolds")
+  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
+  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
 
   return (ctr)
 }
