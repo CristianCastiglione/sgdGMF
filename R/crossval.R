@@ -140,7 +140,7 @@ sgdgmf.cv = function (
       test = data[[fold]]$test
 
       # Run the estimation and compute the GoF statistics
-      sgdGMF:::sgdgmf.cv.step(
+      sgdgmf.cv.step(
         train = train, test = test, X = X, Z = Z, family = family,
         ncomp = ncomp, maxcomp = maxcomp, fold = fold, nfolds = nfolds,
         method = method, penalty = penalty, control.init = control.init,
