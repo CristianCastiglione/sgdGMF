@@ -80,6 +80,11 @@ old
 old/
 old/**
 
+# Simulation folder
+sim
+sim/
+sim/**
+
 # Sandbox folder
 sandbox
 sandbox/
@@ -89,6 +94,9 @@ sandbox/**
 data/splatter
 data/splatter/
 data/splatter/**
+data/bubble
+data/bubble/
+data/bubble/**
 
 # Compressed files
 *.zip
