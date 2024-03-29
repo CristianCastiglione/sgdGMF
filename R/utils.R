@@ -209,8 +209,8 @@ partition = function (y, p = 0.3) {
   s = floor(p*n*m)
 
   # Sparsification mask
-  mask = cbind(ii = sample.int(n = n, size = s, replace = TRUE),
-               jj = sample.int(n = m, size = s, replace = TRUE))
+  mask = cbind(row = sample.int(n = n, size = s, replace = TRUE),
+               col = sample.int(n = m, size = s, replace = TRUE))
 
   # Train-test split
   train = test = y
