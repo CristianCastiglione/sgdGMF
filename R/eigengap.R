@@ -20,6 +20,7 @@
 #' @param maxiter maximum number of iterations
 #' @param parallel if \code{TRUE}, allows for parallel computing using \code{foreach}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @param return.fit if \code{TRUE}, return the fitted value martix
 #' @param return.res if \code{TRUE}, return the residual matrix
 #' @param return.cov if \code{TRUE}, return the covariance matrix of the residuals
 #'
@@ -52,6 +53,8 @@ sgdgmf.rank = function (
     maxiter = 10,
     parallel = FALSE,
     nthreads = 1,
+    return.eta = FALSE,
+    return.mu  = FALSE,
     return.res = FALSE,
     return.cov = FALSE
 ) {
@@ -133,8 +136,10 @@ sgdgmf.rank = function (
   out$ncomp = eigengap$ncomp
   out$lambdas = eigengap$lambdas
 
-  if (return.cov) out$covmat = covmat
-  if (return.res) out$resmat = res
+  if (return.eta) out$eta = eta
+  if (return.mu) out$mu = mu
+  if (return.res) out$residuals = res
+  if (return.cov) out$covariance = covmat
 
   # Return the selected rank
   return (out)
