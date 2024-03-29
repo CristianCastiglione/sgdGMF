@@ -130,7 +130,7 @@ data.frame(
   variance = c(res.airwls$lambdas, res.newton$lambdas, res.sgd$lambdas),
   model = get.factor(c("AIRWLS", "Newton", "SGD"), 20)) |>
   ggplot(map = aes(x = components, y = variance)) +
-  geom_col() + facet_grid(cols = vars(model))
+  geom_col(color = "white") + facet_grid(cols = vars(model))
 ```
 
 ## Observations vs fitted values
