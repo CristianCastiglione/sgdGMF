@@ -175,7 +175,7 @@ set.control.init = function (
 
   if (is.list(values)) {
     if (length(values) > 0) {
-      if (c("B", "A", "U", "V") %in% names(values)) {
+      if (all(c("B", "A", "U", "V") %in% names(values))) {
         if (is.numeric(values$B) && is.matrix(values$B)) ctr$values$B = values$B
         if (is.numeric(values$A) && is.matrix(values$A)) ctr$values$A = values$A
         if (is.numeric(values$U) && is.matrix(values$U)) ctr$values$U = values$U
@@ -717,7 +717,11 @@ set.control.alg = function (
 #' Check if the input cross-validation parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined cross-validation parameters.
 #'
+#' @param criterion information criterion to minimize for selecting the matrix rank
+#' @param refit if \code{TRUE}, refit the model with the selected rank and return the fitted model
 #' @param nfolds number of cross-validation folds
+#' @param proportion proportion of the data to be used as test set in each fold
+#' @param verbose if \code{TRUE}, print the cross-validation status
 #' @param parallel if \code{TRUE}, allows for parallel computing
 #' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})
 #'
@@ -727,6 +731,7 @@ set.control.cv = function (
     refit = TRUE,
     nfolds = 5,
     proportion = 0.3,
+    init = c("common", "separate"),
     verbose = FALSE,
     parallel = FALSE,
     nthreads = 1
@@ -737,6 +742,7 @@ set.control.cv = function (
   ctr$refit = TRUE
   ctr$nfolds = 5
   ctr$proportion = 0.3
+  ctr$init = match.arg(init)
   ctr$verbose = FALSE
   ctr$parallel = FALSE
   ctr$nthreads = 1
