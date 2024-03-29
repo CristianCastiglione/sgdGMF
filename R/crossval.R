@@ -46,143 +46,6 @@ sgdgmf.cv = function (
 ) {
 
   # Sanity check for the cross-validation options
-  control.cv = do.call("set.control.cv", control.cv)
-
-  # Data dimensions
-  n = nrow(Y)
-  m = ncol(Y)
-  p = ifelse(is.null(X), 0, ncol(X))
-  q = ifelse(is.null(Z), 0, ncol(Z))
-
-  # Maximum rank
-  ncomps = floor(ncomps)
-  maxcomp = max(ncomps)
-  nfolds = control.cv$nfolds
-  proportion = control.cv$proportion
-  parallel = control.cv$parallel
-  nthreads = control.cv$nthreads
-
-  # Check whether the algorithm and cross-validation controls are consistent
-  if (method %in% c("airwls", "newton")) {
-    if (control.alg$parallel && control.cv$parallel) {
-      stop("Nested parallelization is not allowed.")
-    }
-  }
-
-  if (control.cv$parallel && control.alg$verbose) {
-    control.alg$verbose = FALSE
-    warning("With 'parallel=TRUE', no output is printed, that is 'verbose=FALSE'.",
-            call. = FALSE, immediate. = TRUE, domain = NULL)
-  }
-
-  # Perform model selection minimizing the test deviance
-  {
-    # Create a k-fold partition
-    data = list()
-    f = proportion
-    for (fold in 1:nfolds) {
-      data[[fold]] = partition(Y, f)
-    }
-
-    # Initialize the summary data-frame
-    cv = data.frame(ncomp = c(), fold = c(), df = c(),
-                    aic = c(), bic = c(), cbic = c(), dev = c())
-
-    # Estimation loop
-    for (ncomp in ncomps) {
-
-      # Effective number of parameters
-      df = m * p + n * q + (n + m) * ncomp
-
-      for (fold in 1:nfolds) {
-
-        # Print the eestimation status
-        cat(" Rank:", paste(ncomp, maxcomp, sep = "/"),
-            " Fold:", paste(fold, nfolds, sep = "/"), "\n")
-
-        # Estimated mean matrix
-        mu = sgdgmf.fit(Y = data[[fold]]$train, X = X, Z = Z, family = family,
-                        ncomp = ncomp, method = method, penalty = penalty,
-                        control.init = control.init, control.alg = control.alg)$mu
-
-        # Train and test sample sizes
-        n.train = (1-f)*n*m
-        n.test = f*n*m
-
-        # Train and test goodness-of-fit measures
-        dev.train = matrix.deviance(mu = mu, y = data[[fold]]$train, family = family)
-        dev.test = matrix.deviance(mu = mu, y = data[[fold]]$test, family = family)
-        aic.train = dev.train + 2 * df
-        bic.train = dev.train + 2 * df * log(n.train)
-        cbic.train = dev.train + 2 * df * log(log(n.train))
-
-        # Summary data-frame
-        cv = rbind(cv, data.frame(
-            ncomp = ncomp, fold = fold, df = df,
-            aic = aic.train / n.train, bic = bic.train / n.train,
-            cbic = cbic.train / n.train, dev = dev.test / n.test
-          )
-        )
-      }
-    }
-
-    # Rank selection
-    if (nfolds > 1) {
-      avgcv = data.frame(ncomp = c(), df = c(), dev = c(),
-                         aic = c(), bic = c(), cbic = c())
-      for (ncomp in 1:maxcomp) {
-        for (fold in 1:nfolds) {
-          idx = (cv$ncomp == ncomp) & (cv$fold == fold)
-          df = mean(cv$df[idx])
-          aic = mean(cv$aic[idx], na.rm = TRUE)
-          bic = mean(cv$bic[idx], na.rm = TRUE)
-          cbic = mean(cv$cbic[idx], na.rm = TRUE)
-          dev = mean(cv$dev[idx], na.rm = TRUE)
-          avgstat = data.frame(ncomp = ncomp, df = df, dev = dev,
-                               aic = aic, bic = bic, cbic = cbic)
-          avgcv = rbind(avgcv, avgstat)
-        }
-      }
-      ncomp = avgcv$ncomp[which.min(avgcv$dev)]
-    } else {
-      ncomp = cv$ncomp[which.min(cv$dev)]
-    }
-  }
-
-  cat("Final refit with rank = ", ncomp, " \n")
-
-  # Fit the model using the chosen optimizer
-  fit = sgdgmf.fit(Y = Y, X = X, Z = Z, family = family,
-                   ncomp = ncomp, method = method, penalty = penalty,
-                   control.init = control.init, control.alg = control.alg)
-
-  # Return the cross-validation parameters
-  fit$control.cv = control.cv
-
-  # Return the cross-validation statistics
-  fit$summary.cv = cv
-
-  # Return the fitted model
-  return (fit)
-}
-
-#' @export sgdgmf.cv2
-sgdgmf.cv2 = function (
-    Y,
-    X = NULL,
-    Z = NULL,
-    family = poisson(),
-    ncomps = seq(from = 1, to = 10, by = 1),
-    weights = NULL,
-    offset = NULL,
-    method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
-    penalty = list(),
-    control.init = list(),
-    control.alg = list(),
-    control.cv = list()
-) {
-
-  # Sanity check for the cross-validation options
   control.init = do.call("set.control.init", control.init)
   control.alg = switch(method,
     "airwls" = do.call("set.control.airwls", control.alg),
@@ -206,6 +69,7 @@ sgdgmf.cv2 = function (
   criterion = control.cv$criterion
   refit = control.cv$refit
   nfolds = control.cv$nfolds
+  common = control.cv$init == "common"
   parallel = control.cv$parallel
   nthreads = control.cv$nthreads
 
@@ -230,6 +94,19 @@ sgdgmf.cv2 = function (
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
 
+  # Common initialization
+  if (common) {
+    time.init = proc.time()
+    control.init$values = init.param(
+      Y = Y, X = X, Z = Z, ncomp = maxcomp,
+      family = family, method = control.init$method,
+      type = control.init$type, niter = control.init$niter,
+      values = control.init$values,verbose = control.init$verbose,
+      parallel = control.init$parallel, nthreads = control.init$threads)
+    control.init$method = "values"
+    time.init = as.numeric(proc.time() - time.init)[3]
+  }
+
   # Create a k-fold partition
   data = list()
   f = control.cv$proportion
@@ -246,6 +123,7 @@ sgdgmf.cv2 = function (
     ncores = parallel::detectCores() - 1
     ncores = max(1, min(nthreads, ncores))
     clust = parallel::makeCluster(ncores)
+    parallel::makeExport(c("sgdGMF"))
     doParallel::registerDoParallel(clust)
   }
 
@@ -275,7 +153,7 @@ sgdgmf.cv2 = function (
     # ... The problem seems to be that the function "sgdgmf.cv.step"
     # ... is not visible from the "foreach" environment, as well as
     # ... all the other functions that are called by "sgdgmf.cv.step".
-    cv = foreach (iter = 1:niter, .combine = "rbind") %dopar% {
+    cv = foreach (iter = 1:niter, .packages = c("sgdGMF"), .combine = "rbind") %dopar% {
 
       # Set the number of components and the group
       ncomp = groups$ncomp[iter]
@@ -317,24 +195,26 @@ sgdgmf.cv2 = function (
       }
     }
     ncomp = switch(criterion,
-                   "dev" = avgcv$ncomp[which.min(avgcv$dev)],
-                   "aic" = avgcv$ncomp[which.min(avgcv$aic)],
-                   "bic" = avgcv$ncomp[which.min(avgcv$bic)],
-                   "cbic" = avgcv$ncomp[which.min(avgcv$cbic)])
+      "dev" = avgcv$ncomp[which.min(avgcv$dev)],
+      "aic" = avgcv$ncomp[which.min(avgcv$aic)],
+      "bic" = avgcv$ncomp[which.min(avgcv$bic)],
+      "cbic" = avgcv$ncomp[which.min(avgcv$cbic)])
   } else {
     ncomp = switch(criterion,
-                   "dev" = cv$ncomp[which.min(cv$dev)],
-                   "aic" = cv$ncomp[which.min(cv$aic)],
-                   "bic" = cv$ncomp[which.min(cv$bic)],
-                   "cbic" = cv$ncomp[which.min(cv$cbic)])
+      "dev" = cv$ncomp[which.min(cv$dev)],
+      "aic" = cv$ncomp[which.min(cv$aic)],
+      "bic" = cv$ncomp[which.min(cv$bic)],
+      "cbic" = cv$ncomp[which.min(cv$cbic)])
   }
 
   if (refit) {
     # Re-fit the model using the chosen optimizer
     cat("Final refit with rank =", ncomp, "\n")
-    fit = sgdgmf.fit(Y = Y, X = X, Z = Z, family = family,
-                     ncomp = ncomp, method = method, penalty = penalty,
-                     control.init = control.init, control.alg = control.alg)
+    fit = sgdgmf.fit(
+      Y = Y, X = X, Z = Z, family = family,
+      ncomp = ncomp, method = method, penalty = penalty,
+      control.init = control.init, control.alg = control.alg)
+    if (common) fit$exe.time[1] = time.init
   } else {
     # Do not re-fit the model, just return the summary statistics
     fit = list()
@@ -377,10 +257,17 @@ sgdgmf.cv.step = function (
     cat(" Rank:", paste(ncomp, maxcomp, sep = "/"),
         " Fold:", paste(fold, nfolds, sep = "/"), "\n")
 
+  # Select the correct number of columns of the initial U and V matrices
+  if (control.init$method == "values") {
+    control.init$values$U = control.init$values$U[, 1:ncomp, drop = FALSE]
+    control.init$values$V = control.init$values$V[, 1:ncomp, drop = FALSE]
+  }
+
   # Estimated mean matrix
-  mu = sgdgmf.fit(Y = train, X = X, Z = Z, family = family,
-                  ncomp = ncomp, method = method, penalty = penalty,
-                  control.init = control.init, control.alg = control.alg)$mu
+  mu = sgdgmf.fit(
+    Y = train, X = X, Z = Z, family = family,
+    ncomp = ncomp, method = method, penalty = penalty,
+    control.init = control.init, control.alg = control.alg)$mu
 
   # Train and test sample sizes
   n.train = (1-f)*n*m
