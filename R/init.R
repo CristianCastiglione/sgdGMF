@@ -340,7 +340,7 @@ init.param.glm = function (
 #' \code{\link{init.param.svd}}. See \code{\link{init.param}} for more details.
 #'
 #' @keywords internal
-init.param.values = function (
+init.param.custom = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -366,10 +366,10 @@ init.param.values = function (
     gettextf("Incompatible dimensions: dim(%s) != c(%d, %d).", mat, nr, nc)
 
   # Check if all the dimensions are compatible
-  if (dim(values$B) == c(m, p)) stop(error.message("B", m, p))
-  if (dim(values$A) == c(n, q)) stop(error.message("A", n, q))
-  if (dim(values$U) == c(n, d)) stop(error.message("U", n, d))
-  if (dim(values$V) == c(m, d)) stop(error.message("V", m, d))
+  if (any(dim(values$B) != c(m, p))) stop(error.message("B", m, p), call. = FALSE)
+  if (any(dim(values$A) != c(n, q))) stop(error.message("A", n, q), call. = FALSE)
+  if (any(dim(values$U) != c(n, d))) stop(error.message("U", n, d), call. = FALSE)
+  if (any(dim(values$V) != c(m, d))) stop(error.message("V", m, d), call. = FALSE)
 
   # Compute the initial vector of dispersion parameters
   eta = tcrossprod(cbind(X, values$A, values$U), cbind(values$B, Z, values$V))
