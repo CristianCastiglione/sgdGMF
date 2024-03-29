@@ -4,10 +4,10 @@
 \alias{eigengap.onatski}
 \title{Rank selection via the Onatski method}
 \usage{
-eigengap.onatski(Y, maxcomp = 50, maxiter = 100)
+eigengap.onatski(covmat, maxcomp = 50, maxiter = 100)
 }
 \arguments{
-\item{Y}{matrix to be decomposed}
+\item{covmat}{matrix to be decomposed}
 
 \item{maxcomp}{maximum number of eigenvalues to compute}
 
