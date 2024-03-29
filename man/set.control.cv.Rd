@@ -4,7 +4,15 @@
 \alias{set.control.cv}
 \title{Check and set the cross-validation parameters}
 \usage{
-set.control.cv(nfolds = 5, parallel = FALSE, nthreads = 1)
+set.control.cv(
+  criterion = c("dev", "aic", "bic", "cbic"),
+  refit = TRUE,
+  nfolds = 5,
+  proportion = 0.3,
+  verbose = FALSE,
+  parallel = FALSE,
+  nthreads = 1
+)
 }
 \arguments{
 \item{nfolds}{number of cross-validation folds}
