@@ -722,17 +722,45 @@ set.control.alg = function (
 #' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})
 #'
 #' @export set.control.cv
-set.control.cv = function (nfolds = 5, parallel = FALSE, nthreads = 1) {
-  ctr = list(nfolds = 5, parallel = FALSE, nthreads = 1)
+set.control.cv = function (
+    criterion = c("dev", "aic", "bic", "cbic"),
+    refit = TRUE,
+    nfolds = 5,
+    proportion = 0.3,
+    verbose = FALSE,
+    parallel = FALSE,
+    nthreads = 1
+) {
+  # Set the default parameters
+  ctr = list()
+  ctr$criterion = match.arg(criterion)
+  ctr$refit = TRUE
+  ctr$nfolds = 5
+  ctr$proportion = 0.3
+  ctr$verbose = FALSE
+  ctr$parallel = FALSE
+  ctr$nthreads = 1
 
+  # Set the warning message
   message = function (var)
     warning(paste0("Cross-validation control: '", var,"' was set to default value."),
             call. = FALSE, immediate. = TRUE, domain = NULL)
 
-  if (is.numeric(nfolds) && nfolds >= 1) ctr$nfolds = floor(nfolds) else message("nfolds")
-  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
+  # Check all the input parameters
+  if (is.logical(refit))
+    ctr$refit = refit else message("refit")
+  if (is.numeric(nfolds) && nfolds >= 1)
+    ctr$nfolds = floor(nfolds) else message("nfolds")
+  if (is.numeric(proportion) && proportion > 0 && proportion < 1)
+    ctr$proportion = proportion else message("proportion")
+  if (is.logical(verbose))
+    ctr$verbose = verbose else message("verbose")
+  if (is.logical(parallel))
+    ctr$parallel = parallel else message("parallel")
+  if (is.numeric(nthreads) && nthreads >= 1)
+    ctr$nthreads = floor(nthreads) else message("nthreads")
 
+  # Return the checked parameters
   return (ctr)
 }
 
