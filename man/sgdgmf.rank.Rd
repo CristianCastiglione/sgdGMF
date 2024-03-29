@@ -12,12 +12,15 @@ sgdgmf.rank(
   family = gaussian(),
   weights = NULL,
   offset = NULL,
-  method = c("act", "onatski"),
+  method = c("onatski", "act"),
   type.reg = c("ols", "glm"),
   type.res = c("deviance", "pearson", "working", "link"),
+  normalize = FALSE,
   maxiter = 10,
   parallel = FALSE,
-  nthreads = 1
+  nthreads = 1,
+  return.res = FALSE,
+  return.cov = FALSE
 )
 }
 \arguments{
@@ -41,11 +44,17 @@ sgdgmf.rank(
 
 \item{type.res}{residual type to be decomposed}
 
+\item{normalize}{if \code{TRUE}, standardize column-by-column the residual matrix}
+
 \item{maxiter}{maximum number of iterations}
 
 \item{parallel}{if \code{TRUE}, allows for parallel computing using \code{foreach}}
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
+
+\item{return.res}{if \code{TRUE}, return the residual matrix}
+
+\item{return.cov}{if \code{TRUE}, return the covariance matrix of the residuals}
 }
 \description{
 Select the number of significant principal components of a matrix via
