@@ -4,12 +4,12 @@
 \alias{eigengap.act}
 \title{Rank selection via adjust correlation thresholding}
 \usage{
-eigengap.act(Y, maxcomp = NULL)
+eigengap.act(covmat, nobs, maxcomp = NULL)
 }
 \arguments{
-\item{Y}{matrix to be decomposed}
-
 \item{maxcomp}{maximum number of eigenvalues to compute}
+
+\item{Y}{matrix to be decomposed}
 }
 \description{
 Select the number of significant principal components of a matrix via adjust
