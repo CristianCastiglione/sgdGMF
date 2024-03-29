@@ -227,7 +227,7 @@ residuals.sgdgmf = function (
   } else {
     return (
       list(residuals = res,
-           spectrum = var.eig,
+           lambdas = var.eig,
            explained.var = var.exp,
            reminder.var = var.res,
            total.var = var.tot))
@@ -495,7 +495,7 @@ eigenval.sgdgmf = function (
   var.res = var.tot - var.exp
 
   # Return the spectrum
-  list(spectrum = var.eig, explained = var.exp,
+  list(lambdas = var.eig, explained = var.exp,
        reminder = var.res, total = var.tot)
 }
 
