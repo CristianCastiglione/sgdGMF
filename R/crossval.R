@@ -149,7 +149,7 @@ sgdgmf.cv = function (
   } else {
     # Parallel estimation loop
     # WARNING:
-    # ... this "foreach" loop do not works yet!
+    # ... this "foreach" loop does not work yet!
     # ... The problem seems to be that the function "sgdgmf.cv.step"
     # ... is not visible from the "foreach" environment, as well as
     # ... all the other functions that are called by "sgdgmf.cv.step".
