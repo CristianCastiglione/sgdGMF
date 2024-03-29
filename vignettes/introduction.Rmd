@@ -1,0 +1,197 @@
+---
+title: "Introduction to GMF models"
+author: "Cristian Castiglione"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Workspace setup
+
+```{r setup, include = FALSE}
+options(warn = -1)
+options(rmarkdown.html_vignette.check_title = FALSE)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Load the \code{sgdGMF} package in the workspace.
+
+```{r sgdgmf}
+# library(sgdGMF)
+devtools::load_all()
+```
+
+Load other useful packages in the workspace.
+
+```{r libraries}
+library(ggplot2)
+library(ggpubr)
+library(reshape2)
+library(viridis)
+
+theme_set(theme_bw())
+```
+
+## Ant traits data
+
+Load the ant traits data in the workspace and define the response and covariate matrices.
+
+```{r data}
+data(antTraits, package = "mvabund")
+
+Y = as.matrix(antTraits$abund)
+X = as.matrix(antTraits$env[,-3])
+Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+n = nrow(Y)
+m = ncol(Y)
+```
+
+## Model specification
+
+Set the model family to Poisson since the response matrix contain count data.
+
+```{r family}
+family = poisson()
+```
+
+Select the optimal number of latent factors using the function \code{sgdgmf.rank},
+which employs an adjusted eigenvalue thresholding method to identify the optimal
+elbow point of a screeplot.
+
+```{r rank}
+vglm = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family, 
+                   return.eta = TRUE, return.mu = TRUE, return.res = TRUE)
+
+cat("Selected rank: ", vglm$ncomp)
+```
+
+## Model estimation
+
+Estimate a Poisson GMF model using iterated least squares, diagonal quasi-Newton and
+stochastic gradient descent algorithms.
+
+```{r fit}
+ncomp = vglm$ncomp
+gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "newton")
+```
+
+## Model validation
+
+Compute the correlation between the observed data and the predicted values.
+
+```{r cor}
+cat(" VGLM: ", 100 * round(cor(c(Y), c(vglm$mu)), 4), "\n",
+    "  GMF: ", 100 * round(cor(c(Y), c(gmf$mu)), 4), sep = "")
+```
+Compute the partial deviance residuals holding out from the model the estimated 
+matrix factorization. Additionally, compute the spectrum of such a residual matrix.
+
+```{r resid}
+res = residuals(gmf, spectrum = TRUE, ncomp = 20)
+```
+
+Compare the residuals of two competing models: VGLM and GMF.
+Notice that VGLM is a particular case of GMF of which only include the regression
+effects and does not include a residual matrix factorization in the linear predictor.
+
+```{r hist, fig.width = 6, fig.height = 5}
+plt.res.fit.glm = 
+  data.frame(residuals = c(vglm$residuals), fitted = c(vglm$mu)) |>
+  ggplot(map = aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) + 
+  labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values (VGLM)")
+
+plt.res.hist.glm = 
+  data.frame(residuals = c(vglm$residuals)) |>
+  ggplot(map = aes(x = residuals, y = after_stat(density))) +
+  geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) + 
+  labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals (VGLM)")
+
+plt.res.fit.gmf = 
+  data.frame(residuals = c(res$residuals), fitted = c(gmf$mu)) |>
+  ggplot(map = aes(x = fitted, y = residuals)) +
+  geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) + 
+  labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values (GMF)")
+
+plt.res.hist.gmf = 
+  data.frame(residuals = c(res$residuals)) |>
+  ggplot(map = aes(x = residuals, y = after_stat(density))) +
+  geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) + 
+  labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals (GMF)")
+
+ggpubr::ggarrange(plt.res.fit.glm, plt.res.hist.glm, 
+                  plt.res.fit.gmf, plt.res.hist.gmf, 
+                  nrow = 2, ncol = 2, align = "hv")
+
+```
+
+Plot the variance explained by each principal component of the residual matrix.
+
+```{r spectrum, fig.width = 6, fig.height = 2.5}
+plt.eig.glm = data.frame(components = 1:20, eigenvalues = vglm$lambdas[1:20]) |>
+  ggplot(map = aes(x = components, y = eigenvalues)) + geom_col() +
+  labs(x = "Components", y = "Normalized eigenvalues", title = "Residual variance (VGLM)")
+
+plt.eig.gmf = data.frame(components = 1:20, eigenvalues = res$lambdas[1:20]) |>
+  ggplot(map = aes(x = components, y = eigenvalues)) + geom_col() +
+  labs(x = "Components", y = "Normalized eigenvalues", title = "Residual variance (GMF)")
+
+ggpubr::ggarrange(plt.eig.glm, plt.eig.gmf, nrow = 1, ncol = 2, align = "hv")
+```
+
+## Observations vs fitted values
+
+Plot the abundance predicted by each method comparing it with the observed matrix.
+
+```{r pred, fig.width = 8, fig.height = 3}
+colnames(vglm$mu) = colnames(Y)
+colnames(gmf$mu) = colnames(Y)
+
+df = rbind(
+  reshape2::melt(Y, varnames = c("environments", "species"), value.name = "abundance"),
+  reshape2::melt(vglm$mu, varnames = c("environments", "species"), value.name = "abundance"),
+  reshape2::melt(gmf$mu, varnames = c("environments", "species"), value.name = "abundance"))
+
+df$abundance[df$abundance > max(Y)] = NA
+df$model = as.factor(rep(c("Data", "VGLM", "GMF"), each = n*m))
+
+ggplot(data = df, map = aes(x = species, y = environments, fill = abundance)) + 
+  geom_raster() + facet_wrap(vars(model), nrow = 1, ncol = 3) + scale_fill_viridis() + 
+  theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank()) +
+  labs(x = "Species", y = "Environmens", fill = "Abundance", title = "Ant abundance")
+```
+
+## Latent scores and low-dimensional representation
+
+```{r scores, fig.width = 6, fig.height = 4}
+pca = RSpectra::svds(tcrossprod(gmf$U, gmf$V), 2)
+
+plt.scores = 
+  data.frame(idx = c(1:n), pc1 = scale(pca$u[,1]), pc2 = scale(pca$u[,2])) |>
+  ggplot(map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+  geom_hline(yintercept = 0, lty = 2, color = "grey40") + 
+  geom_vline(xintercept = 0, lty = 2, color = "grey40") + 
+  geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
+  scale_color_viridis(option = "viridis") + theme(legend.position = "bottom") + 
+  labs(x = "PC 1", y = "PC 2", color = "Index", title = "Environments")
+
+plt.loadings = 
+  data.frame(idx = c(1:m), pc1 = scale(pca$v[,1]), pc2 = scale(pca$v[,2])) |>
+  ggplot(map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+  geom_hline(yintercept = 0, lty = 2, color = "grey40") + 
+  geom_vline(xintercept = 0, lty = 2, color = "grey40") + 
+  geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
+  scale_color_viridis(option = "inferno") + theme(legend.position = "bottom") +
+  labs(x = "PC 1", y = "PC 2", color = "Index", title = "Species")
+
+ggpubr::ggarrange(plt.scores, plt.loadings, nrow = 1, ncol = 2, align = "hv")
+```
+
+
