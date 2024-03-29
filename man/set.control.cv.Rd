@@ -9,13 +9,22 @@ set.control.cv(
   refit = TRUE,
   nfolds = 5,
   proportion = 0.3,
+  init = c("common", "separate"),
   verbose = FALSE,
   parallel = FALSE,
   nthreads = 1
 )
 }
 \arguments{
+\item{criterion}{information criterion to minimize for selecting the matrix rank}
+
+\item{refit}{if \code{TRUE}, refit the model with the selected rank and return the fitted model}
+
 \item{nfolds}{number of cross-validation folds}
+
+\item{proportion}{proportion of the data to be used as test set in each fold}
+
+\item{verbose}{if \code{TRUE}, print the cross-validation status}
 
 \item{parallel}{if \code{TRUE}, allows for parallel computing}
 
