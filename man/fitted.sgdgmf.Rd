@@ -4,7 +4,7 @@
 \alias{fitted.sgdgmf}
 \title{Extract the fitted values of a GMF models}
 \usage{
-\method{fitted}{sgdgmf}(object, type = c("link", "response", "terms"))
+\method{fitted}{sgdgmf}(object, type = c("link", "response", "terms"), partial = FALSE)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
