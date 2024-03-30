@@ -19,7 +19,7 @@ set.control.msgd(
   rate2 = 0.01,
   parallel = FALSE,
   nthreads = 1,
-  verbose = TRUE,
+  verbose = FALSE,
   frequency = 10,
   progress = FALSE
 )
