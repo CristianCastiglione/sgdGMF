@@ -17,7 +17,7 @@ set.control.bsgd(
   damping = 0.001,
   rate1 = 0.1,
   rate2 = 0.01,
-  verbose = TRUE,
+  verbose = FALSE,
   frequency = 250,
   progress = FALSE
 )
