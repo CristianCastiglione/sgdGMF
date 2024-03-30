@@ -1,5 +1,5 @@
 ---
-title: "Introduction to GMF models"
+title: "Introduction to the sgdGMF package"
 author: "Cristian Castiglione"
 output: rmarkdown::html_vignette
 vignette: >
