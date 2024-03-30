@@ -101,47 +101,26 @@ Compare the residuals of two competing models: VGLM and GMF.
 Notice that VGLM is a particular case of GMF of which only include the regression
 effects and does not include a residual matrix factorization in the linear predictor.
 
-```{r hist, fig.width = 6, fig.height = 5}
-plt.res.fit.glm = 
-  data.frame(residuals = c(vglm$residuals), fitted = c(vglm$mu)) |>
-  ggplot(map = aes(x = fitted, y = residuals)) +
-  geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) + 
-  labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values (VGLM)")
+```{r hist, fig.width = 7, fig.height = 5}
+plt.res.fit.glm = plot(gmf, type = "res-v-fit", partial = TRUE)
+plt.res.hist.glm = plot(gmf, type = "res-hist", partial = TRUE)
+plt.res.fit.gmf = plot(gmf, type = "res-v-fit", partial = FALSE)
+plt.res.hist.gmf = plot(gmf, type = "res-hist", partial = FALSE)
 
-plt.res.hist.glm = 
-  data.frame(residuals = c(vglm$residuals)) |>
-  ggplot(map = aes(x = residuals, y = after_stat(density))) +
-  geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) + 
-  labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals (VGLM)")
-
-plt.res.fit.gmf = 
-  data.frame(residuals = c(res$residuals), fitted = c(gmf$mu)) |>
-  ggplot(map = aes(x = fitted, y = residuals)) +
-  geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) + 
-  labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values (GMF)")
-
-plt.res.hist.gmf = 
-  data.frame(residuals = c(res$residuals)) |>
-  ggplot(map = aes(x = residuals, y = after_stat(density))) +
-  geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) + 
-  labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals (GMF)")
-
-ggpubr::ggarrange(plt.res.fit.glm, plt.res.hist.glm, 
-                  plt.res.fit.gmf, plt.res.hist.gmf, 
-                  nrow = 2, ncol = 2, align = "hv")
+ggpubr::ggarrange(
+  plt.res.fit.glm + ggtitle("Residuals vs Fitted values (VGLM)"), 
+  plt.res.hist.glm + ggtitle("Histogram of the residuals (VGLM)"), 
+  plt.res.fit.gmf + ggtitle("Residuals vs Fitted values (GMF)"), 
+  plt.res.hist.gmf + ggtitle("Histogram of the residuals (GMF)"), 
+  nrow = 2, ncol = 2, align = "hv")
 
 ```
 
 Plot the variance explained by each principal component of the residual matrix.
 
-```{r spectrum, fig.width = 6, fig.height = 2.5}
-plt.eig.glm = data.frame(components = 1:20, eigenvalues = vglm$lambdas[1:20]) |>
-  ggplot(map = aes(x = components, y = eigenvalues)) + geom_col() +
-  labs(x = "Components", y = "Normalized eigenvalues", title = "Residual variance (VGLM)")
-
-plt.eig.gmf = data.frame(components = 1:20, eigenvalues = res$lambdas[1:20]) |>
-  ggplot(map = aes(x = components, y = eigenvalues)) + geom_col() +
-  labs(x = "Components", y = "Normalized eigenvalues", title = "Residual variance (GMF)")
+```{r spectrum, fig.width = 7, fig.height = 3}
+plt.eig.glm = screeplot(gmf, partial = TRUE) + ggtitle("Residual screeplot (VGLM)")
+plt.eig.gmf = screeplot(gmf, partial = FALSE) + ggtitle("Residual screeplot (GMF)")
 
 ggpubr::ggarrange(plt.eig.glm, plt.eig.gmf, nrow = 1, ncol = 2, align = "hv")
 ```
@@ -150,48 +129,27 @@ ggpubr::ggarrange(plt.eig.glm, plt.eig.gmf, nrow = 1, ncol = 2, align = "hv")
 
 Plot the abundance predicted by each method comparing it with the observed matrix.
 
-```{r pred, fig.width = 8, fig.height = 3}
-colnames(vglm$mu) = colnames(Y)
-colnames(gmf$mu) = colnames(Y)
+```{r pred, fig.width = 7, fig.height = 3.5}
+plt.ant = heatmap.sgdgmf(gmf, limits = range(c(Y)), type = "data")
+plt.fit = heatmap.sgdgmf(gmf, limits = range(c(Y)), type = "response")
 
-df = rbind(
-  reshape2::melt(Y, varnames = c("environments", "species"), value.name = "abundance"),
-  reshape2::melt(vglm$mu, varnames = c("environments", "species"), value.name = "abundance"),
-  reshape2::melt(gmf$mu, varnames = c("environments", "species"), value.name = "abundance"))
-
-df$abundance[df$abundance > max(Y)] = NA
-df$model = as.factor(rep(c("Data", "VGLM", "GMF"), each = n*m))
-
-ggplot(data = df, map = aes(x = species, y = environments, fill = abundance)) + 
-  geom_raster() + facet_wrap(vars(model), nrow = 1, ncol = 3) + scale_fill_viridis() + 
-  theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank()) +
-  labs(x = "Species", y = "Environmens", fill = "Abundance", title = "Ant abundance")
+ggpubr::ggarrange(
+  plt.ant + labs(x = "Species", y = "Environments", title = "Observed abundance"), 
+  plt.fit + labs(x = "Species", y = "Environments", title = "Predicted abundance"), 
+  nrow = 1, ncol = 2, common.legend = TRUE, 
+  legend = "bottom", align = "hv")
 ```
+
+
 
 ## Latent scores and low-dimensional representation
 
-```{r scores, fig.width = 6, fig.height = 4}
-pca = RSpectra::svds(tcrossprod(gmf$U, gmf$V), 2)
-
-plt.scores = 
-  data.frame(idx = c(1:n), pc1 = scale(pca$u[,1]), pc2 = scale(pca$u[,2])) |>
-  ggplot(map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
-  geom_hline(yintercept = 0, lty = 2, color = "grey40") + 
-  geom_vline(xintercept = 0, lty = 2, color = "grey40") + 
-  geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
-  scale_color_viridis(option = "viridis") + theme(legend.position = "bottom") + 
-  labs(x = "PC 1", y = "PC 2", color = "Index", title = "Environments")
-
-plt.loadings = 
-  data.frame(idx = c(1:m), pc1 = scale(pca$v[,1]), pc2 = scale(pca$v[,2])) |>
-  ggplot(map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
-  geom_hline(yintercept = 0, lty = 2, color = "grey40") + 
-  geom_vline(xintercept = 0, lty = 2, color = "grey40") + 
-  geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
-  scale_color_viridis(option = "inferno") + theme(legend.position = "bottom") +
-  labs(x = "PC 1", y = "PC 2", color = "Index", title = "Species")
-
-ggpubr::ggarrange(plt.scores, plt.loadings, nrow = 1, ncol = 2, align = "hv")
+```{r scores, fig.width = 7, fig.height = 4}
+plt = biplot(gmf, palette = c("viridis", "inferno"))
+ggpubr::ggarrange(
+  plt$scores + ggtitle("Environments"), 
+  plt$loadings + ggtitle("Species"), 
+  nrow = 1, ncol = 2, align = "hv")
 ```
 
 
