@@ -246,19 +246,28 @@ residuals.sgdgmf = function (
 #' @method fitted sgdgmf
 #' @export
 fitted.sgdgmf = function (
-    object, type = c("link", "response", "terms")
+    object, type = c("link", "response", "terms"), partial = FALSE
 ) {
   # Set the fitted value type
   type = match.arg(type)
 
   # Return the fitted values depending on the prediction type
-  switch(type,
-    "link" = object$eta,
-    "response" = object$mu,
-    "terms" = list(
-      XB = tcrossprod(object$X, object$B),
-      AZ = tcrossprod(object$A, object$Z),
-      UV = tcrossprod(object$U, object$V)))
+  if (!partial) {
+    switch(type,
+      "link" = object$eta,
+      "response" = object$mu,
+      "terms" = list(
+        XB = tcrossprod(object$X, object$B),
+        AZ = tcrossprod(object$A, object$Z),
+        UV = tcrossprod(object$U, object$V)))
+  } else {
+    XB = tcrossprod(object$X, object$B)
+    AZ = tcrossprod(object$A, object$Z)
+    switch(type,
+      "link" = XB + AZ,
+      "response" = object$family$linkinv(XB + AZ),
+      "terms" = list(XB = XB, AZ = AZ, UV = NULL))
+  }
 }
 
 #' @title Predict method for GMF models
@@ -420,6 +429,10 @@ simulate.sgdgmf = function (
     parallel = FALSE, nthreads = 1
 ) {
   type = match.arg(type)
+
+  # ...
+  # ...
+  # ...
 }
 
 #' @title Spectrum method for GMF models
@@ -498,4 +511,187 @@ eigenval.sgdgmf = function (
   list(lambdas = var.eig, explained = var.exp,
        reminder = var.res, total = var.tot)
 }
+
+
+#' @export
+plot.sgdgmf = function (
+    object,
+    type = c("res-v-idx", "res-v-fit", "res-hist", "res-qq", "res-pp"),
+    resid = c("deviance", "pearson", "working", "response", "link"),
+    subsample = FALSE, sample.size = 500, partial = FALSE,
+    normalize = FALSE, fillna = FALSE
+) {
+  type = match.arg(type)
+  resid = match.arg(resid)
+
+  fit = switch(resid,
+    "deviance" = fitted(object, type = "response", partial = partial),
+    "pearson" = fitted(object, type = "response", partial = partial),
+    "working" = fitted(object, type = "response", partial = partial),
+    "response" = fitted(object, type = "response", partial = partial),
+    "link" = fitted(object, type = "link", partial = partial))
+
+  res = residuals(
+    object, type = resid, partial = partial,
+    normalize = normalize, fillna = fillna, spectrum = FALSE)
+
+  if (subsample) {
+    n = nrow(object$Y)
+    m = ncol(object$Y)
+    if (sample.size < n*m) {
+      idx = cbind(
+        row = sample.int(n = n, size = sample.size, replace = TRUE),
+        col = sample.int(n = m, size = sample.size, replace = TRUE))
+      fit = fit[idx]
+      res = res[idx]
+    }
+  }
+
+  if (type %in% c("1", "res-v-idx")) {
+    df = data.frame(residuals = c(res), index = c(1:prod(dim(res))))
+    plt = ggplot(data = df, map = aes(x = index, y = residuals)) +
+      geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
+      labs(x = "Index", y = "Residuals", title = "Residuals vs Fitted values")
+  }
+  if (type %in% c("2", "res-v-fit")) {
+    df = data.frame(residuals = c(res), fitted = c(fit))
+    plt = ggplot(data = df, map = aes(x = fitted, y = residuals)) +
+      geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
+      labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
+  }
+  if (type %in% c("3", "res-hist")) {
+    df = data.frame(residuals = c(res))
+    plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density))) +
+      geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
+      labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
+  }
+  if (type %in% c("4", "res-qq")) {
+    df = list2DF(qqnorm(scale(c(res)), plot.it = FALSE))
+    plt = ggplot(data = df, map = aes(x = x, y = y)) +
+      geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) +
+      geom_point(alpha = 0.5) +
+      labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
+  }
+  if (type %in% c("5", "res-pp")) {
+    zn = scale(c(res))
+    zz = seq(from = min(zn), to = max(zn), length = 100)
+    df1 = data.frame(x = zn, y = ecdf(zn)(zn))
+    df2 = data.frame(x = zz, y = pnorm(zz))
+    plt = ggplot() +
+      geom_line(data = df2, map = aes(x = x, y = y), color = 2) +
+      geom_point(data = df1, map = aes(x = x, y = y), alpha = 0.5) +
+      # geom_step(data = df1, map = aes(x = x, y = y), alpha = 0.5, direction = "hv") +
+      labs(x = "Standardized residuals", y = "Empirical CDF", title = "Residual ECDF plot")
+  }
+
+  return (plt)
+}
+
+#' @export
+biplot.sgdgmf = function (
+    object, choices = 1:2, normalize = FALSE,
+    labels = NULL, palette = c("viridis", "inferno")
+) {
+  n = nrow(object$Y)
+  m = ncol(object$Y)
+
+  i = max(1, min(choices[1], object$ncomp))
+  j = max(1, min(choices[2], object$ncomp))
+
+  if (is.null(labels)) {
+    labels = list(scores = c(1:n), loadings = c(1:m))
+  }
+
+  if (normalize) {
+    pca = RSpectra::svds(tcrossprod(object$U, object$V), object$ncomp)
+
+    scores = data.frame(
+      idx = labels$scores,
+      pc1 = c(scale(pca$u[,i])),
+      pc2 = c(scale(pca$u[,j])))
+    loadings = data.frame(
+      idx = labels$loadings,
+      pc1 = c(scale(pca$v[,i])),
+      pc2 = c(scale(pca$v[,j])))
+  } else {
+    scores = data.frame(
+      idx = labels$scores,
+      pc1 = c(scale(object$U[,i])),
+      pc2 = c(scale(object$U[,j])))
+    loadings = data.frame(
+      idx = labels$loadings,
+      pc1 = c(scale(object$V[,i])),
+      pc2 = c(scale(object$V[,j])))
+  }
+
+  plt.scores =
+    ggplot(data = scores, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
+    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
+    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
+    scale_color_viridis(option = palette[1]) + theme(legend.position = "bottom") +
+    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Scores")
+
+  plt.loadings =
+    ggplot(data = loadings, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
+    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
+    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
+    scale_color_viridis(option = palette[2]) + theme(legend.position = "bottom") +
+    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Loadings")
+
+  list(scores = plt.scores, loadings = plt.loadings)
+}
+
+
+
+#' @export
+screeplot.sgdgmf = function (
+    object, ncomp = 20, partial = FALSE, normalize = FALSE,
+    cumulative = FALSE, proportion = FALSE
+) {
+
+  ncomp = max(1, min(ncomp, ncol(object$Y)))
+  res = residuals(object, partial = partial, normalize = normalize,
+                  fillna = TRUE, spectrum = TRUE, ncomp = ncomp)
+
+  lambdas = res$lambdas
+  if (cumulative) lambdas = cumsum(lambdas)
+  if (proportion) lambdas = lambdas / res$total.var
+
+  df = data.frame(components = 1:ncomp, lambdas = lambdas)
+  plt = ggplot(data = df, map = aes(x = components, y = lambdas)) + geom_col() +
+    labs(x = "Components", y = "Eigenvalues", title = "Residual screeplot")
+
+  return (plt)
+}
+
+#' @export
+heatmap.sgdgmf = function (
+    object, type = c("data", "response", "link", "scores", "loadings"),
+    palette = "viridis", symmetric = FALSE, transpose = FALSE, limits = NULL
+) {
+  type = match.arg(type)
+
+  df = switch(type,
+    "data" = if (transpose) t(object$Y) else object$Y,
+    "response" = if (transpose) t(object$mu) else object$mu,
+    "link" = if (transpose) t(object$eta) else object$eta,
+    "scores" = if (transpose) t(object$U) else object$U,
+    "loadings" = if (transpose) t(object$V) else object$V)
+
+  df = reshape2::melt(df, varnames = c("sample", "variable"))
+
+  if (is.null(limits)) limits = range(df$value, na.rm = TRUE)
+
+  plt = ggplot(data = df, map = aes(x = variable, y = sample, fill = value)) +
+    geom_raster() +
+    scale_fill_gradientn(colours = viridis(100, option = palette), limits = limits) +
+    theme(axis.text = element_blank(), axis.ticks = element_blank()) +
+    theme(legend.position = "bottom", panel.grid = element_blank()) +
+    labs(x = "Variables", y = "Samples", fill = "Intensity")
+
+  return (plt)
+}
+
 
