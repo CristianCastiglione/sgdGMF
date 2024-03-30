@@ -17,7 +17,7 @@ set.control.rsgd(
   damping = 1e-04,
   rate1 = 0.05,
   rate2 = 0.01,
-  verbose = TRUE,
+  verbose = FALSE,
   frequency = 10,
   progress = FALSE
 )
