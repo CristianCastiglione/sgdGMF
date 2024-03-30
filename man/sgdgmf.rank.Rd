@@ -19,6 +19,8 @@ sgdgmf.rank(
   maxiter = 10,
   parallel = FALSE,
   nthreads = 1,
+  return.eta = FALSE,
+  return.mu = FALSE,
   return.res = FALSE,
   return.cov = FALSE
 )
@@ -55,6 +57,8 @@ sgdgmf.rank(
 \item{return.res}{if \code{TRUE}, return the residual matrix}
 
 \item{return.cov}{if \code{TRUE}, return the covariance matrix of the residuals}
+
+\item{return.fit}{if \code{TRUE}, return the fitted value martix}
 }
 \description{
 Select the number of significant principal components of a matrix via
