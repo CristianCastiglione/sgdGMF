@@ -13,7 +13,7 @@ set.control.airwls(
   nafill = 1,
   tol = 1e-05,
   damping = 0.001,
-  verbose = TRUE,
+  verbose = FALSE,
   frequency = 10,
   parallel = FALSE,
   nthreads = 1
