@@ -12,7 +12,7 @@ set.control.newton(
   nafill = 1,
   tol = 1e-05,
   damping = 0.001,
-  verbose = TRUE,
+  verbose = FALSE,
   frequency = 50,
   parallel = FALSE,
   nthreads = 1
