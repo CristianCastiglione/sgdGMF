@@ -11,6 +11,7 @@
 #' @importFrom stats binomial quasibinomial
 #' @importFrom stats poisson quasipoisson
 #' @importFrom stats Gamma inverse.gaussian
+#' @importFrom stats biplot screeplot heatmap
 #' @importFrom MASS neg.bin negative.binomial
 #' @importFrom RSpectra svds eigs eigs_sym
 #' @importFrom parallel detectCores makeCluster stopCluster
