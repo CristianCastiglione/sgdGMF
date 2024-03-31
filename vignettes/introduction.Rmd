@@ -74,12 +74,11 @@ cat("Selected rank: ", vglm$ncomp)
 
 ## Model estimation
 
-Estimate a Poisson GMF model using iterated least squares, diagonal quasi-Newton and
-stochastic gradient descent algorithms.
+Estimate a Poisson GMF model using iterated least squares.
 
 ```{r fit}
 ncomp = vglm$ncomp
-gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "newton")
+gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "bsgd")
 ```
 
 ## Model validation
@@ -102,10 +101,10 @@ Notice that VGLM is a particular case of GMF of which only include the regressio
 effects and does not include a residual matrix factorization in the linear predictor.
 
 ```{r hist, fig.width = 7, fig.height = 5}
-plt.res.fit.glm = plot(gmf, type = "res-v-fit", partial = TRUE)
-plt.res.hist.glm = plot(gmf, type = "res-hist", partial = TRUE)
-plt.res.fit.gmf = plot(gmf, type = "res-v-fit", partial = FALSE)
-plt.res.hist.gmf = plot(gmf, type = "res-hist", partial = FALSE)
+plt.res.fit.glm = plot(gmf, type = "fit", partial = TRUE)
+plt.res.hist.glm = plot(gmf, type = "hist", partial = TRUE)
+plt.res.fit.gmf = plot(gmf, type = "fit", partial = FALSE)
+plt.res.hist.gmf = plot(gmf, type = "hist", partial = FALSE)
 
 ggpubr::ggarrange(
   plt.res.fit.glm + ggtitle("Residuals vs Fitted values (VGLM)"), 
@@ -136,16 +135,23 @@ plt.fit = heatmap.sgdgmf(gmf, limits = range(c(Y)), type = "response")
 ggpubr::ggarrange(
   plt.ant + labs(x = "Species", y = "Environments", title = "Observed abundance"), 
   plt.fit + labs(x = "Species", y = "Environments", title = "Predicted abundance"), 
-  nrow = 1, ncol = 2, common.legend = TRUE, 
-  legend = "bottom", align = "hv")
+  nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom", align = "hv")
 ```
 
+```{r resid2, fig.width = 7, fig.height = 3.5}
+plt.dev = heatmap.sgdgmf(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
+plt.prs = heatmap.sgdgmf(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
 
+ggpubr::ggarrange(
+  plt.dev + labs(x = "Species", y = "Environments", title = "Deviance residuals"), 
+  plt.prs + labs(x = "Species", y = "Environments", title = "Pearson residuals"), 
+  nrow = 1, ncol = 2, common.legend = FALSE, legend = "bottom", align = "hv")
+```
 
 ## Latent scores and low-dimensional representation
 
 ```{r scores, fig.width = 7, fig.height = 4}
-plt = biplot(gmf, palette = c("viridis", "inferno"))
+plt = biplot(gmf)
 ggpubr::ggarrange(
   plt$scores + ggtitle("Environments"), 
   plt$loadings + ggtitle("Species"), 
