@@ -552,33 +552,29 @@ plot.sgdgmf = function (
 
   if (type %in% c("1", "idx")) {
     df = data.frame(residuals = c(res), index = c(1:prod(dim(res))), column = as.factor(col))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals, color = column))
     if (!bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals))
-    plt = plt +
-      geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
+    if ( bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals, color = column))
+    plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Index", y = "Residuals", title = "Residuals vs Fitted values")
   }
   if (type %in% c("2", "fit")) {
     df = data.frame(residuals = c(res), fitted = c(fit), column = as.factor(col))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
     if (!bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals))
-    plt = plt +
-      geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
+    if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
+    plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
   }
   if (type %in% c("3", "hist")) {
     df = data.frame(residuals = c(res), column = as.factor(col))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density), color = column, fill = column))
     if (!bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density)))
-    plt = plt +
-      geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
+    if ( bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density), color = column, fill = column))
+    plt = plt + geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
       labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
   }
   if (type %in% c("4", "qq")) {
     df = list2DF(qqnorm(scale(c(res)), plot.it = FALSE))
     plt = ggplot(data = df, map = aes(x = x, y = y)) +
-      geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) +
-      geom_point(alpha = 0.5) +
+      geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) + geom_point(alpha = 0.5) +
       labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
   }
   if (type %in% c("5", "ecdf")) {
@@ -589,7 +585,6 @@ plot.sgdgmf = function (
     plt = ggplot() +
       geom_line(data = df2, map = aes(x = x, y = y), color = 2) +
       geom_point(data = df1, map = aes(x = x, y = y), alpha = 0.5) +
-      # geom_step(data = df1, map = aes(x = x, y = y), alpha = 0.5, direction = "hv") +
       labs(x = "Standardized residuals", y = "Empirical CDF", title = "Residual ECDF plot")
   }
 
