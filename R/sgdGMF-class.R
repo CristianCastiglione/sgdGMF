@@ -519,7 +519,7 @@ plot.sgdgmf = function (
     type = c("1", "2", "3", "4", "5", "idx", "fit", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
-    normalize = FALSE, fillna = FALSE
+    normalize = FALSE, fillna = FALSE, bycol = FALSE
 ) {
   type = match.arg(type)
   resid = match.arg(resid)
@@ -544,24 +544,33 @@ plot.sgdgmf = function (
         col = sample.int(n = m, size = sample.size, replace = TRUE))
       fit = fit[idx]
       res = res[idx]
+      col = idx$col
     }
+  } else {
+    col = expand.grid(row = 1:n, col = 1:m)$col
   }
 
   if (type %in% c("1", "idx")) {
-    df = data.frame(residuals = c(res), index = c(1:prod(dim(res))))
-    plt = ggplot(data = df, map = aes(x = index, y = residuals)) +
+    df = data.frame(residuals = c(res), index = c(1:prod(dim(res))), column = as.factor(col))
+    if ( bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals, color = column))
+    if (!bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals))
+    plt = plt +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Index", y = "Residuals", title = "Residuals vs Fitted values")
   }
   if (type %in% c("2", "fit")) {
-    df = data.frame(residuals = c(res), fitted = c(fit))
-    plt = ggplot(data = df, map = aes(x = fitted, y = residuals)) +
+    df = data.frame(residuals = c(res), fitted = c(fit), column = as.factor(col))
+    if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
+    if (!bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals))
+    plt = plt +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
   }
   if (type %in% c("3", "hist")) {
-    df = data.frame(residuals = c(res))
-    plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density))) +
+    df = data.frame(residuals = c(res), column = as.factor(col))
+    if ( bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density), color = column, fill = column))
+    if (!bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density)))
+    plt = plt +
       geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
       labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
   }
