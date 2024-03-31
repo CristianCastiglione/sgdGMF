@@ -516,7 +516,7 @@ eigenval.sgdgmf = function (
 #' @export
 plot.sgdgmf = function (
     object,
-    type = c("res-v-idx", "res-v-fit", "res-hist", "res-qq", "res-pp"),
+    type = c("1", "2", "3", "4", "5", "idx", "fit", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
     normalize = FALSE, fillna = FALSE
@@ -547,32 +547,32 @@ plot.sgdgmf = function (
     }
   }
 
-  if (type %in% c("1", "res-v-idx")) {
+  if (type %in% c("1", "idx")) {
     df = data.frame(residuals = c(res), index = c(1:prod(dim(res))))
     plt = ggplot(data = df, map = aes(x = index, y = residuals)) +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Index", y = "Residuals", title = "Residuals vs Fitted values")
   }
-  if (type %in% c("2", "res-v-fit")) {
+  if (type %in% c("2", "fit")) {
     df = data.frame(residuals = c(res), fitted = c(fit))
     plt = ggplot(data = df, map = aes(x = fitted, y = residuals)) +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
   }
-  if (type %in% c("3", "res-hist")) {
+  if (type %in% c("3", "hist")) {
     df = data.frame(residuals = c(res))
     plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density))) +
       geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
       labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
   }
-  if (type %in% c("4", "res-qq")) {
+  if (type %in% c("4", "qq")) {
     df = list2DF(qqnorm(scale(c(res)), plot.it = FALSE))
     plt = ggplot(data = df, map = aes(x = x, y = y)) +
       geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) +
       geom_point(alpha = 0.5) +
       labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
   }
-  if (type %in% c("5", "res-pp")) {
+  if (type %in% c("5", "ecdf")) {
     zn = scale(c(res))
     zz = seq(from = min(zn), to = max(zn), length = 100)
     df1 = data.frame(x = zn, y = ecdf(zn)(zn))
@@ -586,64 +586,6 @@ plot.sgdgmf = function (
 
   return (plt)
 }
-
-#' @export
-biplot.sgdgmf = function (
-    object, choices = 1:2, normalize = FALSE,
-    labels = NULL, palette = c("viridis", "inferno")
-) {
-  n = nrow(object$Y)
-  m = ncol(object$Y)
-
-  i = max(1, min(choices[1], object$ncomp))
-  j = max(1, min(choices[2], object$ncomp))
-
-  if (is.null(labels)) {
-    labels = list(scores = c(1:n), loadings = c(1:m))
-  }
-
-  if (normalize) {
-    pca = RSpectra::svds(tcrossprod(object$U, object$V), object$ncomp)
-
-    scores = data.frame(
-      idx = labels$scores,
-      pc1 = c(scale(pca$u[,i])),
-      pc2 = c(scale(pca$u[,j])))
-    loadings = data.frame(
-      idx = labels$loadings,
-      pc1 = c(scale(pca$v[,i])),
-      pc2 = c(scale(pca$v[,j])))
-  } else {
-    scores = data.frame(
-      idx = labels$scores,
-      pc1 = c(scale(object$U[,i])),
-      pc2 = c(scale(object$U[,j])))
-    loadings = data.frame(
-      idx = labels$loadings,
-      pc1 = c(scale(object$V[,i])),
-      pc2 = c(scale(object$V[,j])))
-  }
-
-  plt.scores =
-    ggplot(data = scores, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
-    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
-    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
-    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
-    scale_color_viridis(option = palette[1]) + theme(legend.position = "bottom") +
-    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Scores")
-
-  plt.loadings =
-    ggplot(data = loadings, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
-    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
-    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
-    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
-    scale_color_viridis(option = palette[2]) + theme(legend.position = "bottom") +
-    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Loadings")
-
-  list(scores = plt.scores, loadings = plt.loadings)
-}
-
-
 
 #' @export
 screeplot.sgdgmf = function (
@@ -667,26 +609,92 @@ screeplot.sgdgmf = function (
 }
 
 #' @export
+biplot.sgdgmf = function (
+    object, choices = 1:2, normalize = FALSE,
+    labels = NULL, palette = c("viridis", "inferno")
+) {
+  n = nrow(object$Y)
+  m = ncol(object$Y)
+
+  i = max(1, min(choices[1], object$ncomp))
+  j = max(1, min(choices[2], object$ncomp))
+
+  if (is.null(labels)) {
+    labels = list(scores = c(1:n), loadings = c(1:m))
+  }
+
+  if (normalize) {
+    pca = RSpectra::svds(tcrossprod(object$U, object$V), object$ncomp)
+    u = scale(pca$u[,c(i,j)])
+    v = scale(pca$v[,c(i,j)])
+  } else {
+    u = scale(object$U[,c(i,j)])
+    v = scale(object$V[,c(i,j)])
+  }
+
+  scores = data.frame(idx = labels$scores, pc1 = c(u[,1]), pc2 = c(u[,2]))
+  loadings = data.frame(idx = labels$loadings, pc1 = c(v[,1]), pc2 = c(v[,2]))
+
+  plt.scores =
+    ggplot(data = scores, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
+    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
+    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
+    scale_color_viridis(option = palette[1]) + theme(legend.position = "bottom") +
+    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Scores")
+
+  plt.loadings =
+    ggplot(data = loadings, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
+    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
+    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
+    scale_color_viridis(option = palette[2]) + theme(legend.position = "bottom") +
+    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Loadings")
+
+  list(scores = plt.scores, loadings = plt.loadings)
+}
+
+#' @export
 heatmap.sgdgmf = function (
-    object, type = c("data", "response", "link", "scores", "loadings"),
-    palette = "viridis", symmetric = FALSE, transpose = FALSE, limits = NULL
+    object,
+    type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson", "working"),
+    resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
 ) {
   type = match.arg(type)
 
-  df = switch(type,
-    "data" = if (transpose) t(object$Y) else object$Y,
-    "response" = if (transpose) t(object$mu) else object$mu,
-    "link" = if (transpose) t(object$eta) else object$eta,
-    "scores" = if (transpose) t(object$U) else object$U,
-    "loadings" = if (transpose) t(object$V) else object$V)
+  if (resid) {
+    if (type == "data") stop("type='data' is not allowed with resid=TRUE", call. = FALSE)
+    if (type == "scores") stop("type='scores' is not allowed with resid=TRUE", call. = FALSE)
+    if (type == "loadings") stop("type='loadings' is not allowed with resid=TRUE", call. = FALSE)
 
-  df = reshape2::melt(df, varnames = c("sample", "variable"))
+    mat = residuals(object, type = type)
+    if (transpose) mat = t(mat)
 
-  if (is.null(limits)) limits = range(df$value, na.rm = TRUE)
+  } else {
+    if (type == "deviance") stop("type='deviance' is not allowed with resid=FALSE", call. = FALSE)
+    if (type == "pearson") stop("type='pearson' is not allowed with resid=FALSE", call. = FALSE)
+    if (type == "working") stop("type='working' is not allowed with resid=FALSE", call. = FALSE)
+
+    mat = switch(type, "data" = object$Y, "response" = object$mu,
+      "link" = object$eta, "scores" = object$U, "loadings" = object$V)
+    if (transpose) mat = t(mat)
+  }
+
+  df = reshape2::melt(mat, varnames = c("sample", "variable"))
+
+  if (is.null(limits)) {
+    limits = range(df$value, na.rm = TRUE)
+    if (symmetric) limits = c(-1,+1) * max(abs(limits))
+  }
+
+  if (is.null(palette)) {
+    palette = viridis(100, option = "viridis")
+    if (resid) palette = hcl.colors(100, palette = "RdBu")
+    if (symmetric) palette = hcl.colors(100, palette = "RdBu")
+  }
 
   plt = ggplot(data = df, map = aes(x = variable, y = sample, fill = value)) +
-    geom_raster() +
-    scale_fill_gradientn(colours = viridis(100, option = palette), limits = limits) +
+    geom_raster() + scale_fill_gradientn(colours = palette, limits = limits) +
     theme(axis.text = element_blank(), axis.ticks = element_blank()) +
     theme(legend.position = "bottom", panel.grid = element_blank()) +
     labs(x = "Variables", y = "Samples", fill = "Intensity")
