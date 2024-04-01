@@ -68,7 +68,7 @@ setClass("sgdgmf",
 
 #' @title Print the fundamental characteristics of a GMF
 #'
-#' @description ...
+#' @description Print some summary information of a GMF model.
 #'
 #' @param object an object of class \code{sgdgmf}
 #'
@@ -105,7 +105,9 @@ print.sgdgmf = function (object) {
 
 #' @title Extract the coefficient of a GMF model
 #'
-#' @description ...
+#' @description
+#' Return the estimated coefficients of a GMF model, i.e., the row- and column-specific
+#' regression effects, the latent scores and loadings.
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of coefficients which should be returned
@@ -237,8 +239,7 @@ residuals.sgdgmf = function (
 
 #' @title Extract the fitted values of a GMF models
 #'
-#' @description
-#' Computes the predictions from a fitted generalized matrix factorization model (GMF).
+#' @description Computes the fitted values of a GMF model.
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of fitted values which should be returned
@@ -273,7 +274,10 @@ fitted.sgdgmf = function (
 #' @title Predict method for GMF models
 #'
 #' @description
-#' Computes the predictions from a fitted generalized matrix factorization model (GMF).
+#' Computes the predictions of a GMF model. Out-of-sample predictions for a new
+#' set of responses and covariates are computed via MLE, by keeping fixed the values
+#' of the estimated \code{B} and \code{V} and maximizing the likelihood with respect
+#' to \code{A} and \code{U}.
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param newdata optionally, a list containing new values for \code{X} and \code{Z}
@@ -512,7 +516,21 @@ eigenval.sgdgmf = function (
        reminder = var.res, total = var.tot)
 }
 
-
+#' @title Plot diagnostics for a GMF model
+#'
+#' @description
+#' A short description...
+#'
+#' @param object ...
+#' @param type ...
+#' @param resid ...
+#' @param subsample ...
+#' @param sample.size ...
+#' @param partial ...
+#' @param normalize ...
+#' @param fillna ...
+#' @param bycol ...
+#'
 #' @export
 plot.sgdgmf = function (
     object,
@@ -591,6 +609,18 @@ plot.sgdgmf = function (
   return (plt)
 }
 
+#' @title Screeplot for the residuals of a GMF model
+#'
+#' @description
+#' A short description...
+#'
+#' @param object ...
+#' @param ncomp ...
+#' @param partial ...
+#' @param normalize ...
+#' @param cumulative ...
+#' @param proportion ...
+#'
 #' @export
 screeplot.sgdgmf = function (
     object, ncomp = 20, partial = FALSE, normalize = FALSE,
@@ -612,6 +642,17 @@ screeplot.sgdgmf = function (
   return (plt)
 }
 
+#' @title Biplot of a GMF model
+#'
+#' @description
+#' A short description...
+#'
+#' @param object ...
+#' @param choices ...
+#' @param normalize ...
+#' @param labels ...
+#' @param palette ...
+#'
 #' @export
 biplot.sgdgmf = function (
     object, choices = 1:2, normalize = FALSE,
@@ -658,6 +699,19 @@ biplot.sgdgmf = function (
   list(scores = plt.scores, loadings = plt.loadings)
 }
 
+#' @title Heatmap of a GMF model
+#'
+#' @description
+#' A short description...
+#'
+#' @param object ...
+#' @param type ...
+#' @param resid ...
+#' @param symmetric ...
+#' @param transpose ...
+#' @param limits ...
+#' @param palette ...
+#'
 #' @export
 heatmap.sgdgmf = function (
     object,
