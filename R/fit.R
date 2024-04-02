@@ -276,6 +276,13 @@ sgdgmf.fit = function (
   # Set the optimization history
   colnames(fit$trace) = c("iter", "dev", "pen", "pdev", "change", "time")
 
+  # Set the overdispersion parameter of a Negative Binomial family
+  if (family$family == "negbinom" | substring(family$family, 1, 17) == "Negative Binomial") {
+    family = MASS::negative.binomial(theta = fit$phi)
+    family = set.family(family)
+    family$theta = fit$phi
+  }
+
   # Output list
   out = list()
   out$method = method
