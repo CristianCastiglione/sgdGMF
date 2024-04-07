@@ -12,5 +12,6 @@
 \item{type}{the type of coefficients which should be returned}
 }
 \description{
-...
+Return the estimated coefficients of a GMF model, i.e., the row- and column-specific
+regression effects, the latent scores and loadings.
 }
