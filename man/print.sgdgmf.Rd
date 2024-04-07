@@ -10,5 +10,5 @@
 \item{object}{an object of class \code{sgdgmf}}
 }
 \description{
-...
+Print some summary information of a GMF model.
 }
