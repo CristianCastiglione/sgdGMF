@@ -3,7 +3,7 @@
 #' @title Rank selection via eigenvalue-gap methods
 #'
 #' @description
-#' Select the number of significant principal components of a matrix via
+#' Select the number of significant principal components of a GMF model via
 #' exploitation of eigenvalue-gap methods
 #'
 #' @param Y matrix of responses (\eqn{n \times m})
