@@ -12,5 +12,5 @@
 \item{type}{the type of fitted values which should be returned}
 }
 \description{
-Computes the predictions from a fitted generalized matrix factorization model (GMF).
+Computes the fitted values of a GMF model.
 }
