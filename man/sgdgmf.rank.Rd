@@ -61,7 +61,7 @@ sgdgmf.rank(
 \item{return.fit}{if \code{TRUE}, return the fitted value martix}
 }
 \description{
-Select the number of significant principal components of a matrix via
+Select the number of significant principal components of a GMF model via
 exploitation of eigenvalue-gap methods
 }
 \references{
