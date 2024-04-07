@@ -1,0 +1,132 @@
+---
+title: "Analysis of the residuals"
+author: "Cristian Castiglione"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Workspace setup
+
+```{r setup, include = FALSE}
+options(warn = -1)
+options(rmarkdown.html_vignette.check_title = FALSE)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Load the \code{sgdGMF} package in the workspace.
+
+```{r sgdgmf}
+# library(sgdGMF)
+devtools::load_all()
+```
+
+Load other useful packages in the workspace.
+
+```{r libraries}
+library(ggplot2)
+library(ggpubr)
+library(reshape2)
+library(viridis)
+
+theme_set(theme_bw())
+```
+
+## Ant traits data
+
+Load the ant traits data in the workspace and define the response and covariate matrices.
+
+```{r data}
+data(antTraits, package = "mvabund")
+
+Y = as.matrix(antTraits$abund)
+X = as.matrix(antTraits$env[,-3])
+Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+n = nrow(Y)
+m = ncol(Y)
+```
+
+## Model specification
+
+Set the model family to Poisson since the response matrix contain count data.
+
+```{r family}
+family = poisson()
+```
+
+Select the optimal number of latent factors using the function \code{sgdgmf.rank},
+which employs an adjusted eigenvalue thresholding method to identify the optimal
+elbow point of a screeplot.
+
+```{r rank}
+ncomp = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family)$ncomp
+cat("Selected rank: ", ncomp)
+```
+
+## Model estimation
+
+Estimate a Poisson GMF model using iterated least squares.
+
+```{r fit}
+gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "airwls")
+```
+
+## Model validation
+
+Compute the deviance residuals of the model the estimated matrix factorization. 
+Additionally, compute the spectrum of such a residual matrix.
+
+```{r resid}
+res = residuals(gmf, spectrum = TRUE, ncomp = 20)
+```
+
+Compare the residuals of two competing models: VGLM and GMF.
+Notice that VGLM is a particular case of GMF of which only include the regression
+effects and does not include a residual matrix factorization in the linear predictor.
+
+```{r plot, fig.width = 7, fig.height = 5}
+ggpubr::ggarrange(
+  plot(gmf, type = "idx"),
+  plot(gmf, type = "fit"),
+  plot(gmf, type = "hist"),
+  plot(gmf, type = "qq"),
+  nrow = 2, ncol = 2, align = "hv")
+```
+
+We now have a look to the spectrum of the residual matrices, i.e., the eigenvalues
+of the corresponding covariance matrix. However, instead of analyzing the actual
+values of the eigenvalues, we normalize them in such a way to plot the percentage of
+variance explained by each principal component.
+
+```{r spectrum, fig.width = 7, fig.height = 3}
+ggpubr::ggarrange(
+  screeplot(gmf, cumulative = FALSE, proportion = TRUE),
+  screeplot(gmf, cumulative = TRUE, proportion = TRUE),
+  nrow = 1, ncol = 2, align = "hv")
+```
+
+## Observations vs fitted values
+
+Plot the deviance and Pearson residuals using a heatmap. This could be helpful to
+graphically detect if there are some structured patterns in the matrix that have not 
+been captured by the model.
+
+```{r resid2, fig.width = 7, fig.height = 3.5}
+plt.dev = heatmap.sgdgmf(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
+plt.prs = heatmap.sgdgmf(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
+
+ggpubr::ggarrange(
+  plt.dev + labs(x = "Species", y = "Environments", title = "Deviance residuals"), 
+  plt.prs + labs(x = "Species", y = "Environments", title = "Pearson residuals"),
+  nrow = 1, ncol = 2, common.legend = FALSE, legend = "bottom", align = "hv")
+```
+
+
+
