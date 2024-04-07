@@ -25,7 +25,10 @@
 \item{newdata}{optionally, a list containing new values for \code{X} and \code{Z}}
 }
 \description{
-Computes the predictions from a fitted generalized matrix factorization model (GMF).
+Computes the predictions of a GMF model. Out-of-sample predictions for a new
+set of responses and covariates are computed via MLE, by keeping fixed the values
+of the estimated \code{B} and \code{V} and maximizing the likelihood with respect
+to \code{A} and \code{U}.
 }
 \details{
 If \code{newY} and \code{newX} are omitted, the predictions are based on the data
