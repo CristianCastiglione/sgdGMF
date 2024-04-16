@@ -145,7 +145,7 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #' @export set.control.init
 set.control.init = function (
     method = c("ols", "glm", "random", "values"),
-    type = c("deviance", "pearson", "working"),
+    type = c("deviance", "pearson", "working", "link"),
     values = list(),
     niter = 5,
     normalize = TRUE,
