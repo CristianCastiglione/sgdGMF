@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{sgdgmf}(
   object,
-  type = c("1", "2", "3", "4", "5", "idx", "fit", "hist", "qq", "ecdf"),
+  type = c("1", "2", "3", "4", "5", "6", "idx", "fit", "std", "hist", "qq", "ecdf"),
   resid = c("deviance", "pearson", "working", "response", "link"),
   subsample = FALSE,
   sample.size = 500,
@@ -17,24 +17,28 @@
 )
 }
 \arguments{
-\item{object}{...}
+\item{object}{an object of class \code{sgdgmf}}
 
-\item{type}{...}
+\item{type}{the type of plot which should be returned}
 
-\item{resid}{...}
+\item{resid}{the type of residuals which should be used}
 
-\item{subsample}{...}
+\item{subsample}{if \code{TRUE}, computes the residuals over o small fraction of the data}
 
-\item{sample.size}{...}
+\item{sample.size}{the dimension of the sub-sample which should be used}
 
-\item{partial}{...}
+\item{partial}{if \code{TRUE}, computes the partial residuals}
 
-\item{normalize}{...}
+\item{normalize}{if \code{TRUE}, standardizes the residuals column-by-column}
 
-\item{fillna}{...}
+\item{fillna}{if \code{TRUE}, fills the \code{NA} values with \code{0}}
 
-\item{bycol}{...}
+\item{bycol}{if \code{TRUE}, uses a column-specific palette}
 }
 \description{
-A short description...
+Plots (one of) six diagnostics to graphically analyze the marginal and conditional
+distribution of the residuals of a GMF model. Currently, the following plots are
+available: residuals against observation indices, residuals agains fitted values,
+absolute square-root residuals against fitted values, histogram of the residuals,
+residual QQ-plot, residual ECDF-plot.
 }
