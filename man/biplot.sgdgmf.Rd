@@ -13,16 +13,17 @@
 )
 }
 \arguments{
-\item{object}{...}
+\item{object}{an object of class \code{sgdgmf}}
 
-\item{choices}{...}
+\item{choices}{a length 2 vector specifying the components to plot}
 
-\item{normalize}{...}
+\item{normalize}{if \code{TRUE}, orthogonalizes the scores using SVD}
 
-\item{labels}{...}
+\item{labels}{a vector of labels which should be plotted}
 
-\item{palette}{...}
+\item{palette}{the name of a color-palette which should be used}
 }
 \description{
-A short description...
+Plot the observations on a two-dimensional projection determined by the
+estimated score matrix
 }
