@@ -131,35 +131,42 @@ coefficients.sgdgmf = function (
 #'
 #' @description
 #' Extract the residuals of a GMF model and, if required, compute the eigenvalues
-#' of the partial residuals obtained by excluding the matrix decomposition from
-#' the linear predictor.
+#' of the residuals covariance/correlation matrix.
+#' Moreover, if required, return the partial residual of the model obtained by
+#' excluding the matrix decomposition from the linear predictor.
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of residuals which should be returned
-#' @param partial if \code{TRUE}, compute the residuals excluding the matrix factorization from the linear predictor
+#' @param partial if \code{TRUE}, computes the residuals excluding the matrix factorization from the linear predictor
 #' @param normalize if \code{TRUE}, standardize the residuals column-by-column
-#' @param fillna if \code{TRUE}, fill \code{NA} values column-by-column
+#' @param fillna if \code{TRUE}, fills \code{NA} values column-by-column
 #' @param spectrum if \code{TRUE}, returns the eigenvalues of the residual covariance matrix
 #' @param ncomp number of eigenvalues to be calculated (only if \code{spectrum=TRUE})
 #'
 #' @details
 #' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top} be the linear predictor of a
-#' GMF model. Let \eqn{R = (r_{ij})} be the correspondent partial residual matrix.
+#' GMF model. Let \eqn{R = (r_{ij})} be the correspondent residual matrix.
 #' The following residuals can be considered:
 #' \itemize{
 #' \item deviance: \eqn{r_{ij}^{_D} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}};
 #' \item Pearson: \eqn{r_{ij}^{_P} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}};
 #' \item working: \eqn{r_{ij}^{_W} = (y_{ij} - \mu_{ij}) / \{g'(\mu_{ij}) \,\nu(\mu_{ij})\}};
+#' \item response: \eqn{r_{ij}^{_R} = y_{ij} - \mu_{ij}};
 #' \item link: \eqn{r_{ij}^{_G} = g(y_{ij}) - \eta_{ij}}.
 #' }
-#' Finally, we define \eqn{\Sigma} as the empirical variance-covariance matrix of
-#' \eqn{R}, being \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, we define
-#' the latent spectrum of the model as the collection of eigenvalues of \eqn{\Sigma}.
+#' If \code{partial=TRUE}, \eqn{mu} is computed excluding the latent matrix decomposition
+#' from the linear predictor, so as to obtain the partial residuals.
+#'
+#' Let \eqn{\Sigma} be the empirical variance-covariance matrix of \eqn{R}, being
+#' \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, the latent spectrum of
+#' the model is the collection of eigenvalues of \eqn{\Sigma}.
+#'
 #' Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
 #' component analysis on the regression residuals, whose eigenvalues can be used to
-#' infer how much signal can be explained by each principal component. Similarly,
-#' we can use the latent spectrum in non-Gaussian data settings to infer the correct
-#' number of principal components to include into the GMF model.
+#' infer the amount of variance explained by each principal component. Similarly,
+#' we can use the (partial) latent spectrum in non-Gaussian data settings to infer
+#' the correct number of principal components to include into the GMF model or to
+#' detect some residual dependence structures not already explained by the model.
 #'
 #' @method residuals sgdgmf
 #' @export
@@ -243,6 +250,7 @@ residuals.sgdgmf = function (
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of fitted values which should be returned
+#' @param partial if \code{TRUE}, returns the partial fitted values
 #'
 #' @method fitted sgdgmf
 #' @export
@@ -280,7 +288,8 @@ fitted.sgdgmf = function (
 #' to \code{A} and \code{U}.
 #'
 #' @param object an object of class \code{sgdgmf}
-#' @param newdata optionally, a list containing new values for \code{X} and \code{Z}
+#' @param newY optionally, a matrix of new response variable
+#' @param newX optionally, a matrix of new covariate values
 #' @param type the type of prediction which should be returned
 #' @param parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
@@ -447,7 +456,6 @@ simulate.sgdgmf = function (
 #' @param object an object of class \code{sgdgmf}
 #' @param ncomp number of eigenvalues to compute
 #' @param type the type of residual which should be returned
-#' @param stat the type of statistics to use (covariance or correlation)
 #' @param normalize if \code{TRUE}, standardize the residuals column-by-column
 #'
 #' @details
@@ -519,22 +527,26 @@ eigenval.sgdgmf = function (
 #' @title Plot diagnostics for a GMF model
 #'
 #' @description
-#' A short description...
+#' Plots (one of) six diagnostics to graphically analyze the marginal and conditional
+#' distribution of the residuals of a GMF model. Currently, the following plots are
+#' available: residuals against observation indices, residuals agains fitted values,
+#' absolute square-root residuals against fitted values, histogram of the residuals,
+#' residual QQ-plot, residual ECDF-plot.
 #'
-#' @param object ...
-#' @param type ...
-#' @param resid ...
-#' @param subsample ...
-#' @param sample.size ...
-#' @param partial ...
-#' @param normalize ...
-#' @param fillna ...
-#' @param bycol ...
+#' @param object an object of class \code{sgdgmf}
+#' @param type the type of plot which should be returned
+#' @param resid the type of residuals which should be used
+#' @param subsample if \code{TRUE}, computes the residuals over o small fraction of the data
+#' @param sample.size the dimension of the sub-sample which should be used
+#' @param partial if \code{TRUE}, computes the partial residuals
+#' @param normalize if \code{TRUE}, standardizes the residuals column-by-column
+#' @param fillna if \code{TRUE}, fills the \code{NA} values with \code{0}
+#' @param bycol if \code{TRUE}, uses a column-specific palette
 #'
 #' @export
 plot.sgdgmf = function (
     object,
-    type = c("1", "2", "3", "4", "5", "idx", "fit", "hist", "qq", "ecdf"),
+    type = c("1", "2", "3", "4", "5", "6", "idx", "fit", "std", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
     normalize = FALSE, fillna = FALSE, bycol = FALSE
@@ -582,20 +594,27 @@ plot.sgdgmf = function (
     plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
       labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
   }
-  if (type %in% c("3", "hist")) {
+  if (type %in% c("3", "std")) {
+    df = data.frame(residuals = c(sqrt(abs(res))), fitted = c(fit), column = as.factor(col))
+    if (!bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals))
+    if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
+    plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
+      labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
+  }
+  if (type %in% c("4", "hist")) {
     df = data.frame(residuals = c(res), column = as.factor(col))
     if (!bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density)))
     if ( bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density), color = column, fill = column))
     plt = plt + geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
       labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
   }
-  if (type %in% c("4", "qq")) {
+  if (type %in% c("5", "qq")) {
     df = list2DF(qqnorm(scale(c(res)), plot.it = FALSE))
     plt = ggplot(data = df, map = aes(x = x, y = y)) +
       geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) + geom_point(alpha = 0.5) +
       labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
   }
-  if (type %in% c("5", "ecdf")) {
+  if (type %in% c("6", "ecdf")) {
     zn = scale(c(res))
     zz = seq(from = min(zn), to = max(zn), length = 100)
     df1 = data.frame(x = zn, y = ecdf(zn)(zn))
@@ -612,24 +631,29 @@ plot.sgdgmf = function (
 #' @title Screeplot for the residuals of a GMF model
 #'
 #' @description
-#' A short description...
+#' Plots the variances of the principal components of the residuals against the
+#' number of principal component.
 #'
-#' @param object ...
-#' @param ncomp ...
-#' @param partial ...
-#' @param normalize ...
-#' @param cumulative ...
-#' @param proportion ...
+#' @param object an object of class \code{sgdgmf}
+#' @param ncomp number of components to be plotted
+#' @param type the type of residuals which should be used
+#' @param partial if \code{TRUE}, plots the eigenvalues of the partial residuals
+#' @param normalize if \code{TRUE}, plots the eigenvalues of the standardized residuals
+#' @param cumulative if \code{TRUE}, plots the cumulative sum of the eigenvalues
+#' @param proportion if \code{TRUE}, plots the fractions of explained variance
 #'
 #' @export
 screeplot.sgdgmf = function (
-    object, ncomp = 20, partial = FALSE, normalize = FALSE,
+    object, ncomp = 20,
+    type = c("deviance", "pearson", "working", "response", "link"),
+    partial = FALSE, normalize = FALSE,
     cumulative = FALSE, proportion = FALSE
 ) {
 
   ncomp = max(1, min(ncomp, ncol(object$Y)))
-  res = residuals(object, partial = partial, normalize = normalize,
-                  fillna = TRUE, spectrum = TRUE, ncomp = ncomp)
+  res = residuals(object, type = type, partial = partial,
+                  normalize = normalize, fillna = TRUE,
+                  spectrum = TRUE, ncomp = ncomp)
 
   lambdas = res$lambdas
   if (cumulative) lambdas = cumsum(lambdas)
@@ -645,13 +669,14 @@ screeplot.sgdgmf = function (
 #' @title Biplot of a GMF model
 #'
 #' @description
-#' A short description...
+#' Plot the observations on a two-dimensional projection determined by the
+#' estimated score matrix
 #'
-#' @param object ...
-#' @param choices ...
-#' @param normalize ...
-#' @param labels ...
-#' @param palette ...
+#' @param object an object of class \code{sgdgmf}
+#' @param choices a length 2 vector specifying the components to plot
+#' @param normalize if \code{TRUE}, orthogonalizes the scores using SVD
+#' @param labels a vector of labels which should be plotted
+#' @param palette the name of a color-palette which should be used
 #'
 #' @export
 biplot.sgdgmf = function (
@@ -702,15 +727,17 @@ biplot.sgdgmf = function (
 #' @title Heatmap of a GMF model
 #'
 #' @description
-#' A short description...
+#' Plots a heatmap of either the data, the fitted values, or the residual values
+#' of a GMF model allowing for different types of transformations and normalizations.
+#' Moreover, it also permits to plot the latent score and loading matrices.
 #'
-#' @param object ...
-#' @param type ...
-#' @param resid ...
-#' @param symmetric ...
-#' @param transpose ...
-#' @param limits ...
-#' @param palette ...
+#' @param object an object of class \code{sgdgmf}
+#' @param type the type of data/predictions/residuals which should be returned
+#' @param resid if \code{TRUE}, plots the residual values
+#' @param symmetric if \code{TRUE}, symmetrizes the color limits
+#' @param transpose if \code{TRUE}, transposes the matrix before plotting it
+#' @param limits the color limits which should be used
+#' @param palette the color-palette which should be used
 #'
 #' @export
 heatmap.sgdgmf = function (
