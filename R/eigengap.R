@@ -99,13 +99,13 @@ sgdgmf.rank = function (
 
   # Initialize the regression coefficients
   B = switch(type.reg,
-    "ols" = ols.fit.coef(gY, X, family = family, offset = NULL),
+    "ols" = ols.fit.coef(gY, X, offset = NULL),
     "glm" = vglm.fit.coef(Y, X, family = family, offset = NULL,
                           parallel = parallel, nthreads = nthreads, clust = clust))
   #
   eta[] = tcrossprod(X, B)
   A = switch(type.reg,
-    "ols" = ols.fit.coef(t(gY), Z, family = family, offset = t(eta)),
+    "ols" = ols.fit.coef(t(gY), Z, offset = t(eta)),
     "glm" = vglm.fit.coef(t(Y), Z, family = family, offset = t(eta),
                           parallel = parallel, nthreads = nthreads, clust = clust))
 
