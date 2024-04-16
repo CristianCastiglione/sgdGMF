@@ -6,7 +6,7 @@
 \usage{
 set.control.init(
   method = c("ols", "glm", "random", "values"),
-  type = c("deviance", "pearson", "working"),
+  type = c("deviance", "pearson", "working", "link"),
   values = list(),
   niter = 5,
   normalize = TRUE,
