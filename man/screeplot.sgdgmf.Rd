@@ -7,6 +7,7 @@
 \method{screeplot}{sgdgmf}(
   object,
   ncomp = 20,
+  type = c("deviance", "pearson", "working", "response", "link"),
   partial = FALSE,
   normalize = FALSE,
   cumulative = FALSE,
@@ -14,18 +15,21 @@
 )
 }
 \arguments{
-\item{object}{...}
+\item{object}{an object of class \code{sgdgmf}}
 
-\item{ncomp}{...}
+\item{ncomp}{number of components to be plotted}
 
-\item{partial}{...}
+\item{type}{the type of residuals which should be used}
 
-\item{normalize}{...}
+\item{partial}{if \code{TRUE}, plots the eigenvalues of the partial residuals}
 
-\item{cumulative}{...}
+\item{normalize}{if \code{TRUE}, plots the eigenvalues of the standardized residuals}
 
-\item{proportion}{...}
+\item{cumulative}{if \code{TRUE}, plots the cumulative sum of the eigenvalues}
+
+\item{proportion}{if \code{TRUE}, plots the fractions of explained variance}
 }
 \description{
-A short description...
+Plots the variances of the principal components of the residuals against the
+number of principal component.
 }
