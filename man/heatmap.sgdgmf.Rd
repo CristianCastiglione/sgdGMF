@@ -16,20 +16,22 @@ heatmap.sgdgmf(
 )
 }
 \arguments{
-\item{object}{...}
+\item{object}{an object of class \code{sgdgmf}}
 
-\item{type}{...}
+\item{type}{the type of data/predictions/residuals which should be returned}
 
-\item{resid}{...}
+\item{resid}{if \code{TRUE}, plots the residual values}
 
-\item{symmetric}{...}
+\item{symmetric}{if \code{TRUE}, symmetrizes the color limits}
 
-\item{transpose}{...}
+\item{transpose}{if \code{TRUE}, transposes the matrix before plotting it}
 
-\item{limits}{...}
+\item{limits}{the color limits which should be used}
 
-\item{palette}{...}
+\item{palette}{the color-palette which should be used}
 }
 \description{
-A short description...
+Plots a heatmap of either the data, the fitted values, or the residual values
+of a GMF model allowing for different types of transformations and normalizations.
+Moreover, it also permits to plot the latent score and loading matrices.
 }
