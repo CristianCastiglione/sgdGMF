@@ -16,13 +16,15 @@
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
 
+\item{newY}{optionally, a matrix of new response variable}
+
+\item{newX}{optionally, a matrix of new covariate values}
+
 \item{type}{the type of prediction which should be returned}
 
 \item{parallel}{if \code{TRUE}, allows for parallel computing using the package \code{foreach}}
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
-
-\item{newdata}{optionally, a list containing new values for \code{X} and \code{Z}}
 }
 \description{
 Computes the predictions of a GMF model. Out-of-sample predictions for a new
