@@ -19,8 +19,6 @@ eigenval.sgdgmf(
 \item{type}{the type of residual which should be returned}
 
 \item{normalize}{if \code{TRUE}, standardize the residuals column-by-column}
-
-\item{stat}{the type of statistics to use (covariance or correlation)}
 }
 \description{
 Compute the latent spectrum of a GMF model evaluated on the GLM residual scale.
