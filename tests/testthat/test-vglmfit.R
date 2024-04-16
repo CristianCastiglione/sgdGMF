@@ -12,7 +12,7 @@ testthat::test_that("Multivariate OLS fitting", {
   E = matrix(rnorm(n*m, mean = 0.0, sd = 0.1), nrow = n, ncol = m)
   Y = O + tcrossprod(X, B) + E
 
-  B.hat = ols.fit.coef(Y, X, gaussian(), offset = O)
+  B.hat = ols.fit.coef(Y, X, offset = O)
   F.hat = O + tcrossprod(X, B.hat)
   E.hat = Y - F.hat
 
