@@ -181,12 +181,12 @@ init.param.ols = function (
 
   # Compute the initial column-specific regression parameters
   if (verbose) cat(" Initialization: column-specific covariates \n")
-  B[] = ols.fit.coef(gY, X, family = family, offset = NULL)
+  B[] = ols.fit.coef(gY, X, offset = NULL)
   eta = tcrossprod(X, B)
 
   # Compute the initial row-specific regression parameter
   if (verbose) cat(" Initialization: row-specific covariates \n")
-  A[] = ols.fit.coef(t(gY), Z, family = family, offset = t(eta))
+  A[] = ols.fit.coef(t(gY), Z, offset = t(eta))
   eta = eta + tcrossprod(A, Z)
 
   # Compute the GLM residuals to be decompose via PCA
@@ -208,7 +208,7 @@ init.param.ols = function (
 
   # Compute the initial loading matrix via OLS
   if (verbose) cat(" Initialization: latent loadings \n")
-  V[] = ols.fit.coef(gY, U, family = family, offset = eta)
+  V[] = ols.fit.coef(gY, U, offset = eta)
   eta = eta + tcrossprod(U, V)
 
   # Compute the initial vector of dispersion parameters
