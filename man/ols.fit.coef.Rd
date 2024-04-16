@@ -4,9 +4,16 @@
 \alias{ols.fit.coef}
 \title{Estimate the coefficients of a multivariate linear model}
 \usage{
-ols.fit.coef(Y, X, family, offset = NULL)
+ols.fit.coef(Y, X, offset = NULL)
+}
+\arguments{
+\item{Y}{\eqn{n \times m} matrix of response variables}
+
+\item{X}{\eqn{n \times p} matrix of covariates}
+
+\item{offset}{\eqn{n \times m} matrix of offset values}
 }
 \description{
-...
+Estimate the coefficients of a multivariate linear model via ordinary least squares.
 }
 \keyword{internal}
