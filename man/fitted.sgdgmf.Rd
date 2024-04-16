@@ -10,6 +10,8 @@
 \item{object}{an object of class \code{sgdgmf}}
 
 \item{type}{the type of fitted values which should be returned}
+
+\item{partial}{if \code{TRUE}, returns the partial fitted values}
 }
 \description{
 Computes the fitted values of a GMF model.
