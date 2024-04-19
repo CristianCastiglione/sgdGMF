@@ -8,6 +8,6 @@ init.param.random(Y, X = NULL, Z = NULL, ncomp = 2, family = gaussian())
 }
 \description{
 Initialize the parameters of a GMF model sampling them from an independent
-Gaussian distribution (see \code{\link{init.param}} for more details)
+Gaussian distribution (see \code{\link{init.gmf.param}} for more details)
 }
 \keyword{internal}
