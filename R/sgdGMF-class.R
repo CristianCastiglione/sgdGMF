@@ -66,6 +66,24 @@ setClass("sgdgmf",
     summary.cv = "data.frame"
 ))
 
+#' @title Compute the deviance of a GMF model
+#'
+#' @description Compute the deviance of an estimated GMF object
+#'
+#' @param object an object of class \code{sgdgmf}
+#'
+#' @method deviance sgdgmf
+#' @export
+deviance.sgdgmf = function (object, normalize = FALSE) {
+  dev = matrix.deviance(object$mu, object$Y, object$family)
+  if (normalize) {
+    mu0 = matrix(mean(Y, na.rm = TRUE), nrow(Y), ncol(Y))
+    dev0 = matrix.deviance(mu0, Y, object$family)
+    dev = dev / dev0
+  }
+  return (dev)
+}
+
 #' @title Print the fundamental characteristics of a GMF
 #'
 #' @description Print some summary information of a GMF model.
@@ -473,7 +491,7 @@ simulate.sgdgmf = function (
 #' we can use the latent spectrum in non-Gaussian data settings to infer the correct
 #' number of principal components to include into the GMF model.
 #'
-#' @export
+#' @keywords internal
 eigenval.sgdgmf = function (
     object, ncomp = object$ncomp,
     type = c("deviance", "pearson", "working", "link"),
@@ -543,6 +561,7 @@ eigenval.sgdgmf = function (
 #' @param fillna if \code{TRUE}, fills the \code{NA} values with \code{0}
 #' @param bycol if \code{TRUE}, uses a column-specific palette
 #'
+#' @method plot sgdgmf
 #' @export
 plot.sgdgmf = function (
     object,
@@ -599,7 +618,7 @@ plot.sgdgmf = function (
     if (!bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals))
     if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
     plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
-      labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
+      labs(x = "Fitted values", y = "Abs. Residuals", title = "Residuals vs Fitted values")
   }
   if (type %in% c("4", "hist")) {
     df = data.frame(residuals = c(res), column = as.factor(col))
@@ -642,6 +661,7 @@ plot.sgdgmf = function (
 #' @param cumulative if \code{TRUE}, plots the cumulative sum of the eigenvalues
 #' @param proportion if \code{TRUE}, plots the fractions of explained variance
 #'
+#' @method screeplot sgdgmf
 #' @export
 screeplot.sgdgmf = function (
     object, ncomp = 20,
@@ -678,6 +698,7 @@ screeplot.sgdgmf = function (
 #' @param labels a vector of labels which should be plotted
 #' @param palette the name of a color-palette which should be used
 #'
+#' @method biplot sgdgmf
 #' @export
 biplot.sgdgmf = function (
     object, choices = 1:2, normalize = FALSE,
@@ -739,6 +760,7 @@ biplot.sgdgmf = function (
 #' @param limits the color limits which should be used
 #' @param palette the color-palette which should be used
 #'
+#' @method heatmap sgdgmf
 #' @export
 heatmap.sgdgmf = function (
     object,
