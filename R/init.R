@@ -48,8 +48,8 @@
 #' @examples
 #' ...
 #'
-#' @export init.param
-init.param = function (
+#' @export init.gmf.param
+init.gmf.param = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -74,6 +74,18 @@ init.param = function (
     "random" = init.param.random(Y, X, Z, ncomp),
     "values" = init.param.custom(Y, X, Z, ncomp, family, values, verbose))
 
+  # Save all the initialization options
+  init$method = method
+  init$family = family
+  init$ncomp = ncomp
+  init$type = type
+  init$verbose = verbose
+  init$parallel = parallel
+  init$nthreads = nthreads
+
+  # Set the initialization class
+  class(init) = "initgmf"
+
   # Return the initial estimates
   return (init)
 }
@@ -82,7 +94,7 @@ init.param = function (
 #'
 #' @description
 #' Initialize the parameters of a GMF model sampling them from an independent
-#' Gaussian distribution (see \code{\link{init.param}} for more details)
+#' Gaussian distribution (see \code{\link{init.gmf.param}} for more details)
 #'
 #' @keywords internal
 init.param.random = function (
@@ -128,7 +140,7 @@ init.param.random = function (
 #' Initialize the parameters of a GMF model fitting a sequence of multivariate
 #' linear regression followed by a residual SVD decomposition. It allows to
 #' recursively refine the initial estimate by repeating the process a pre-specified
-#' number of times. See \code{\link{init.param}} for more details.
+#' number of times. See \code{\link{init.gmf.param}} for more details.
 #'
 #' @keywords internal
 init.param.ols = function (
@@ -225,7 +237,7 @@ init.param.ols = function (
 #'
 #' @description
 #' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
-#' by a residual SVD decomposition. See \code{\link{init.param}} for more details.
+#' by a residual SVD decomposition. See \code{\link{init.gmf.param}} for more details.
 #'
 #' @keywords internal
 init.param.glm = function (
@@ -234,7 +246,7 @@ init.param.glm = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
-    type = c("deviance", "pearson", "working"),
+    type = c("deviance", "pearson", "working", "link"),
     verbose = FALSE,
     parallel = FALSE,
     nthreads = 1
@@ -247,6 +259,10 @@ init.param.glm = function (
 
   # Set the residual type
   type = match.arg(type)
+
+  # Set the data transformation to use for
+  # the initialization of the working data
+  family = set.family(family)
 
   # Compute the transformed data
   if (verbose) cat(" Initialization: working data \n")
@@ -305,7 +321,8 @@ init.param.glm = function (
   res[] = switch(type,
     "deviance" = sign(Y - mu) * sqrt(abs(family$dev.resids(Y, mu, 1))),
     "pearson" = (Y - mu) / sqrt(abs(family$variance(mu))),
-    "working" = (Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)))
+    "working" = (Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
+    "link" = (family$transform(Y) - eta))
 
   if (anyNA(res)) res[is.na(res) | is.nan(res)] = 0
 
@@ -337,7 +354,7 @@ init.param.glm = function (
 #' @description
 #' Initialize the parameters of a GMF model using custom values provided by the user
 #' and estimating the unspecified parameters using the same procedure described in
-#' \code{\link{init.param.svd}}. See \code{\link{init.param}} for more details.
+#' \code{\link{init.param.svd}}. See \code{\link{init.gmf.param}} for more details.
 #'
 #' @keywords internal
 init.param.custom = function (
