@@ -10,7 +10,7 @@ init.param.glm(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
-  type = c("deviance", "pearson", "working"),
+  type = c("deviance", "pearson", "working", "link"),
   verbose = FALSE,
   parallel = FALSE,
   nthreads = 1
@@ -18,6 +18,6 @@ init.param.glm(
 }
 \description{
 Initialize the parameters of a GMF model fitting a sequence of GLMs followed
-by a residual SVD decomposition. See \code{\link{init.param}} for more details.
+by a residual SVD decomposition. See \code{\link{init.gmf.param}} for more details.
 }
 \keyword{internal}
