@@ -175,7 +175,7 @@ sgdgmf.fit = function (
 
   # Initialize the parameters
   time.init = proc.time()
-  init = init.param(
+  init = init.gmf.param(
     Y = Y, X = X, Z = Z, ncomp = ncomp,
     family = family, method = control.init$method,
     type = control.init$type, niter = control.init$niter,
