@@ -38,3 +38,4 @@ infer how much signal can be explained by each principal component. Similarly,
 we can use the latent spectrum in non-Gaussian data settings to infer the correct
 number of principal components to include into the GMF model.
 }
+\keyword{internal}
