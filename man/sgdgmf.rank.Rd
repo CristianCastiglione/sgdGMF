@@ -69,7 +69,11 @@ Onatski, A. (2010).
 \emph{Determining the number of factors from empirical distribution of eigenvalues.}
 Review of Economics and Statistics, 92(4): 1004-1016
 
-Fan, J., Guo, j. and Zheng, S. (2020).
+Gavish, M., Donoho, D.L. (2014)
+\emph{The optimal hard thresholding for singular values is 4/sqrt(3).}
+IEEE Transactions on Information Theory, 60(8): 5040--5053
+
+Fan, J., Guo, J. and Zheng, S. (2020).
 \emph{Estimating number of factors by adjusted eigenvalues thresholding.}
 Journal of the American Statistical Association, 117(538): 852--861
 
