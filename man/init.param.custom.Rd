@@ -17,6 +17,6 @@ init.param.custom(
 \description{
 Initialize the parameters of a GMF model using custom values provided by the user
 and estimating the unspecified parameters using the same procedure described in
-\code{\link{init.param.svd}}. See \code{\link{init.param}} for more details.
+\code{\link{init.param.svd}}. See \code{\link{init.gmf.param}} for more details.
 }
 \keyword{internal}
