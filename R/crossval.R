@@ -97,7 +97,7 @@ sgdgmf.cv = function (
   # Common initialization
   if (common) {
     time.init = proc.time()
-    control.init$values = init.param(
+    control.init$values = init.gmf.param(
       Y = Y, X = X, Z = Z, ncomp = maxcomp,
       family = family, method = control.init$method,
       type = control.init$type, niter = control.init$niter,
