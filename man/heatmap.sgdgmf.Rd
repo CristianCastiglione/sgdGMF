@@ -4,7 +4,7 @@
 \alias{heatmap.sgdgmf}
 \title{Heatmap of a GMF model}
 \usage{
-heatmap.sgdgmf(
+\method{heatmap}{sgdgmf}(
   object,
   type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson",
     "working"),
