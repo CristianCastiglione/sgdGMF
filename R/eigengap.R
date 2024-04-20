@@ -50,7 +50,7 @@ sgdgmf.rank = function (
     family = gaussian(),
     weights = NULL,
     offset = NULL,
-    method = c("onatski", "act"),
+    method = c("onatski", "act", "oht"),
     type.reg = c("ols", "glm"),
     type.res = c("deviance", "pearson", "working", "link"),
     normalize = FALSE,
@@ -131,7 +131,8 @@ sgdgmf.rank = function (
   # Select the optimal rank
   eigengap = switch(method,
     "onatski" = eigengap.onatski(covmat, min(maxcomp, n-6, m-6), maxiter),
-    "act" = eigengap.act(covmat, n, maxcomp))
+    "act" = eigengap.act(covmat, n, maxcomp),
+    "oht" = eigengap.oht(covmat, n, maxcomp))
 
   # Build the output
   out = list()
@@ -286,10 +287,20 @@ eigengap.act = function (covmat, nobs, maxcomp = NULL) {
 #'
 #' @keywords internal
 eigengap.oht = function (covmat, nobs, maxcomp = NULL) {
-  ## Yet to be implemented
-  ## ...
-  ## ...
-  ## ...
+
+  # lambdas = eigen(covmat)$values
+  # beta = nobs / ncol(covmat)
+  # beta = ifelse(beta > 1, beta, 1 / beta)
+  # omega = 0.56 * beta^3 - 0.95 * beta^2 + 1.82 * beta + 1.43
+  # thr = omega * sqrt(median(lambdas))
+  # ncomp = max(1, sum(sqrt(lambdas) > thr))
+
+  lambdas = eigen(covmat)$values
+  thr = 2.858 * median(lambdas)
+  ncomp = max(1, sum(lambdas > thr))
+
+  # Return the selected rank
+  list(ncomp = ncomp, lambdas = lambdas, threshold = thr)
 }
 
 
