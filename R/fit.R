@@ -177,10 +177,10 @@ sgdgmf.fit = function (
   time.init = proc.time()
   init = init.gmf.param(
     Y = Y, X = X, Z = Z, ncomp = ncomp,
-    family = family, method = control.init$method,
-    type = control.init$type, niter = control.init$niter,
-    values = control.init$values,verbose = control.init$verbose,
-    parallel = control.init$parallel, nthreads = control.init$threads)
+    family = family, method = control.init$method, type = control.init$type,
+    niter = control.init$niter, values = control.init$values,
+    verbose = control.init$verbose, parallel = control.init$parallel,
+    nthreads = control.init$threads, savedata = FALSE)
   time.init = as.numeric(proc.time() - time.init)[3]
 
   # Select the correct estimation method
