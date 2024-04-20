@@ -10,19 +10,25 @@ A short description...
 \section{Slots}{
 
 \describe{
-\item{\code{method}}{initialization method}
+\item{\code{method}}{initialization method to approximatelly minimize the negative penalized log-likelihood}
 
-\item{\code{family}}{model family}
+\item{\code{family}}{a \code{glm} family (see \code{\link{family}} for more details)}
 
-\item{\code{ncomp}}{number of latent components}
+\item{\code{ncomp}}{rank of the latent matrix factorization}
 
-\item{\code{type}}{residual type}
+\item{\code{type}}{residual type to be used for initializing the latent scores}
 
-\item{\code{verbose}}{if \code{TRUE}, ...}
+\item{\code{verbose}}{if \code{TRUE}, print the optimization status (default \code{TRUE})}
 
-\item{\code{parallel}}{if \code{TRUE}, ...}
+\item{\code{parallel}}{if \code{TRUE}, allows for parallel computing using the package \code{foreach} (only if \code{method="glm"})}
 
-\item{\code{nthreads}}{...}
+\item{\code{nthreads}}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
+
+\item{\code{Y}}{matrix of responses (\eqn{n \times m})}
+
+\item{\code{X}}{matrix of row fixed effects (\eqn{n \times p})}
+
+\item{\code{Z}}{matrix of column fixed effects (\eqn{m \times q})}
 
 \item{\code{A}}{matrix of row-specific regression effects (\eqn{n \times q})}
 
