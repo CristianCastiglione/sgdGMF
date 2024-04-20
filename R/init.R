@@ -61,7 +61,8 @@ init.gmf.param = function (
     values = list(),
     verbose = FALSE,
     parallel = FALSE,
-    nthreads = 1
+    nthreads = 1,
+    savedata = TRUE
 ) {
   # Set the initialization method
   method = match.arg(method)
@@ -82,6 +83,22 @@ init.gmf.param = function (
   init$verbose = verbose
   init$parallel = parallel
   init$nthreads = nthreads
+  init$savedata = savedata
+
+  if (savedata) {
+    n = nrow(Y)
+    m = ncol(Y)
+    p = ifelse(is.null(X), 1, ncol(X))
+    q = ifelse(is.null(Z), 1, ncol(Z))
+
+    init$Y = matrix(NA, nrow = n, ncol = m)
+    init$X = matrix(NA, nrow = n, ncol = p)
+    init$Z = matrix(NA, nrow = m, ncol = q)
+
+    init$Y[] = Y
+    init$X[] = if (!is.null(X)) X else matrix(1, nrow = n, ncol = p)
+    init$Z[] = if (!is.null(Z)) Z else matrix(1, nrow = m, ncol = q)
+  }
 
   # Set the initialization class
   class(init) = "initgmf"
