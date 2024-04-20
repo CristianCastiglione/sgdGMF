@@ -4,13 +4,16 @@
 #' @description
 #' A short description...
 #'
-#' @slot method initialization method
-#' @slot family model family
-#' @slot ncomp number of latent components
-#' @slot type residual type
-#' @slot verbose if \code{TRUE}, ...
-#' @slot parallel if \code{TRUE}, ...
-#' @slot nthreads ...
+#' @slot method initialization method to approximatelly minimize the negative penalized log-likelihood
+#' @slot family a \code{glm} family (see \code{\link{family}} for more details)
+#' @slot ncomp rank of the latent matrix factorization
+#' @slot type residual type to be used for initializing the latent scores
+#' @slot verbose if \code{TRUE}, print the optimization status (default \code{TRUE})
+#' @slot parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach} (only if \code{method="glm"})
+#' @slot nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @slot Y matrix of responses (\eqn{n \times m})
+#' @slot X matrix of row fixed effects (\eqn{n \times p})
+#' @slot Z matrix of column fixed effects (\eqn{m \times q})
 #' @slot A matrix of row-specific regression effects (\eqn{n \times q})
 #' @slot B matrix of column-specific regression effects (\eqn{m \times p})
 #' @slot U matrix of latent scores (\eqn{n \times d})
