@@ -27,6 +27,10 @@ setClass("initgmf",
     verbose = "logical",
     parallel = "logical",
     nthreads = "numeric",
+    savedata = "logical",
+    Y = "matrix",
+    X = "matrix",
+    Z = "matrix",
     A = "matrix",
     B = "matrix",
     U = "matrix",
@@ -36,15 +40,18 @@ setClass("initgmf",
 
 #' @method deviance initgmf
 #' @export
-deviance.initgmf = function (object, Y, X, Z, normalize = FALSE) {
-  U = cbind(X, object$A, object$U)
-  V = cbind(object$B, Z, object$V)
+deviance.initgmf = function (object, normalize = FALSE) {
+  if (!object$savedata) stop("The data matrices Y, X and Z are not available.")
+  n = nrow(object$Y)
+  m = ncol(object$Y)
+  U = cbind(object$X, object$A, object$U)
+  V = cbind(object$B, object$Z, object$V)
   eta = tcrossprod(U, V)
   mu = object$family$linkinv(eta)
-  dev = matrix.deviance(mu, Y, object$family)
+  dev = matrix.deviance(mu, object$Y, object$family)
   if (normalize) {
-    mu0 = matrix(mean(Y, na.rm = TRUE), nrow(Y), ncol(Y))
-    dev0 = matrix.deviance(mu0, Y, object$family)
+    mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
+    dev0 = matrix.deviance(mu0, object$Y, object$family)
     dev = dev / dev0
   }
   return (dev)
@@ -68,35 +75,32 @@ coefficients.initgmf = function (
 #' @method residuals initgmf
 #' @export
 residuals.initgmf = function (
-    object, Y, X = NULL, Z = NULL,
-    type = c("deviance", "pearson", "working", "response", "link"),
+    object, type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
   # Set the residual type
   type = match.arg(type)
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+  # if (is.null(object$X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  # if (is.null(object$Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
 
   # Safety checks
-  if (!is.numeric(X) | !is.matrix(X)) stop("`X` is not a numeric matrix.")
-  if (!is.numeric(Z) | !is.matrix(Z)) stop("`Z` is not a numeric matrix.")
-
-  if (nrow(X) != nrow(object$U)) stop("Incompatible dimensions.")
-  if (ncol(X) != ncol(object$B)) stop("Incompatible dimensions.")
-
-  if (nrow(Z) != nrow(object$V)) stop("Incompatible dimensions.")
-  if (ncol(Z) != ncol(object$A)) stop("Incompatible dimensions.")
+  # if (!is.numeric(X) | !is.matrix(X)) stop("`X` is not a numeric matrix.")
+  # if (!is.numeric(Z) | !is.matrix(Z)) stop("`Z` is not a numeric matrix.")
+  # if (nrow(X) != nrow(object$U)) stop("Incompatible dimensions.")
+  # if (ncol(X) != ncol(object$B)) stop("Incompatible dimensions.")
+  # if (nrow(Z) != nrow(object$V)) stop("Incompatible dimensions.")
+  # if (ncol(Z) != ncol(object$A)) stop("Incompatible dimensions.")
 
   # Compute the predicted values
   family = object$family
   if (partial) {
-    U = cbind(X, object$A)
-    V = cbind(object$B, Z)
+    U = cbind(object$X, object$A)
+    V = cbind(object$B, object$Z)
   } else {
-    U = cbind(X, object$A, object$U)
-    V = cbind(object$B, Z, object$V)
+    U = cbind(object$X, object$A, object$U)
+    V = cbind(object$B, object$Z, object$V)
   }
   eta = tcrossprod(U, V)
   mu = family$linkinv(eta)
@@ -145,41 +149,36 @@ residuals.initgmf = function (
   if (!spectrum) {
     return (res)
   } else {
-    return (
-      list(residuals = res,
-           lambdas = var.eig,
-           explained.var = var.exp,
-           reminder.var = var.res,
-           total.var = var.tot))
+    return (list(
+      residuals = res,
+      lambdas = var.eig, explained.var = var.exp,
+      reminder.var = var.res, total.var = var.tot))
   }
 }
 
 #' @method fitted initgmf
 #' @export
 fitted.initgmf = function (
-    object, X = NULL, Z = NULL,
-    type = c("link", "response", "terms"), partial = FALSE
+    object, type = c("link", "response", "terms"), partial = FALSE
 ) {
   # Set the fitted value type
   type = match.arg(type)
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+  # if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  # if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
 
   # Safety checks
-  if (!is.numeric(X) | !is.matrix(X)) stop("`X` is not a numeric matrix.")
-  if (!is.numeric(Z) | !is.matrix(Z)) stop("`Z` is not a numeric matrix.")
-
-  if (nrow(X) != nrow(object$U)) stop("Incompatible dimensions.")
-  if (ncol(X) != ncol(object$B)) stop("Incompatible dimensions.")
-
-  if (nrow(Z) != nrow(object$V)) stop("Incompatible dimensions.")
-  if (ncol(Z) != ncol(object$A)) stop("Incompatible dimensions.")
+  # if (!is.numeric(X) | !is.matrix(X)) stop("`X` is not a numeric matrix.")
+  # if (!is.numeric(Z) | !is.matrix(Z)) stop("`Z` is not a numeric matrix.")
+  # if (nrow(X) != nrow(object$U)) stop("Incompatible dimensions.")
+  # if (ncol(X) != ncol(object$B)) stop("Incompatible dimensions.")
+  # if (nrow(Z) != nrow(object$V)) stop("Incompatible dimensions.")
+  # if (ncol(Z) != ncol(object$A)) stop("Incompatible dimensions.")
 
   # Return the fitted values depending on the prediction type
-  XB = tcrossprod(X, object$B)
-  AZ = tcrossprod(object$A, Z)
+  XB = tcrossprod(object$X, object$B)
+  AZ = tcrossprod(object$A, object$Z)
   if (!partial) {
     UV = tcrossprod(object$U, object$V)
     switch(type,
@@ -197,7 +196,7 @@ fitted.initgmf = function (
 #' @method plot initgmf
 #' @export
 plot.initgmf = function (
-    object, Y, X = NULL, Z = NULL,
+    object,
     type = c("1", "2", "3", "4", "5", "6", "idx", "fit", "std", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
@@ -207,14 +206,14 @@ plot.initgmf = function (
   resid = match.arg(resid)
 
   fit = switch(resid,
-    "deviance" = fitted(object, X, Z, type = "response", partial = partial),
-    "pearson" = fitted(object, X, Z, type = "response", partial = partial),
-    "working" = fitted(object, X, Z, type = "response", partial = partial),
-    "response" = fitted(object, X, Z, type = "response", partial = partial),
-    "link" = fitted(object, X, Z, type = "link", partial = partial))
+    "deviance" = fitted(object, type = "response", partial = partial),
+    "pearson" = fitted(object, type = "response", partial = partial),
+    "working" = fitted(object, type = "response", partial = partial),
+    "response" = fitted(object, type = "response", partial = partial),
+    "link" = fitted(object, type = "link", partial = partial))
 
   res = residuals(
-    object, Y, X, Z, type = resid, partial = partial,
+    object, type = resid, partial = partial,
     normalize = normalize, fillna = fillna, spectrum = FALSE)
 
   if (subsample) {
@@ -283,16 +282,16 @@ plot.initgmf = function (
 #' @method screeplot initgmf
 #' @export
 screeplot.initgmf = function (
-    object, Y, X = NULL, Z = NULL, ncomp = 20,
+    object, ncomp = 20,
     type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE,
     cumulative = FALSE, proportion = FALSE
 ) {
 
   ncomp = max(1, min(ncomp, nrow(object$V)))
-  res = residuals(object, Y = Y, X = X, Z = Z,
-                  type = type, partial = partial, normalize = normalize,
-                  fillna = TRUE, spectrum = TRUE, ncomp = ncomp)
+  res = residuals(object = object, type = type, partial = partial,
+                  normalize = normalize, fillna = TRUE,
+                  spectrum = TRUE, ncomp = ncomp)
 
   lambdas = res$lambdas
   if (cumulative) lambdas = cumsum(lambdas)
@@ -355,7 +354,7 @@ biplot.initgmf = function (
 #' @method heatmap initgmf
 #' @export
 heatmap.initgmf = function (
-    object, Y = NULL, X = NULL, Z = NULL,
+    object,
     type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson", "working"),
     resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
 ) {
@@ -366,7 +365,7 @@ heatmap.initgmf = function (
     if (type == "scores") stop("type='scores' is not allowed with resid=TRUE", call. = FALSE)
     if (type == "loadings") stop("type='loadings' is not allowed with resid=TRUE", call. = FALSE)
 
-    mat = residuals(object, Y, X, Z, type = type)
+    mat = residuals(object, type = type)
     if (transpose) mat = t(mat)
 
   } else {
@@ -377,13 +376,13 @@ heatmap.initgmf = function (
     mat = switch(type,
       "data" = Y,
       "response" = {
-        U = cbind(X, object$A, object$U)
-        V = cbind(object$B, Z, object$V)
+        U = cbind(object$X, object$A, object$U)
+        V = cbind(object$B, object$Z, object$V)
         eta = tcrossprod(U, V)
         object$family$linkinv(eta)},
       "link" = {
-        U = cbind(X, object$A, object$U)
-        V = cbind(object$B, Z, object$V)
+        U = cbind(object$X, object$A, object$U)
+        V = cbind(object$B, object$Z, object$V)
         eta = tcrossprod(U, V)},
       "scores" = object$U,
       "loadings" = object$V)
