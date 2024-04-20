@@ -16,7 +16,8 @@ init.gmf.param(
   values = list(),
   verbose = FALSE,
   parallel = FALSE,
-  nthreads = 1
+  nthreads = 1,
+  savedata = TRUE
 )
 }
 \arguments{
