@@ -60,7 +60,7 @@ setClass("sgdgmf",
     objective = "numeric",
     aic = "numeric",
     bic = "numeric",
-    cbic = "numeric",
+    sic = "numeric",
     exe.time = "vector",
     trace = "data.frame",
     summary.cv = "data.frame"
@@ -71,9 +71,9 @@ setClass("sgdgmf",
 #' @description Refine the estimated latent scores of a GMF model via IRWLS
 #'
 #' @param object an object of class \code{sgdgmf}
-#' @param verbose ...
-#' @param parallel ...
-#' @param nthreads ...
+#' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
+#' @param parallel if \code{TRUE}, use parallel computing using the \code{foreach} package
+#' @param nthreads number of cores to be used in the \code{"glm"} method
 #'
 #' @method refit sgdgmf
 #' @export
@@ -82,34 +82,48 @@ refit.sgdgmf = function (
     normalize = TRUE,
     verbose = FALSE,
     parallel = FALSE,
-    nthreads = 1,
-    clust = NULL
+    nthreads = 1
 ) {
 
   # Default error message
   message = function (var)
-    stop(paste0("Refit control: '", var,"' was set to default value."),
+    warning(paste0("Refit control: '", var,"' was set to default value."),
             call. = FALSE, immediate. = TRUE, domain = NULL)
 
   # Safety checks
-  if (!is.logical(normalize)) message("normalize")
-  if (!is.logical(verbose)) message("verbose")
-  if (!is.logical(parallel)) message("parallel")
-  if (!is.numeric(nthreads) | nthreads < 1) message("nthreads")
+  if (!is.logical(normalize)) {message("normalize"); normalize = TRUE}
+  if (!is.logical(verbose)) {message("verbose"); verbose = FALSE}
+  if (!is.logical(parallel)) {message("parallel"); paralle = FALSE}
+  if (!is.numeric(nthreads) | nthreads < 1) {message("nthreads"); nthreads = 1}
 
   # Get the parameter dimensions
-  q = ifelse(is.vector(object$A), 1, ncol(object$A))
-  d = object$ncomp
+  idxA = seq(from = 1, to = ncol(object$A))
+  idxU = seq(from = 1, to = ncol(object$U)) + ncol(object$A)
+
+  # Fill the missing values with the predictions
+  Y = object$Y
+  if (anyNA(Y)) {
+    isna = is.na(Y)
+    Y[isna] = object$mu[isna]
+  }
 
   # Refit A and U via IRWLS
   coefs = vglm.fit.coef(
-    Y = t(object$Y), X = cbind(object$Z, object$V), family = object$family,
-    offset = tcrossprod(object$B, object$X), parallel = parallel,
-    nthreads = as.integer(nthreads), clust = clust)
+    Y = t(Y), X = cbind(object$Z, object$V),
+    family = object$family, offset = tcrossprod(object$B, object$X),
+    parallel = parallel, nthreads = as.integer(nthreads), clust = NULL)
 
   # Set the final estimates
-  object$A = coefs[, 1:q]
-  object$U = coefs[, (q+1):(q+d)]
+  object$A = coefs[, idxA]
+  object$U = coefs[, idxU]
+
+  # Recompute the linear predictor
+  object$eta = tcrossprod(cbind(object$X, object$A, object$U),
+                          cbind(object$B, object$Z, object$V))
+
+  # Recompute the conditional mean and variance matrices
+  object$mu = object$family$linkinv(object$eta)
+  object$var = object$family$variance(object$mu)
 
   # Normalize the latent factors
   if (normalize) {
