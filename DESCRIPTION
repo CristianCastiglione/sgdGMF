@@ -26,8 +26,6 @@ Imports:
     Rcpp (>= 1.0.10),
     RcppArmadillo,
     RSpectra, 
-    svd, 
-    whitening, 
     parallel, 
     doParallel, 
     foreach
