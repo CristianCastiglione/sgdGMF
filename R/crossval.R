@@ -69,7 +69,7 @@ sgdgmf.cv = function (
   criterion = control.cv$criterion
   refit = control.cv$refit
   nfolds = control.cv$nfolds
-  common = control.cv$init == "common"
+  common = isTRUE(control.cv$init == "common")
   parallel = control.cv$parallel
   nthreads = control.cv$nthreads
 
@@ -180,7 +180,7 @@ sgdgmf.cv = function (
   # Rank selection
   if (nfolds > 1) {
     avgcv = data.frame()
-    for (ncomp in 1:maxcomp) {
+    for (ncomp in ncomps) {
       for (fold in 1:nfolds) {
         idx = (cv$ncomp == ncomp) & (cv$fold == fold)
         avgstat = data.frame(
@@ -210,6 +210,8 @@ sgdgmf.cv = function (
   if (refit) {
     # Re-fit the model using the chosen optimizer
     cat("Final refit with rank =", ncomp, "\n")
+    control.init$values$U = control.init$values$U[, 1:ncomp, drop = FALSE]
+    control.init$values$V = control.init$values$V[, 1:ncomp, drop = FALSE]
     fit = sgdgmf.fit(
       Y = Y, X = X, Z = Z, family = family,
       ncomp = ncomp, method = method, penalty = penalty,
