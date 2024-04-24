@@ -66,6 +66,62 @@ setClass("sgdgmf",
     summary.cv = "data.frame"
 ))
 
+#' @title Refine the final estimate of a GMF model
+#'
+#' @description Refine the estimated latent scores of a GMF model via IRWLS
+#'
+#' @param object an object of class \code{sgdgmf}
+#' @param verbose ...
+#' @param parallel ...
+#' @param nthreads ...
+#'
+#' @method refit sgdgmf
+#' @export
+refit.sgdgmf = function (
+    object,
+    normalize = FALSE,
+    verbose = FALSE,
+    parallel = FALSE,
+    nthreads = 1,
+    clust = NULL
+) {
+
+  # Default error message
+  message = function (var)
+    stop(paste0("Refit control: '", var,"' was set to default value."),
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+
+  # Safety checks
+  if (!is.logical(normalize)) message("normalize")
+  if (!is.logical(verbose)) message("verbose")
+  if (!is.logical(parallel)) message("parallel")
+  if (!is.numeric(nthreads) | nthreads < 1) message("nthreads")
+
+  # Get the parameter dimensions
+  q = ncol(object$A)
+  d = ncol(object$U)
+
+  # Refit A and U via IRWLS
+  coefs = vglm.fit.coef(
+    Y = t(object$Y), X = cbind(object$Z, object$V), family = family,
+    offset = tcrossprod(object$B, object$X), parallel = parallel,
+    nthreads = as.integer(nthreads), clust = clust)
+
+  # Set the final estimates
+  object$A = coefs[, 1:q]
+  object$U = coefs[, (q+1):(q+d)]
+
+  # Normalize the latent factors
+  if (alg$normalize) {
+    uv = normalize.uv(object$U, object$V, method = "qr")
+    object$U = uv$U
+    object$V = uv$V
+  }
+
+  # Return the refined object
+  return (object)
+}
+
 #' @title Compute the deviance of a GMF model
 #'
 #' @description Compute the deviance of an estimated GMF object
