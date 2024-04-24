@@ -865,7 +865,7 @@ heatmap.sgdgmf = function (
   }
 
   if (is.null(palette)) {
-    palette = viridis(100, option = "viridis")
+    palette = viridisLite::viridis(100, option = "viridis")
     if (resid) palette = hcl.colors(100, palette = "RdBu")
     if (symmetric) palette = hcl.colors(100, palette = "RdBu")
   }
