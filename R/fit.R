@@ -324,10 +324,10 @@ sgdgmf.fit = function (
   out$Y = Y
   out$X = X
   out$Z = Z
-  out$A = fit$U[, idxA]
-  out$B = fit$V[, idxB]
-  out$U = fit$U[, idxU]
-  out$V = fit$V[, idxV]
+  out$A = fit$U[, idxA, drop = FALSE]
+  out$B = fit$V[, idxB, drop = FALSE]
+  out$U = fit$U[, idxU, drop = FALSE]
+  out$V = fit$V[, idxV, drop = FALSE]
   out$eta = fit$eta
   out$mu = fit$mu
   out$var = fit$var
