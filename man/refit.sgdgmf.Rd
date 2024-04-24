@@ -6,7 +6,7 @@
 \usage{
 \method{refit}{sgdgmf}(
   object,
-  normalize = FALSE,
+  normalize = TRUE,
   verbose = FALSE,
   parallel = FALSE,
   nthreads = 1,
