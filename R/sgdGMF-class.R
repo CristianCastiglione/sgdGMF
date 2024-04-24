@@ -79,7 +79,7 @@ setClass("sgdgmf",
 #' @export
 refit.sgdgmf = function (
     object,
-    normalize = FALSE,
+    normalize = TRUE,
     verbose = FALSE,
     parallel = FALSE,
     nthreads = 1,
@@ -98,12 +98,12 @@ refit.sgdgmf = function (
   if (!is.numeric(nthreads) | nthreads < 1) message("nthreads")
 
   # Get the parameter dimensions
-  q = ncol(object$A)
-  d = ncol(object$U)
+  q = ifelse(is.vector(object$A), 1, ncol(object$A))
+  d = object$ncomp
 
   # Refit A and U via IRWLS
   coefs = vglm.fit.coef(
-    Y = t(object$Y), X = cbind(object$Z, object$V), family = family,
+    Y = t(object$Y), X = cbind(object$Z, object$V), family = object$family,
     offset = tcrossprod(object$B, object$X), parallel = parallel,
     nthreads = as.integer(nthreads), clust = clust)
 
@@ -112,7 +112,7 @@ refit.sgdgmf = function (
   object$U = coefs[, (q+1):(q+d)]
 
   # Normalize the latent factors
-  if (alg$normalize) {
+  if (normalize) {
     uv = normalize.uv(object$U, object$V, method = "qr")
     object$U = uv$U
     object$V = uv$V
