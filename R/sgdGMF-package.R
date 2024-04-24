@@ -13,6 +13,8 @@
 #' @importFrom stats Gamma inverse.gaussian
 #' @importFrom stats biplot screeplot heatmap
 #' @importFrom MASS neg.bin negative.binomial
+#' @importFrom generics refit
+#' @importFrom stats heatmap
 #' @importFrom RSpectra svds eigs eigs_sym
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
