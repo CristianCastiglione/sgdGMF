@@ -5,7 +5,7 @@
 \title{Check and set the cross-validation parameters}
 \usage{
 set.control.cv(
-  criterion = c("dev", "aic", "bic", "cbic"),
+  criterion = c("dev", "aic", "bic", "sic"),
   refit = TRUE,
   nfolds = 5,
   proportion = 0.3,
