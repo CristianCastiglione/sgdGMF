@@ -179,18 +179,18 @@ sgdgmf.cv = function (
 
   # Rank selection
   if (nfolds > 1) {
-    avgcv = data.frame(ncomp = c(), df = c(), dev = c(),
-                       aic = c(), bic = c(), cbic = c())
+    avgcv = data.frame()
     for (ncomp in 1:maxcomp) {
       for (fold in 1:nfolds) {
         idx = (cv$ncomp == ncomp) & (cv$fold == fold)
-        df = mean(cv$df[idx])
-        aic = mean(cv$aic[idx], na.rm = TRUE)
-        bic = mean(cv$bic[idx], na.rm = TRUE)
-        cbic = mean(cv$cbic[idx], na.rm = TRUE)
-        dev = mean(cv$dev[idx], na.rm = TRUE)
-        avgstat = data.frame(ncomp = ncomp, df = df, dev = dev,
-                             aic = aic, bic = bic, cbic = cbic)
+        avgstat = data.frame(
+          ncomp = ncomp,
+          df = mean(cv$df[idx]),
+          dev = mean(cv$dev[idx], na.rm = TRUE),
+          aic = mean(cv$aic[idx], na.rm = TRUE),
+          bic = mean(cv$bic[idx], na.rm = TRUE),
+          sic = mean(cv$sic[idx], na.rm = TRUE)
+        )
         avgcv = rbind(avgcv, avgstat)
       }
     }
@@ -198,13 +198,13 @@ sgdgmf.cv = function (
       "dev" = avgcv$ncomp[which.min(avgcv$dev)],
       "aic" = avgcv$ncomp[which.min(avgcv$aic)],
       "bic" = avgcv$ncomp[which.min(avgcv$bic)],
-      "cbic" = avgcv$ncomp[which.min(avgcv$cbic)])
+      "sic" = avgcv$ncomp[which.min(avgcv$sic)])
   } else {
     ncomp = switch(criterion,
       "dev" = cv$ncomp[which.min(cv$dev)],
       "aic" = cv$ncomp[which.min(cv$aic)],
       "bic" = cv$ncomp[which.min(cv$bic)],
-      "cbic" = cv$ncomp[which.min(cv$cbic)])
+      "sic" = cv$ncomp[which.min(cv$sic)])
   }
 
   if (refit) {
@@ -277,14 +277,14 @@ sgdgmf.cv.step = function (
   dev.train = matrix.deviance(mu = mu, y = train, family = family)
   dev.test = matrix.deviance(mu = mu, y = test, family = family)
   aic.train = dev.train + 2 * df
-  bic.train = dev.train + 2 * df * log(n.train)
-  cbic.train = dev.train + 2 * df * log(log(n.train))
+  bic.train = dev.train + df * log(n.train)
+  sic.train = dev.train + df * log(n.train) / n.train
 
   # Return a data-frame with all the GoF statistics
   data.frame(
     ncomp = ncomp, fold = fold, df = df,
     aic = aic.train / n.train, bic = bic.train / n.train,
-    cbic = cbic.train / n.train, dev = dev.test / n.test
+    sic = sic.train / n.train, dev = dev.test / n.test
   )
 }
 
