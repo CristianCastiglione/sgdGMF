@@ -9,18 +9,17 @@
   normalize = TRUE,
   verbose = FALSE,
   parallel = FALSE,
-  nthreads = 1,
-  clust = NULL
+  nthreads = 1
 )
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
 
-\item{verbose}{...}
+\item{normalize}{if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal}
 
-\item{parallel}{...}
+\item{parallel}{if \code{TRUE}, use parallel computing using the \code{foreach} package}
 
-\item{nthreads}{...}
+\item{nthreads}{number of cores to be used in the \code{"glm"} method}
 }
 \description{
 Refine the estimated latent scores of a GMF model via IRWLS
