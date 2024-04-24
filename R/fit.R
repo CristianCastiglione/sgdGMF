@@ -143,6 +143,35 @@ sgdgmf.fit = function (
   X = set.mat.X(X, nrow(Y), "X")
   Z = set.mat.X(Z, ncol(Y), "Z")
 
+##  # Safety checks: Y
+##  if (!is.numeric(Y)) stop("Y is not numeric.")
+##  if (!is.matrix(Y)) stop("Y is not a matrix.")
+##  Y = matrix(c(Y), nrow = nrow(Y), ncol = ncol(Y))
+##
+##  # Safety checks: X
+##  if (!is.null(X)) {
+##    if (!is.numeric(X)) stop("X is not numeric.")
+##    if (!is.matrix(X)) stop("X is not a matrix.")
+##    if (nrow(X) != nrow(X)) stop("The dimensions of X are not compatible with Y.")
+##    if (anyNA(X)) stop("X contains some NA.")
+##    if (sum(apply(X, 2, sd) == 0) > 1) stop("X has too many constant columns.")
+##    X = matrix(c(X), nrow = nrow(X), ncol = ncol(X))
+##  } else {
+##    X = matrix(1, nrow = nrow(Y), ncol = 1)
+##  }
+##
+##  # Safety checks: Z
+##  if (!is.null(Z)) {
+##    if (!is.numeric(Z)) stop("Z is not numeric.")
+##    if (!is.matrix(Z)) stop("Z is not a matrix.")
+##    if (nrow(Z) != ncol(Y)) stop("The dimensions of Z are not compatible with Y.")
+##    if (anyNA(Z)) stop("Z contains some NA.")
+##    if (sum(apply(Z, 2, sd) == 0) > 1) stop("Z has too many constant columns.")
+##    Z = matrix(c(Z), nrow = nrow(Z), ncol = ncol(Z))
+##  } else {
+##    Z = matrix(1, nrow = ncol(Y), ncol = 1)
+##  }
+
   # Set the model dimensions
   n = nrow(Y)
   m = ncol(Y)
@@ -307,8 +336,8 @@ sgdgmf.fit = function (
   out$deviance = fit$deviance
   out$objective = fit$objective
   out$aic = fit$deviance + 2 * df
-  out$bic = fit$deviance + 2 * df * log(nm)
-  out$cbic = fit$deviance + 2 * df * log(log(nm))
+  out$bic = fit$deviance + df * log(nm)
+  out$sic = fit$deviance + df * log(nm) / nm
   out$exe.time = exe.time
   out$trace = as.data.frame(fit$trace)
   out$summary.cv = data.frame()
@@ -326,3 +355,4 @@ sgdgmf.fit = function (
   # Return the estimated model
   return (out)
 }
+
