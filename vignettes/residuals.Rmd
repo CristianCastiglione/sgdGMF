@@ -93,8 +93,8 @@ effects and does not include a residual matrix factorization in the linear predi
 
 ```{r plot, fig.width = 7, fig.height = 5}
 ggpubr::ggarrange(
-  plot(gmf, type = "idx"),
-  plot(gmf, type = "fit"),
+  plot(gmf, type = "res-idx"),
+  plot(gmf, type = "res-fit"),
   plot(gmf, type = "hist"),
   plot(gmf, type = "qq"),
   nrow = 2, ncol = 2, align = "hv")
@@ -119,8 +119,8 @@ graphically detect if there are some structured patterns in the matrix that have
 been captured by the model.
 
 ```{r resid2, fig.width = 7, fig.height = 3.5}
-plt.dev = heatmap.sgdgmf(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
-plt.prs = heatmap.sgdgmf(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
+plt.dev = image(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
+plt.prs = image(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
 
 ggpubr::ggarrange(
   plt.dev + labs(x = "Species", y = "Environments", title = "Deviance residuals"), 
