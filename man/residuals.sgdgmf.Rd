@@ -2,9 +2,20 @@
 % Please edit documentation in R/sgdGMF-class.R
 \name{residuals.sgdgmf}
 \alias{residuals.sgdgmf}
+\alias{resid.sgdgmf}
 \title{Extract the residuals of a GMF model}
 \usage{
 \method{residuals}{sgdgmf}(
+  object,
+  type = c("deviance", "pearson", "working", "response", "link"),
+  partial = FALSE,
+  normalize = FALSE,
+  fillna = FALSE,
+  spectrum = FALSE,
+  ncomp = 50
+)
+
+\method{resid}{sgdgmf}(
   object,
   type = c("deviance", "pearson", "working", "response", "link"),
   partial = FALSE,
