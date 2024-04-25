@@ -44,13 +44,14 @@ setClass("initgmf",
 #' @method deviance initgmf
 #' @export
 deviance.initgmf = function (object, normalize = FALSE) {
-  if (!object$savedata) stop("The data matrices Y, X and Z are not available.")
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
   n = nrow(object$Y)
   m = ncol(object$Y)
   U = cbind(object$X, object$A, object$U)
   V = cbind(object$B, object$Z, object$V)
-  eta = tcrossprod(U, V)
-  mu = object$family$linkinv(eta)
+  mu = object$family$linkinv(tcrossprod(U, V))
   dev = matrix.deviance(mu, object$Y, object$family)
   if (normalize) {
     mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
@@ -58,6 +59,44 @@ deviance.initgmf = function (object, normalize = FALSE) {
     dev = dev / dev0
   }
   return (dev)
+}
+
+#' @method AIC initgmf
+#' @export
+AIC.initgmf = function (object) {
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
+  dev = deviance(object, normalize = FALSE)
+  df = prod(dim(object$B)) + prod(dim(object$A)) + prod(dim(object$U)) + prod(dim(object$V))
+  aic = dev + 2 * df
+  return (aic)
+}
+
+#' @method BIC initgmf
+#' @export
+BIC.initgmf = function (object) {
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
+  dev = deviance(object, normalize = FALSE)
+  df = prod(dim(object$B)) + prod(dim(object$A)) + prod(dim(object$U)) + prod(dim(object$V))
+  nm = prod(dim(object$Y)) - sum(is.na(object$Y))
+  bic = dev + df * log(nm)
+  return (bic)
+}
+
+#' @method SIC initgmf
+#' @export
+SIC.initgmf = function (object) {
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
+  dev = deviance(object, normalize = FALSE)
+  df = prod(dim(object$B)) + prod(dim(object$A)) + prod(dim(object$U)) + prod(dim(object$V))
+  nm = prod(dim(object$Y)) - sum(is.na(object$Y))
+  sic = dev + df * log(nm) / nm
+  return (sic)
 }
 
 #' @title Extract the coefficient of an initialized GMF model
@@ -68,6 +107,8 @@ deviance.initgmf = function (object, normalize = FALSE) {
 #'
 #' @param object an object of class \code{initgmf}
 #' @param type the type of coefficients which should be returned
+#'
+#' @seealso \code{\link{coefficients.sgdgmf}} and \code{\link{coef.sgdgmf}}.
 #'
 #' @method coefficients initgmf
 #' @export
