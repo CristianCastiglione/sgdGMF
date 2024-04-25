@@ -274,91 +274,20 @@ fitted.initgmf = function (
 #' @export
 plot.initgmf = function (
     object,
-    type = c("1", "2", "3", "4", "5", "6", "idx", "fit", "std", "hist", "qq", "ecdf"),
+    type = c("res-idx", "res-fit", "std-fit", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
-    normalize = FALSE, fillna = FALSE, bycol = FALSE
+    normalize = FALSE, fillna = FALSE
 ) {
-  type = match.arg(type)
-  resid = match.arg(resid)
-
   # Check if the data are available
   if (!object$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
-  fit = switch(resid,
-    "deviance" = fitted(object, type = "response", partial = partial),
-    "pearson" = fitted(object, type = "response", partial = partial),
-    "working" = fitted(object, type = "response", partial = partial),
-    "response" = fitted(object, type = "response", partial = partial),
-    "link" = fitted(object, type = "link", partial = partial))
-
-  res = residuals(
-    object, type = resid, partial = partial,
-    normalize = normalize, fillna = fillna, spectrum = FALSE)
-
-  if (subsample) {
-    n = nrow(object$U)
-    m = nrow(object$V)
-    if (sample.size < n*m) {
-      idx = cbind(
-        row = sample.int(n = n, size = sample.size, replace = TRUE),
-        col = sample.int(n = m, size = sample.size, replace = TRUE))
-      fit = fit[idx]
-      res = res[idx]
-      col = idx$col
-    }
-  } else {
-    col = expand.grid(row = 1:n, col = 1:m)$col
-  }
-
-  if (type %in% c("1", "idx")) {
-    df = data.frame(residuals = c(res), index = c(1:prod(dim(res))), column = as.factor(col))
-    if (!bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = index, y = residuals, color = column))
-    plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
-      labs(x = "Index", y = "Residuals", title = "Residuals vs Fitted values")
-  }
-  if (type %in% c("2", "fit")) {
-    df = data.frame(residuals = c(res), fitted = c(fit), column = as.factor(col))
-    if (!bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
-    plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
-      labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
-  }
-  if (type %in% c("3", "std")) {
-    df = data.frame(residuals = c(sqrt(abs(res))), fitted = c(fit), column = as.factor(col))
-    if (!bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = fitted, y = residuals, color = column))
-    plt = plt + geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
-      labs(x = "Fitted values", y = "Abs. Residuals", title = "Residuals vs Fitted values")
-  }
-  if (type %in% c("4", "hist")) {
-    df = data.frame(residuals = c(res), column = as.factor(col))
-    if (!bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density)))
-    if ( bycol) plt = ggplot(data = df, map = aes(x = residuals, y = after_stat(density), color = column, fill = column))
-    plt = plt + geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
-      labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
-  }
-  if (type %in% c("5", "qq")) {
-    df = list2DF(qqnorm(scale(c(res)), plot.it = FALSE))
-    plt = ggplot(data = df, map = aes(x = x, y = y)) +
-      geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) + geom_point(alpha = 0.5) +
-      labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
-  }
-  if (type %in% c("6", "ecdf")) {
-    zn = scale(c(res))
-    zz = seq(from = min(zn), to = max(zn), length = 100)
-    df1 = data.frame(x = zn, y = ecdf(zn)(zn))
-    df2 = data.frame(x = zz, y = pnorm(zz))
-    plt = ggplot() +
-      geom_line(data = df2, map = aes(x = x, y = y), color = 2) +
-      geom_point(data = df1, map = aes(x = x, y = y), alpha = 0.5) +
-      labs(x = "Standardized residuals", y = "Empirical CDF", title = "Residual ECDF plot")
-  }
-
-  return (plt)
+  # Call the plot method for sgdgmf objects
+  plot.sgdgmf(object = object, type = type, resid = resid,
+              subsample = subsample, sample.size = sample.size,
+              partial = partial, normalize = normalize, fillna = fillna)
 }
 
 #' @method screeplot initgmf
@@ -375,7 +304,7 @@ screeplot.initgmf = function (
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
-  ncomp = max(1, min(ncomp, nrow(object$V)))
+  ncomp = max(1, min(ncomp, nrow(object$U), nrow(object$V)))
   res = residuals(object = object, type = type, partial = partial,
                   normalize = normalize, fillna = TRUE,
                   spectrum = TRUE, ncomp = ncomp)
@@ -394,48 +323,10 @@ screeplot.initgmf = function (
 #' @method biplot initgmf
 #' @export
 biplot.initgmf = function (
-    object, choices = 1:2, normalize = FALSE,
-    labels = NULL, palette = c("viridis", "inferno")
+    object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL
 ) {
-  n = nrow(object$U)
-  m = nrow(object$V)
-
-  i = max(1, min(choices[1], object$ncomp))
-  j = max(1, min(choices[2], object$ncomp))
-
-  if (is.null(labels)) {
-    labels = list(scores = c(1:n), loadings = c(1:m))
-  }
-
-  if (normalize) {
-    pca = RSpectra::svds(tcrossprod(object$U, object$V), object$ncomp)
-    u = scale(pca$u[,c(i,j)])
-    v = scale(pca$v[,c(i,j)])
-  } else {
-    u = scale(object$U[,c(i,j)])
-    v = scale(object$V[,c(i,j)])
-  }
-
-  scores = data.frame(idx = labels$scores, pc1 = c(u[,1]), pc2 = c(u[,2]))
-  loadings = data.frame(idx = labels$loadings, pc1 = c(v[,1]), pc2 = c(v[,2]))
-
-  plt.scores =
-    ggplot(data = scores, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
-    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
-    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
-    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
-    scale_color_viridis(option = palette[1]) + theme(legend.position = "bottom") +
-    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Scores")
-
-  plt.loadings =
-    ggplot(data = loadings, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
-    geom_hline(yintercept = 0, lty = 2, color = "grey40") +
-    geom_vline(xintercept = 0, lty = 2, color = "grey40") +
-    geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
-    scale_color_viridis(option = palette[2]) + theme(legend.position = "bottom") +
-    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Loadings")
-
-  list(scores = plt.scores, loadings = plt.loadings)
+  biplot.sgdgmf(object = object, choices = choices,
+                normalize = normalize, labels = labels, palette = palette)
 }
 
 #' @method image initgmf
@@ -452,54 +343,12 @@ image.initgmf = function (
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
-  if (resid) {
-    if (type == "data") stop("type='data' is not allowed with resid=TRUE", call. = FALSE)
-    if (type == "scores") stop("type='scores' is not allowed with resid=TRUE", call. = FALSE)
-    if (type == "loadings") stop("type='loadings' is not allowed with resid=TRUE", call. = FALSE)
+  # Store the predictions in the object
+  object$eta = fitted(object, type = "link")
+  object$mu = object$family$linkinv(object$eta)
 
-    mat = residuals(object, type = type)
-    if (transpose) mat = t(mat)
-
-  } else {
-    if (type == "deviance") stop("type='deviance' is not allowed with resid=FALSE", call. = FALSE)
-    if (type == "pearson") stop("type='pearson' is not allowed with resid=FALSE", call. = FALSE)
-    if (type == "working") stop("type='working' is not allowed with resid=FALSE", call. = FALSE)
-
-    mat = switch(type,
-      "data" = Y,
-      "response" = {
-        U = cbind(object$X, object$A, object$U)
-        V = cbind(object$B, object$Z, object$V)
-        eta = tcrossprod(U, V)
-        object$family$linkinv(eta)},
-      "link" = {
-        U = cbind(object$X, object$A, object$U)
-        V = cbind(object$B, object$Z, object$V)
-        eta = tcrossprod(U, V)},
-      "scores" = object$U,
-      "loadings" = object$V)
-    if (transpose) mat = t(mat)
-  }
-
-  df = reshape2::melt(mat, varnames = c("sample", "variable"))
-
-  if (is.null(limits)) {
-    limits = range(df$value, na.rm = TRUE)
-    if (symmetric) limits = c(-1,+1) * max(abs(limits))
-  }
-
-  if (is.null(palette)) {
-    palette = viridis(100, option = "viridis")
-    if (resid) palette = hcl.colors(100, palette = "RdBu")
-    if (symmetric) palette = hcl.colors(100, palette = "RdBu")
-  }
-
-  plt = ggplot(data = df, map = aes(x = variable, y = sample, fill = value)) +
-    geom_raster() + scale_fill_gradientn(colours = palette, limits = limits) +
-    theme(axis.text = element_blank(), axis.ticks = element_blank()) +
-    theme(legend.position = "bottom", panel.grid = element_blank()) +
-    labs(x = "Variables", y = "Samples", fill = "Intensity")
-
-  return (plt)
+  # Call the image method for the sgdgmf object
+  image.sgdgmf(object, type = type, resid = resid, symmetric = symmetric,
+               transpose = transpose, limits = limits, palette = palette)
 }
 
