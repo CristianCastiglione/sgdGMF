@@ -213,9 +213,7 @@ SIC.sgdgmf = function (object) {
 #' @export
 print.sgdgmf = function (object) {
   # Percentage of explained deviance
-  dev.fit  = matrix.deviance(object$mu, object$Y, object$family)
-  dev.null = matrix.deviance(mean(object$Y, na.rm = TRUE), object$Y, object$family)
-  dev.exp  = 100 * (1 - dev.fit / dev.null)
+  dev = 100 * (1 - deviance(object, normalize = TRUE))
 
   # Elapsed execution time
   time.init = object$exe.time[1]
@@ -233,7 +231,7 @@ print.sgdgmf = function (object) {
   cat(gettextf("\n Model family: %s", object$family$family))
   cat(gettextf("\n Model link: %s", object$family$link))
   cat(gettextf("\n Estimation method: %s", object$method))
-  cat(gettextf("\n Explained deviance: %.2f %%", dev.exp))
+  cat(gettextf("\n Explained deviance: %.2f %%", dev))
   cat(gettextf("\n Initialization exe. time: %.2f s (%.2f m)", time.init, time.init/60))
   cat(gettextf("\n Optimization exe. time: %.2f s (%.2f m)", time.opt, time.opt/60))
   cat(gettextf("\n Total execution time: %.2f s (%.2f m)", time.tot, time.tot/60))
