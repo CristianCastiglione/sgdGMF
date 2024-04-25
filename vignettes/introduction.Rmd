@@ -101,9 +101,9 @@ Notice that VGLM is a particular case of GMF of which only include the regressio
 effects and does not include a residual matrix factorization in the linear predictor.
 
 ```{r hist, fig.width = 7, fig.height = 5}
-plt.res.fit.glm = plot(gmf, type = "fit", partial = TRUE)
+plt.res.fit.glm = plot(gmf, type = "res-fit", partial = TRUE)
 plt.res.hist.glm = plot(gmf, type = "hist", partial = TRUE)
-plt.res.fit.gmf = plot(gmf, type = "fit", partial = FALSE)
+plt.res.fit.gmf = plot(gmf, type = "res-fit", partial = FALSE)
 plt.res.hist.gmf = plot(gmf, type = "hist", partial = FALSE)
 
 ggpubr::ggarrange(
