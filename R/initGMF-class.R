@@ -47,15 +47,16 @@ deviance.initgmf = function (object, normalize = FALSE) {
   if (!object$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
-  n = nrow(object$Y)
-  m = ncol(object$Y)
   U = cbind(object$X, object$A, object$U)
   V = cbind(object$B, object$Z, object$V)
   mu = object$family$linkinv(tcrossprod(U, V))
-  dev = matrix.deviance(mu, object$Y, object$family)
+  dev = sum(object$family$dev.resids(object$Y, mu, 1), na.rm = TRUE)
   if (normalize) {
+    n = nrow(object$Y)
+    m = ncol(object$Y)
     mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
-    dev0 = matrix.deviance(mu0, object$Y, object$family)
+    # mu0 = tcrossprod(rep(1, length = n), colMeans(object$Y, na.rm = TRUE))
+    dev0 = sum(object$family$dev.resids(object$Y, mu0, 1), na.rm = TRUE)
     dev = dev / dev0
   }
   return (dev)
