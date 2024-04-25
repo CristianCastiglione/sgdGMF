@@ -131,6 +131,7 @@ coefficients.initgmf = function (
 coef.initgmf = function (
     object, type = c("all", "colreg", "rowreg", "scores", "loadings")
 ) {
+  # Call the coefficients method for initgmf objects
   coefficients.initgmf(object, type = type)
 }
 
@@ -236,6 +237,7 @@ resid.initgmf = function (
     object, type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
+  # Call the residuals method for initgmf objects
   residuals.initgmf(object, type = type, partial = partial, normalize = normalize,
                     fillna = fillna, spectrum = spectrum, ncomp = ncomp)
 }
@@ -304,20 +306,10 @@ screeplot.initgmf = function (
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
-  ncomp = max(1, min(ncomp, nrow(object$U), nrow(object$V)))
-  res = residuals(object = object, type = type, partial = partial,
-                  normalize = normalize, fillna = TRUE,
-                  spectrum = TRUE, ncomp = ncomp)
-
-  lambdas = res$lambdas
-  if (cumulative) lambdas = cumsum(lambdas)
-  if (proportion) lambdas = lambdas / res$total.var
-
-  df = data.frame(components = 1:ncomp, lambdas = lambdas)
-  plt = ggplot(data = df, map = aes(x = components, y = lambdas)) + geom_col() +
-    labs(x = "Components", y = "Eigenvalues", title = "Residual screeplot")
-
-  return (plt)
+  # Call the screeplot method for sgdgmf objects
+  screeplot.sgdgmf(object = object, ncomp = ncomp, type = type,
+                   partial = partial, normalize = normalize,
+                   cumulative = cumulative, proportion = proportion)
 }
 
 #' @method biplot initgmf
@@ -325,6 +317,7 @@ screeplot.initgmf = function (
 biplot.initgmf = function (
     object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL
 ) {
+  # Call the biplot method for sgdgmf objects
   biplot.sgdgmf(object = object, choices = choices,
                 normalize = normalize, labels = labels, palette = palette)
 }
@@ -344,7 +337,7 @@ image.initgmf = function (
   }
 
   # Store the predictions in the object
-  object$eta = fitted(object, type = "link")
+  object$eta = fitted.initgmf(object, type = "link")
   object$mu = object$family$linkinv(object$eta)
 
   # Call the image method for the sgdgmf object
