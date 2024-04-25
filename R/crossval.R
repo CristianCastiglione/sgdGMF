@@ -276,8 +276,8 @@ sgdgmf.cv.step = function (
   n.test = f*n*m
 
   # Train and test goodness-of-fit measures
-  dev.train = matrix.deviance(mu = mu, y = train, family = family)
-  dev.test = matrix.deviance(mu = mu, y = test, family = family)
+  dev.train = sum(family$dev.resids(train, mu, 1), na.rm = TRUE)
+  dev.test = sum(family$dev.resids(test, mu, 1), na.rm = TRUE)
   aic.train = dev.train + 2 * df
   bic.train = dev.train + df * log(n.train)
   sic.train = dev.train + df * log(n.train) / n.train
