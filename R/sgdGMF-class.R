@@ -150,7 +150,6 @@ deviance.sgdgmf = function (object, normalize = FALSE) {
     n = nrow(object$Y)
     m = ncol(object$Y)
     mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
-    # mu0 = tcrossprod(rep(1, length = n), colMeans(object$Y, na.rm = TRUE))
     dev0 = sum(object$family$dev.resids(object$Y, mu0, 1), na.rm = TRUE)
     dev = dev / mu0
   }
