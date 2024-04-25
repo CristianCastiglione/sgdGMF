@@ -2,9 +2,12 @@
 % Please edit documentation in R/sgdGMF-class.R
 \name{coefficients.sgdgmf}
 \alias{coefficients.sgdgmf}
+\alias{coef.sgdgmf}
 \title{Extract the coefficient of a GMF model}
 \usage{
 \method{coefficients}{sgdgmf}(object, type = c("all", "colreg", "rowreg", "scores", "loadings"))
+
+\method{coef}{sgdgmf}(object, type = c("all", "colreg", "rowreg", "scores", "loadings"))
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
