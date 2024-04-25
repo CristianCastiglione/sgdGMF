@@ -46,28 +46,6 @@ the eigenvalues of the residuals covariance/correlation matrix.
 Moreover, if required, return the partial residual of the model obtained by
 excluding the matrix decomposition from the linear predictor.
 }
-\details{
-Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top} be the linear predictor of a
-GMF model. Let \eqn{R = (r_{ij})} be the correspondent residual matrix.
-The following residuals can be considered:
-\itemize{
-\item deviance: \eqn{r_{ij}^{_D} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}};
-\item Pearson: \eqn{r_{ij}^{_P} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}};
-\item working: \eqn{r_{ij}^{_W} = (y_{ij} - \mu_{ij}) / \{g'(\mu_{ij}) \,\nu(\mu_{ij})\}};
-\item response: \eqn{r_{ij}^{_R} = y_{ij} - \mu_{ij}};
-\item link: \eqn{r_{ij}^{_G} = g(y_{ij}) - \eta_{ij}}.
-}
-If \code{partial=TRUE}, \eqn{mu} is computed excluding the latent matrix decomposition
-from the linear predictor, so as to obtain the partial residuals.
-
-Let \eqn{\Sigma} be the empirical variance-covariance matrix of \eqn{R}, being
-\eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, the latent spectrum of
-the model is the collection of eigenvalues of \eqn{\Sigma}.
-
-Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
-component analysis on the regression residuals, whose eigenvalues can be used to
-infer the amount of variance explained by each principal component. Similarly,
-we can use the (partial) latent spectrum in non-Gaussian data settings to infer
-the correct number of principal components to include into the GMF model or to
-detect some residual dependence structures not already explained by the model.
+\seealso{
+\code{\link{residuals.sgdgmf}} and \code{\link{resid.sgdgmf}} for more details on the residual computation.
 }
