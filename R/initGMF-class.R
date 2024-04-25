@@ -161,6 +161,11 @@ residuals.initgmf = function (
   # Set the residual type
   type = match.arg(type)
 
+  # Check if the data are available
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
+
   # Compute the predicted values
   family = object$family
   if (partial) {
@@ -243,17 +248,10 @@ fitted.initgmf = function (
   # Set the fitted value type
   type = match.arg(type)
 
-  # Set the covariate matrices
-  # if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
-  # if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
-
-  # Safety checks
-  # if (!is.numeric(X) | !is.matrix(X)) stop("`X` is not a numeric matrix.")
-  # if (!is.numeric(Z) | !is.matrix(Z)) stop("`Z` is not a numeric matrix.")
-  # if (nrow(X) != nrow(object$U)) stop("Incompatible dimensions.")
-  # if (ncol(X) != ncol(object$B)) stop("Incompatible dimensions.")
-  # if (nrow(Z) != nrow(object$V)) stop("Incompatible dimensions.")
-  # if (ncol(Z) != ncol(object$A)) stop("Incompatible dimensions.")
+  # Check if the data are available
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
 
   # Return the fitted values depending on the prediction type
   XB = tcrossprod(object$X, object$B)
@@ -283,6 +281,11 @@ plot.initgmf = function (
 ) {
   type = match.arg(type)
   resid = match.arg(resid)
+
+  # Check if the data are available
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
 
   fit = switch(resid,
     "deviance" = fitted(object, type = "response", partial = partial),
@@ -367,6 +370,11 @@ screeplot.initgmf = function (
     cumulative = FALSE, proportion = FALSE
 ) {
 
+  # Check if the data are available
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
+
   ncomp = max(1, min(ncomp, nrow(object$V)))
   res = residuals(object = object, type = type, partial = partial,
                   normalize = normalize, fillna = TRUE,
@@ -438,6 +446,11 @@ image.initgmf = function (
     resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
 ) {
   type = match.arg(type)
+
+  # Check if the data are available
+  if (!object$savedata) {
+    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
+  }
 
   if (resid) {
     if (type == "data") stop("type='data' is not allowed with resid=TRUE", call. = FALSE)
