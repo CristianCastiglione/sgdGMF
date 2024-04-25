@@ -6,14 +6,13 @@
 \usage{
 \method{plot}{sgdgmf}(
   object,
-  type = c("1", "2", "3", "4", "5", "6", "idx", "fit", "std", "hist", "qq", "ecdf"),
+  type = c("res-idx", "res-fit", "std-fit", "hist", "qq", "ecdf"),
   resid = c("deviance", "pearson", "working", "response", "link"),
   subsample = FALSE,
   sample.size = 500,
   partial = FALSE,
   normalize = FALSE,
-  fillna = FALSE,
-  bycol = FALSE
+  fillna = FALSE
 )
 }
 \arguments{
@@ -32,8 +31,6 @@
 \item{normalize}{if \code{TRUE}, standardizes the residuals column-by-column}
 
 \item{fillna}{if \code{TRUE}, fills the \code{NA} values with \code{0}}
-
-\item{bycol}{if \code{TRUE}, uses a column-specific palette}
 }
 \description{
 Plots (one of) six diagnostics to graphically analyze the marginal and conditional
