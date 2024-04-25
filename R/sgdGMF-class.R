@@ -145,11 +145,14 @@ refit.sgdgmf = function (
 #' @method deviance sgdgmf
 #' @export
 deviance.sgdgmf = function (object, normalize = FALSE) {
-  dev = matrix.deviance(object$mu, object$Y, object$family)
+  dev = sum(object$family$dev.resids(object$Y, object$mu, 1), na.rm = TRUE)
   if (normalize) {
-    mu0 = matrix(mean(Y, na.rm = TRUE), nrow(Y), ncol(Y))
-    dev0 = matrix.deviance(mu0, Y, object$family)
-    dev = dev / dev0
+    n = nrow(object$Y)
+    m = ncol(object$Y)
+    mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
+    # mu0 = tcrossprod(rep(1, length = n), colMeans(object$Y, na.rm = TRUE))
+    dev0 = sum(object$family$dev.resids(object$Y, mu0, 1), na.rm = TRUE)
+    dev = dev / mu0
   }
   return (dev)
 }
