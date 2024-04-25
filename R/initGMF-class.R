@@ -60,6 +60,15 @@ deviance.initgmf = function (object, normalize = FALSE) {
   return (dev)
 }
 
+#' @title Extract the coefficient of an initialized GMF model
+#'
+#' @description
+#' Return the initialized coefficients of a GMF model, i.e., the row- and column-specific
+#' regression effects, the latent scores and loadings.
+#'
+#' @param object an object of class \code{initgmf}
+#' @param type the type of coefficients which should be returned
+#'
 #' @method coefficients initgmf
 #' @export
 coefficients.initgmf = function (
@@ -75,6 +84,56 @@ coefficients.initgmf = function (
                  scores = object$U, loadings = object$V))
 }
 
+#' @rdname coefficients.initgmf
+#' @method coef initgmf
+#' @export
+coef.initgmf = function (
+    object, type = c("all", "colreg", "rowreg", "scores", "loadings")
+) {
+  coefficients.initgmf(object, type = type)
+}
+
+#' @title Extract the residuals of an initialized GMF model
+#'
+#' @description
+#' Extract the residuals of an initialized GMF model and, if required, compute
+#' the eigenvalues of the residuals covariance/correlation matrix.
+#' Moreover, if required, return the partial residual of the model obtained by
+#' excluding the matrix decomposition from the linear predictor.
+#'
+#' @param object an object of class \code{initgmf}
+#' @param type the type of residuals which should be returned
+#' @param partial if \code{TRUE}, computes the residuals excluding the matrix factorization from the linear predictor
+#' @param normalize if \code{TRUE}, standardize the residuals column-by-column
+#' @param fillna if \code{TRUE}, fills \code{NA} values column-by-column
+#' @param spectrum if \code{TRUE}, returns the eigenvalues of the residual covariance matrix
+#' @param ncomp number of eigenvalues to be calculated (only if \code{spectrum=TRUE})
+#'
+#' @details
+#' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top} be the linear predictor of a
+#' GMF model. Let \eqn{R = (r_{ij})} be the correspondent residual matrix.
+#' The following residuals can be considered:
+#' \itemize{
+#' \item deviance: \eqn{r_{ij}^{_D} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}};
+#' \item Pearson: \eqn{r_{ij}^{_P} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}};
+#' \item working: \eqn{r_{ij}^{_W} = (y_{ij} - \mu_{ij}) / \{g'(\mu_{ij}) \,\nu(\mu_{ij})\}};
+#' \item response: \eqn{r_{ij}^{_R} = y_{ij} - \mu_{ij}};
+#' \item link: \eqn{r_{ij}^{_G} = g(y_{ij}) - \eta_{ij}}.
+#' }
+#' If \code{partial=TRUE}, \eqn{mu} is computed excluding the latent matrix decomposition
+#' from the linear predictor, so as to obtain the partial residuals.
+#'
+#' Let \eqn{\Sigma} be the empirical variance-covariance matrix of \eqn{R}, being
+#' \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, the latent spectrum of
+#' the model is the collection of eigenvalues of \eqn{\Sigma}.
+#'
+#' Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
+#' component analysis on the regression residuals, whose eigenvalues can be used to
+#' infer the amount of variance explained by each principal component. Similarly,
+#' we can use the (partial) latent spectrum in non-Gaussian data settings to infer
+#' the correct number of principal components to include into the GMF model or to
+#' detect some residual dependence structures not already explained by the model.
+#'
 #' @method residuals initgmf
 #' @export
 residuals.initgmf = function (
@@ -157,6 +216,17 @@ residuals.initgmf = function (
       lambdas = var.eig, explained.var = var.exp,
       reminder.var = var.res, total.var = var.tot))
   }
+}
+
+#' @rdname residuals.initgmf
+#' @method resid initgmf
+#' @export
+resid.initgmf = function (
+    object, type = c("deviance", "pearson", "working", "response", "link"),
+    partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
+) {
+  residuals.initgmf(object, type = type, partial = partial, normalize = normalize,
+                    fillna = fillna, spectrum = spectrum, ncomp = ncomp)
 }
 
 #' @method fitted initgmf
@@ -354,9 +424,9 @@ biplot.initgmf = function (
   list(scores = plt.scores, loadings = plt.loadings)
 }
 
-#' @method heatmap initgmf
+#' @method image initgmf
 #' @export
-heatmap.initgmf = function (
+image.initgmf = function (
     object,
     type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson", "working"),
     resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
