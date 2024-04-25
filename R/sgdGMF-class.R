@@ -163,7 +163,7 @@ deviance.sgdgmf = function (object, normalize = FALSE) {
 #' @method AIC sgdgmf
 #' @export
 AIC.sgdgmf = function (object) {
-  dev = deviance(object)
+  dev = deviance(object, normalize = FALSE)
   df = object$npar
   aic = dev + 2 * df
   return (aic)
@@ -178,7 +178,7 @@ AIC.sgdgmf = function (object) {
 #' @method BIC sgdgmf
 #' @export
 BIC.sgdgmf = function (object) {
-  dev = deviance(object)
+  dev = deviance(object, normalize = FALSE)
   df = object$npar
   nm = prod(dim(object$Y)) - sum(is.na(object$Y))
   bic = dev + df * log(nm)
@@ -194,7 +194,7 @@ BIC.sgdgmf = function (object) {
 #' @method SIC sgdgmf
 #' @export
 SIC.sgdgmf = function (object) {
-  dev = deviance(object)
+  dev = deviance(object, normalize = FALSE)
   df = object$npar
   nm = prod(dim(object$Y)) - sum(is.na(object$Y))
   sic = dev + df * log(nm) / nm
@@ -254,12 +254,12 @@ coefficients.sgdgmf = function (
 ) {
   type = match.arg(type)
   switch(type,
-    "all" = list(colcoef = object$B, rowcoef = object$A,
-                 scores = object$U, loadings = object$V),
     "colreg" = object$B,
     "rowreg" = object$A,
     "scores" = object$U,
-    "loadings" = object$V)
+    "loadings" = object$V,
+    "all" = list(colcoef = object$B, rowcoef = object$A,
+                 scores = object$U, loadings = object$V))
 }
 
 #' @rdname coefficients.sgdgmf
