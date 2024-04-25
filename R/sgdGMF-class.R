@@ -154,6 +154,53 @@ deviance.sgdgmf = function (object, normalize = FALSE) {
   return (dev)
 }
 
+#' @title Compute the AIC of a GMF model
+#'
+#' @description Compute the Akaike information criterion (AIC) of an estimated GMF object
+#'
+#' @param object an object of class \code{sgdgmf}
+#'
+#' @method AIC sgdgmf
+#' @export
+AIC.sgdgmf = function (object) {
+  dev = deviance(object)
+  df = object$npar
+  aic = dev + 2 * df
+  return (aic)
+}
+
+#' @title Compute the BIC of a GMF model
+#'
+#' @description Compute the Bayesian information criterion (BIC) of an estimated GMF object
+#'
+#' @param object an object of class \code{sgdgmf}
+#'
+#' @method BIC sgdgmf
+#' @export
+BIC.sgdgmf = function (object) {
+  dev = deviance(object)
+  df = object$npar
+  nm = prod(dim(object$Y)) - sum(is.na(object$Y))
+  bic = dev + df * log(nm)
+  return (bic)
+}
+
+#' @title Compute the SIC of a GMF model
+#'
+#' @description Compute the Bayesian information criterion (SIC) of an estimated GMF object
+#'
+#' @param object an object of class \code{sgdgmf}
+#'
+#' @method SIC sgdgmf
+#' @export
+SIC.sgdgmf = function (object) {
+  dev = deviance(object)
+  df = object$npar
+  nm = prod(dim(object$Y)) - sum(is.na(object$Y))
+  sic = dev + df * log(nm) / nm
+  return (sic)
+}
+
 #' @title Print the fundamental characteristics of a GMF
 #'
 #' @description Print some summary information of a GMF model.
@@ -213,6 +260,15 @@ coefficients.sgdgmf = function (
     "rowreg" = object$A,
     "scores" = object$U,
     "loadings" = object$V)
+}
+
+#' @rdname coefficients.sgdgmf
+#' @method coef sgdgmf
+#' @export
+coef.sgdgmf = function (
+    object, type = c("all", "colreg", "rowreg", "scores", "loadings")
+) {
+  coefficients.sgdgmf(object, type = type)
 }
 
 #' @title Extract the residuals of a GMF model
@@ -329,6 +385,17 @@ residuals.sgdgmf = function (
            reminder.var = var.res,
            total.var = var.tot))
   }
+}
+
+#' @rdname residuals.sgdgmf
+#' @method resid sgdgmf
+#' @export
+resid.sgdgmf = function (
+    object, type = c("deviance", "pearson", "working", "response", "link"),
+    partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
+) {
+  residuals.sgdgmf(object, type = type, partial = partial, normalize = normalize,
+                   fillna = fillna, spectrum = spectrum, ncomp = ncomp)
 }
 
 
@@ -830,9 +897,9 @@ biplot.sgdgmf = function (
 #' @param limits the color limits which should be used
 #' @param palette the color-palette which should be used
 #'
-#' @method heatmap sgdgmf
+#' @method image sgdgmf
 #' @export
-heatmap.sgdgmf = function (
+image.sgdgmf = function (
     object,
     type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson", "working"),
     resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
