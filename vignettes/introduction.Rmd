@@ -129,8 +129,8 @@ ggpubr::ggarrange(plt.eig.glm, plt.eig.gmf, nrow = 1, ncol = 2, align = "hv")
 Plot the abundance predicted by each method comparing it with the observed matrix.
 
 ```{r pred, fig.width = 7, fig.height = 3.5}
-plt.ant = heatmap.sgdgmf(gmf, limits = range(c(Y)), type = "data")
-plt.fit = heatmap.sgdgmf(gmf, limits = range(c(Y)), type = "response")
+plt.ant = image(gmf, limits = range(c(Y)), type = "data")
+plt.fit = image(gmf, limits = range(c(Y)), type = "response")
 
 ggpubr::ggarrange(
   plt.ant + labs(x = "Species", y = "Environments", title = "Observed abundance"), 
@@ -139,8 +139,8 @@ ggpubr::ggarrange(
 ```
 
 ```{r resid2, fig.width = 7, fig.height = 3.5}
-plt.dev = heatmap.sgdgmf(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
-plt.prs = heatmap.sgdgmf(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
+plt.dev = image(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
+plt.prs = image(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
 
 ggpubr::ggarrange(
   plt.dev + labs(x = "Species", y = "Environments", title = "Deviance residuals"), 
