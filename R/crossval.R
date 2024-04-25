@@ -272,8 +272,8 @@ sgdgmf.cv.step = function (
     control.init = control.init, control.alg = control.alg)$mu
 
   # Train and test sample sizes
-  n.train = (1-f)*n*m
-  n.test = f*n*m
+  n.train = n * m * (1-f)
+  n.test = n * m * f
 
   # Train and test goodness-of-fit measures
   dev.train = sum(family$dev.resids(train, mu, 1), na.rm = TRUE)
