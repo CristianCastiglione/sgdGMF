@@ -806,7 +806,7 @@ screeplot.sgdgmf = function (
 ) {
 
   # Compute the spctrum of the residuals
-  ncomp = max(1, min(ncomp, nrow(object$Y), ncol(object$Y)))
+  ncomp = max(1, min(ncomp, nrow(object$U), nrow(object$V)))
   res = residuals(object, type = type, partial = partial,
                   normalize = normalize, fillna = TRUE,
                   spectrum = TRUE, ncomp = ncomp)
