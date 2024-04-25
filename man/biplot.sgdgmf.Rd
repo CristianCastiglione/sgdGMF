@@ -4,13 +4,7 @@
 \alias{biplot.sgdgmf}
 \title{Biplot of a GMF model}
 \usage{
-\method{biplot}{sgdgmf}(
-  object,
-  choices = 1:2,
-  normalize = FALSE,
-  labels = NULL,
-  palette = c("viridis", "inferno")
-)
+\method{biplot}{sgdgmf}(object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
@@ -21,7 +15,7 @@
 
 \item{labels}{a vector of labels which should be plotted}
 
-\item{palette}{the name of a color-palette which should be used}
+\item{palette}{the color-palette which should be used}
 }
 \description{
 Plot the observations on a two-dimensional projection determined by the
