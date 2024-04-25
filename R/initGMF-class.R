@@ -109,30 +109,7 @@ coef.initgmf = function (
 #' @param spectrum if \code{TRUE}, returns the eigenvalues of the residual covariance matrix
 #' @param ncomp number of eigenvalues to be calculated (only if \code{spectrum=TRUE})
 #'
-#' @details
-#' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top} be the linear predictor of a
-#' GMF model. Let \eqn{R = (r_{ij})} be the correspondent residual matrix.
-#' The following residuals can be considered:
-#' \itemize{
-#' \item deviance: \eqn{r_{ij}^{_D} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}};
-#' \item Pearson: \eqn{r_{ij}^{_P} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}};
-#' \item working: \eqn{r_{ij}^{_W} = (y_{ij} - \mu_{ij}) / \{g'(\mu_{ij}) \,\nu(\mu_{ij})\}};
-#' \item response: \eqn{r_{ij}^{_R} = y_{ij} - \mu_{ij}};
-#' \item link: \eqn{r_{ij}^{_G} = g(y_{ij}) - \eta_{ij}}.
-#' }
-#' If \code{partial=TRUE}, \eqn{mu} is computed excluding the latent matrix decomposition
-#' from the linear predictor, so as to obtain the partial residuals.
-#'
-#' Let \eqn{\Sigma} be the empirical variance-covariance matrix of \eqn{R}, being
-#' \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, the latent spectrum of
-#' the model is the collection of eigenvalues of \eqn{\Sigma}.
-#'
-#' Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
-#' component analysis on the regression residuals, whose eigenvalues can be used to
-#' infer the amount of variance explained by each principal component. Similarly,
-#' we can use the (partial) latent spectrum in non-Gaussian data settings to infer
-#' the correct number of principal components to include into the GMF model or to
-#' detect some residual dependence structures not already explained by the model.
+#' @seealso \code{\link{residuals.sgdgmf}} and \code{\link{resid.sgdgmf}} for more details on the residual computation.
 #'
 #' @method residuals initgmf
 #' @export
@@ -142,18 +119,6 @@ residuals.initgmf = function (
 ) {
   # Set the residual type
   type = match.arg(type)
-
-  # Set the covariate matrices
-  # if (is.null(object$X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
-  # if (is.null(object$Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
-
-  # Safety checks
-  # if (!is.numeric(X) | !is.matrix(X)) stop("`X` is not a numeric matrix.")
-  # if (!is.numeric(Z) | !is.matrix(Z)) stop("`Z` is not a numeric matrix.")
-  # if (nrow(X) != nrow(object$U)) stop("Incompatible dimensions.")
-  # if (ncol(X) != ncol(object$B)) stop("Incompatible dimensions.")
-  # if (nrow(Z) != nrow(object$V)) stop("Incompatible dimensions.")
-  # if (ncol(Z) != ncol(object$A)) stop("Incompatible dimensions.")
 
   # Compute the predicted values
   family = object$family
