@@ -39,4 +39,7 @@
 #' @importFrom stats screeplot
 #' @importFrom graphics image
 #' @importFrom generics refit
+#' @import ggplot2
+#' @importFrom reshape2 melt
+#' @importFrom viridisLite viridis
 NULL
