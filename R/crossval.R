@@ -2,7 +2,7 @@
 #' @title Model selection via cross-validation for generalized matrix factorization models
 #'
 #' @description
-#' ...
+#' K-fold cross-validation for generalized matrix factorization (GMF) models
 #'
 #' @param Y matrix of responses (\eqn{n \times m})
 #' @param X matrix of row fixed effects (\eqn{n \times p})
@@ -26,9 +26,6 @@
 #' @references
 #' ...
 #'
-#' @examples
-#' ...
-#'
 #' @export sgdgmf.cv
 sgdgmf.cv = function (
     Y,
@@ -46,6 +43,7 @@ sgdgmf.cv = function (
 ) {
 
   # Sanity check for the cross-validation options
+  control.cv = do.call("set.control.cv", control.cv)
   control.init = do.call("set.control.init", control.init)
   control.alg = switch(method,
     "airwls" = do.call("set.control.airwls", control.alg),
@@ -54,7 +52,6 @@ sgdgmf.cv = function (
     "csgd" = do.call("set.control.csgd", control.alg),
     "rsgd" = do.call("set.control.rsgd", control.alg),
     "bsgd" = do.call("set.control.bsgd", control.alg))
-  control.cv = do.call("set.control.cv", control.cv)
 
   # Data dimensions
   n = nrow(Y)
