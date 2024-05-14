@@ -145,8 +145,10 @@ whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor"
 #' @title Normalize the matrices U and V
 #'
 #' @description
-#' Rotate U and V in such a way that the transformed matrices
-#' are such that U is orthogonal and V is lower triangular
+#' Rotate U and V using either QR or SVD decompositions.
+#' The QR methods rotate U and V in such a way to obtain an orthogonal U
+#' and a lower triangular V.  The SVD method rotate U and V in such a way
+#' to obtain an orthogonal U and a scaled orthogonal V.
 #'
 #' @keywords internal
 normalize.uv = function (U, V, method = c("qr", "svd")) {
@@ -200,7 +202,17 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
 }
 
 #' @title Split the data matrix in train and test sets
-#' @description ...
+#'
+#' @description
+#' Returns a list of two matrices \code{train} and \code{test}.
+#' \code{train} corresponds to the input matrix with a fixed persentage of
+#' entries masked by NA values. \code{test} is the complement of \code{train}
+#' and contains the values of the input matrix in the cells where \code{train}
+#' is NA, while all the other entries are filled by NA values.
+#'
+#' @param y input matrix to be split into train and test sets
+#' @param p fraction of observations to be used for the test set
+#'
 #' @keywords internal
 partition = function (y, p = 0.3) {
   # Data dimensions
