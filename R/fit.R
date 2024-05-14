@@ -54,9 +54,9 @@
 #'   \item \code{penalty}: the penalty value at the end of the optimization
 #'   \item \code{deviance}: the deviance value at the end of the optimization
 #'   \item \code{objective}: the penalized objective function at the end of the optimization
-#'   \item \code{aic}:
-#'   \item \code{bic}:
-#'   \item \code{cbic}:
+#'   \item \code{aic}: Akaike information criterion
+#'   \item \code{bic}: Bayesian information criterion
+#'   \item \code{sic}: modified Schwarz information criterion
 #'   \item \code{exe.time}: the total execution time in seconds
 #'   \item \code{trace}: a trace matrix recording the optimization history
 #'   \item \code{summary.cv}:
