@@ -4,46 +4,49 @@
 #' @description
 #' Provide four initialization methods to set the initial values of the parameters of
 #' a generalized matrix factorization (GMF) model identified by a \code{\link{glm}} family
-#' and a linear predictor of the form \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top},
+#' and a linear predictor of the form \eqn{g(\mu) = \eta = X B^\top + A Z^\top + U V^\top},
 #' with bijective link function \eqn{g(\cdot)}.
 #' See \code{\link{sgdgmf}} for more details on the model specification.
 #'
 #' @param Y matrix of responses (\eqn{n \times m})
 #' @param X matrix of row-specific fixed effects (\eqn{n \times p})
 #' @param Z matrix of column-specific fixed effects (\eqn{q \times m})
-#' @param ncomp rank of the latent matrix factorization (default 2)
-#' @param family a family as in the \code{\link{glm}} interface (default \code{gaussian()})
-#' @param method optimization method:  \code{"svd"} (default), \code{"glm"}, \code{"random"}, \code{"values"}
-#' @param niter number of iterations to refine the initial estimate (defult 0)
-#' @param values a list of custom initial values for \code{B}, \code{A}, \code{U} and \code{V}, or a subset of them
+#' @param ncomp rank of the latent matrix factorization
+#' @param family a family as in the \code{\link{glm}} interface
+#' @param method optimization method to be used for the initial fit
+#' @param type type of residuals to be used for initializing \code{U} via incomplete SVD decomposition
+#' @param niter number of iterations to refine the initial estimate (only if \code{method="ols"} or \code{"svd"})
+#' @param values a list of custom initial values for \code{B}, \code{A}, \code{U} and \code{V}
 #' @param verbose print the status of the initialization process
+#' @param parallel if \code{TRUE}, allows for parallel computing using the \code{foreach} package
+#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @param savedata if \code{TRUE}, stores a copy of the input data
 #'
 #' @return
 #' A list containing the initial values of \code{B}, \code{A}, \code{U}, \code{V} and \code{phi}.
 #'
 #' @details
-#' \code{method="svd"}: the initialization is performed fitting a sequence of linear
+#' If \code{method = "svd"}, the initialization is performed fitting a sequence of linear
 #' regressions followed by a residual SVD decomposition.
-#' To account for the non-Gaussian distribution of the data, regression and
-#' decomposition are applied on the transformed response matrix \eqn{Y_h = g(h(Y))},
+#' To account for non-Gaussian distribution of the data, regression and
+#' decomposition are applied on the transformed response matrix \eqn{Y_h = (g \circ h)(Y)},
 #' where \eqn{h(\cdot)} is a function which prevent \eqn{Y_h} to take infinite values.
 #' For instance, in the Binomial case \eqn{h(y) = 2 (1-\epsilon) y + \epsilon},
 #' while in the Poisson case \eqn{h(y) = y + \epsilon}, where \eqn{\epsilon} is a small
 #' positive constant, typically \code{0.1} or \code{0.01}.
 #'
-#' \code{method="glm"}: the initialization is performed by fitting a sequence of
+#' If \code{method = "glm"}, the initialization is performed by fitting a sequence of
 #' generalized linear models followed by a residual SVD decomposition.
-#' In particular, we use independent GLM fit \eqn{y_j \sim X \beta_j} to set \eqn{\beta_j}.
-#' Similarly, we fit the model \eqn{y_i \sim Z \gamma_i + o_i} with offset \eqn{o_i = B x_i}
-#' to set \eqn{\gamma_j}. Then, \eqn{U} and \eqn{V} are obtained via SVD on the final
+#' In particular, we use independent GLM fit with \eqn{y_j \sim X \beta_j} to set \eqn{\beta_j}.
+#' Similarly, we fit the model \eqn{y_i \sim Z \alpha_i + o_i} with offset \eqn{o_i = B x_i}
+#' to set \eqn{\alpha_j}. Then, \eqn{U} and \eqn{V} are obtained via SVD on the final
 #' working residuals.
 #'
-#' \code{method="random"}: the initialization is performed using independent Gaussian
+#'If  \code{method = "random"}, the initialization is performed using independent Gaussian
 #' random values for all the parameters in the model
 #'
-#' \code{method="values"}: the initialization is performed using the user-specified
-#' values provided as an input. The parameters not provided by the user are set
-#' using the same strategy described in \code{method="svd"}.
+#' If \code{method = "values"}, the initialization is performed using user-specified
+#' values provided as an input.
 #'
 #' @examples
 #' ...
@@ -107,58 +110,15 @@ init.gmf.param = function (
   return (init)
 }
 
-#' @title Random initialization
-#'
-#' @description
-#' Initialize the parameters of a GMF model sampling them from an independent
-#' Gaussian distribution (see \code{\link{init.gmf.param}} for more details)
-#'
-#' @keywords internal
-init.param.random = function (
-    Y,
-    X = NULL,
-    Z = NULL,
-    ncomp = 2,
-    family = gaussian()
-) {
+# @title OLS-SVD initialization
+#
+# @description
+# Initialize the parameters of a GMF model fitting a sequence of multivariate
+# linear regression followed by a residual SVD decomposition. It allows to
+# recursively refine the initial estimate by repeating the process a pre-specified
+# number of times. See \code{\link{init.gmf.param}} for more details.
 
-  # Derive data dimensions
-  n = nrow(Y)
-  m = ncol(Y)
-  d = ncomp
-
-  # Derive covariate dimensions
-  p = 0
-  q = 0
-  if (!is.null(X)) p = ncol(X) # n x p matrix
-  if (!is.null(Z)) q = ncol(Z) # m x q matrix
-
-  # parameter dimensions
-  dimU = c(n, d)
-  dimV = c(m, d)
-  dimB = c(m, p)
-  dimA = c(n, q)
-
-  # parameter generation
-  sd = 1e-01
-  U = array(rnorm(prod(dimU)) / prod(dimU) * sd, dimU)
-  V = array(rnorm(prod(dimV)) / prod(dimV) * sd, dimV)
-  B = array(rnorm(prod(dimB)) / prod(dimB) * sd, dimB)
-  A = array(rnorm(prod(dimA)) / prod(dimA) * sd, dimA)
-  phi = rep(1, length = m)
-
-  # output
-  list(U = U, V = V, A = A, B = B, phi = phi)
-}
-
-#' @title OLS-SVD initialization
-#'
-#' @description
-#' Initialize the parameters of a GMF model fitting a sequence of multivariate
-#' linear regression followed by a residual SVD decomposition. It allows to
-#' recursively refine the initial estimate by repeating the process a pre-specified
-#' number of times. See \code{\link{init.gmf.param}} for more details.
-#'
+#' @rdname init.gmf.param
 #' @keywords internal
 init.param.ols = function (
     Y,
@@ -250,12 +210,13 @@ init.param.ols = function (
 }
 
 
-#' @title GLM-SVD initialization
-#'
-#' @description
-#' Initialize the parameters of a GMF model fitting a sequence of GLMs followed
-#' by a residual SVD decomposition. See \code{\link{init.gmf.param}} for more details.
-#'
+# @title GLM-SVD initialization
+#
+# @description
+# Initialize the parameters of a GMF model fitting a sequence of GLMs followed
+# by a residual SVD decomposition. See \code{\link{init.gmf.param}} for more details.
+
+#' @rdname init.gmf.param
 #' @keywords internal
 init.param.glm = function (
     Y,
@@ -366,13 +327,54 @@ init.param.glm = function (
 }
 
 
-#' @title SVD initialization
-#'
-#' @description
-#' Initialize the parameters of a GMF model using custom values provided by the user
-#' and estimating the unspecified parameters using the same procedure described in
-#' \code{\link{init.param.svd}}. See \code{\link{init.gmf.param}} for more details.
-#'
+#' @rdname init.gmf.param
+#' @keywords internal
+init.param.random = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    ncomp = 2,
+    family = gaussian(),
+    sigma = 1
+) {
+
+  # Derive data dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+  d = ncomp
+
+  # Derive covariate dimensions
+  p = 0
+  q = 0
+  if (!is.null(X)) p = ncol(X) # n x p matrix
+  if (!is.null(Z)) q = ncol(Z) # m x q matrix
+
+  # parameter dimensions
+  dimU = c(n, d)
+  dimV = c(m, d)
+  dimB = c(m, p)
+  dimA = c(n, q)
+
+  # parameter generation
+  sd = 1e-01 * sigma
+  U = array(rnorm(prod(dimU)) / prod(dimU) * sd, dimU)
+  V = array(rnorm(prod(dimV)) / prod(dimV) * sd, dimV)
+  B = array(rnorm(prod(dimB)) / prod(dimB) * sd, dimB)
+  A = array(rnorm(prod(dimA)) / prod(dimA) * sd, dimA)
+  phi = rep(1, length = m)
+
+  # output
+  list(U = U, V = V, A = A, B = B, phi = phi)
+}
+
+# @title SVD initialization
+#
+# @description
+# Initialize the parameters of a GMF model using custom values provided by the user
+# and estimating the unspecified parameters using the same procedure described in
+# \code{\link{init.param.svd}}. See \code{\link{init.gmf.param}} for more details.
+
+#' @rdname init.gmf.param
 #' @keywords internal
 init.param.custom = function (
     Y,
