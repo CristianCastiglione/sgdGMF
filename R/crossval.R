@@ -31,7 +31,7 @@ sgdgmf.cv = function (
     Y,
     X = NULL,
     Z = NULL,
-    family = poisson(),
+    family = gaussian(),
     ncomps = seq(from = 1, to = 10, by = 1),
     weights = NULL,
     offset = NULL,
@@ -210,7 +210,7 @@ sgdgmf.cv = function (
   }
 
   if (refit) {
-    # Re-fit the model using the chosen optimizer
+    # Re-fit the model using the selected optimizer
     cat("Final refit with rank =", ncomp, "\n")
     control.init$values$U = control.init$values$U[, 1:ncomp, drop = FALSE]
     control.init$values$V = control.init$values$V[, 1:ncomp, drop = FALSE]
@@ -237,7 +237,20 @@ sgdgmf.cv = function (
   return (fit)
 }
 
-
+#' @title Single step of cross-validation for generalized matrix factorization models
+#'
+#' @description
+#' Internal function running a single step of cross-validation for generalized
+#' matrix factorization (GMF) models and calculating some goodness-of-fit measures
+#' on the train and test sets.
+#'
+#' @return
+#' Returns a \code{data.frame}  containing the current number of latent factors
+#' in the model (\code{ncomp}), the fold identifier (\code{fold}), the degrees of
+#' freedom, i.e. the number of parameters, of the model (\code{df}), the AIC, BIC
+#' and SIC and deviance (respectively, \code{aic}, \code{bic}, \code{sic}, \code{dev})
+#' calculated on the train and test sets.
+#'
 #' @keywords internal
 sgdgmf.cv.step = function (
     train, test, X, Z, family,
