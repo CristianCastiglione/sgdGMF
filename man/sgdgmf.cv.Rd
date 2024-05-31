@@ -8,7 +8,7 @@ sgdgmf.cv(
   Y,
   X = NULL,
   Z = NULL,
-  family = poisson(),
+  family = gaussian(),
   ncomps = seq(from = 1, to = 10, by = 1),
   weights = NULL,
   offset = NULL,
