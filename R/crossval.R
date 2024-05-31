@@ -56,8 +56,8 @@ sgdgmf.cv = function (
   # Data dimensions
   n = nrow(Y)
   m = ncol(Y)
-  p = ifelse(is.null(X), 0, ncol(X))
-  q = ifelse(is.null(Z), 0, ncol(Z))
+  p = ifelse(is.null(X), 1, ncol(X)) # if X = NULL, sgdgmf.fit set X = rep(1, n)
+  q = ifelse(is.null(Z), 1, ncol(Z)) # if X = NULL, sgdgmf.fit set Z = rep(1, m)
 
   # Maximum rank
   ncomps = floor(ncomps)
@@ -242,8 +242,8 @@ sgdgmf.cv.step = function (
   # Set the model dimensions
   n = nrow(train)
   m = ncol(train)
-  p = ncol(X)
-  q = ncol(Z)
+  p = ifelse(is.null(X), 1, ncol(X))
+  q = ifelse(is.null(Z), 1, ncol(Z))
 
   # Fraction of the data to use as a test set
   f = control.cv$proportion
