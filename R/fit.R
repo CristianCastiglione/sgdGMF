@@ -35,14 +35,14 @@
 #' \itemize{
 #'   \item \code{method}: the selected estimation method
 #'   \item \code{family}: the model family
-#'   \item \code{ncomp}:
-#'   \item \code{npar}:
-#'   \item \code{control.init}:
-#'   \item \code{control.alg}:
-#'   \item \code{control.cv}:
-#'   \item \code{Y}:
-#'   \item \code{X}:
-#'   \item \code{Z}:
+#'   \item \code{ncomp}: rank of the latent matrix factorization
+#'   \item \code{npar}: number of unknown parameters to be estimated
+#'   \item \code{control.init}: list of control parameters used for the initialization
+#'   \item \code{control.alg}: list of control parameters used for the optimization
+#'   \item \code{control.cv}: list of control parameters used for the cross.validation
+#'   \item \code{Y}: response matrix
+#'   \item \code{X}: row-specific covariate matrix
+#'   \item \code{Z}: column-specific covariate matrix
 #'   \item \code{B}: the estimated col-specific coefficient matrix
 #'   \item \code{A}: the estimated row-specific coefficient matrix
 #'   \item \code{U}: the estimated factor matrix
