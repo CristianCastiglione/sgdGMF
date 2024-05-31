@@ -128,7 +128,7 @@ sgdgmf.fit = function (
     Y,
     X = NULL,
     Z = NULL,
-    family = poisson(),
+    family = gaussian(),
     ncomp = 2,
     weights = NULL,
     offset = NULL,
