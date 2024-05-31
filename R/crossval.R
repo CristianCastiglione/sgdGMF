@@ -150,6 +150,11 @@ sgdgmf.cv = function (
     # ... The problem seems to be that the function "sgdgmf.cv.step"
     # ... is not visible from the "foreach" environment, as well as
     # ... all the other functions that are called by "sgdgmf.cv.step".
+    # SOLUTION:
+    # ... I guess that the problem can be solved by just building and installing
+    # ... the "sgdGMF" package. By doing this, the "foreach" option .package = c("sgdGMF")
+    # ... should work properly, including in the "foreach" environment
+    # ... all the functions and utilities of the "sgdGMF" package
     cv = foreach (iter = 1:niter, .packages = c("sgdGMF"), .combine = "rbind") %dopar% {
 
       # Set the number of components and the group
