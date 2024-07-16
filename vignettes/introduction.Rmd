@@ -20,14 +20,15 @@ knitr::opts_chunk$set(
 )
 ```
 
-Load the \code{sgdGMF} package in the workspace.
+This vignette provides an introductory example on how to work with the `sgdGMF` package, which implements several utilities for the estimation and analysis of generalized matrix factorization (GMF) models.
+
+First, let us load the `sgdGMF` package in the workspace.
 
 ```{r sgdgmf}
 # library(sgdGMF)
 devtools::load_all()
 ```
-
-Load other useful packages in the workspace.
+Most of the plotting functions in `sgdGMF` builds upon `ggplot2`, therefore we also need to load it together with other useful packages.
 
 ```{r libraries}
 library(ggplot2)
@@ -40,7 +41,10 @@ theme_set(theme_bw())
 
 ## Ant traits data
 
-Load the ant traits data in the workspace and define the response and covariate matrices.
+To showcase the basic functionalities of the `sgdGMF` package, we use an ecological dataset which is freely available as part of the `mvabund` package. 
+This dataset consists of a count matrix recording how many times a certain specie of ant have been observed on a particular environment.
+In total, the considered dataset contain 30 ant species and 41 spots.
+Then, we load the ant traits data in the workspace and we define the response and covariate matrices.
 
 ```{r data}
 data(antTraits, package = "mvabund")
@@ -55,55 +59,88 @@ m = ncol(Y)
 
 ## Model specification
 
-Set the model family to Poisson since the response matrix contain count data.
+`sgdGMF` is an package designed to efficiently estimate high-dimensional GMF models using either deterministic or stochastic optimization algorithms. 
+In general, GMF models extend generalized linear models to matrix-variate data.
+As such, we assume that the response variable $y_{ij} \in \mathcal{Y}$ has as conditional distribution of the form
+\[
+  y_{ij} \sim EF(\theta_{ij}, \phi), \quad
+  \mathrm{E}(y_{ij}) = \mu_{ij}, \quad
+  \mathrm{Var}(y_{ij}) = \phi \,\nu(\mu_{ij}),
+\]
+where $EF(\theta, \phi)$ is an exponential dispersion family with natural parameter $\theta$, dispersion $\phi$, mean $\mu$ and variance function $\nu(\cdot)$.
+Therefore, the probability density function of $y_{ij}$ is given by
+\[ 
+  \mathrm{p}(y_{ij} \mid \psi) = \exp \big[ \{ y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi) \big] 
+\]
+for appropriate family-specific functions $b(\cdot)$ and $c(\cdot, \cdot)$.
+Then, by the fundamental properties of the exponential dispersion families, we have $\mu = b'(\theta)$ and $\nu(\mu) = b''(\theta)$.
+
+To complete the model specification, we parametrize the conditional mean $\mu_{ij}$ using a linear predictor $\eta_{ij}$ eventually transformed with a bijective link function $g(\cdot)$, say
+\[
+  g(\mu_{ij}) = \eta_{ij} 
+  = x_i^\top \beta_j + \alpha_i^\top z_j + u_i^\top v_j
+  = (X B^\top + A Z^\top + UV^\top)_{ij}
+\]
+where $x_i \in \mathbb{R}^p$ and $z_j \in \mathbb{R}^q$ are known covariate vectors, $\beta_j \in \mathbb{R}^p$ and $\alpha_i \in \mathbb{R}^q$ are unknown regression coefficients, while $u_i \in \mathbb{R}^d$ and $v_i \in \mathbb{R}^d$ are, respectively, latent factor and loading vectors.
+Similarly, $X$, $Z$, $B$, $A$, $U$ and $V$ represent the matrices stacking the corresponding vectors by row or columns according to the indices $i$ and $j$.
+
+To model the ant aboundance matrix, we specify a GMF model with Poisson likelihood and logarithmic link, say $y_{ij} \sim \mathrm{Pois}(\theta_{ij})$, $\theta_{ij} = \mu_{ij}$ and $\log(\mu_{ij}) = \eta_{ij}$.
+Then, for the linear predictor, we consider the additive decomposition $\eta_{ij} = \alpha_{0i} + \beta_{0j} + x_i^\top \beta_{j} + u_i^\top v_j$, which include row- and column-specific intercepts, a column-specific covariate effect and a latent matrix decomposition. 
+
+The first step to specify such a model using the `sgfGMF` package is to set the likelihood family.
+To this aim, we can just use the standard family builders used by the `glm` function.
 
 ```{r family}
 family = poisson()
 ```
 
-Select the optimal number of latent factors using the function \code{sgdgmf.rank},
-which employs an adjusted eigenvalue thresholding method to identify the optimal
-elbow point of a screeplot.
+Then, we need to set the dimentions of the latent space, i.e., the rank of the matrix decomposition.
+If such an information is known a priori, we can just set it to a pre-specified value, otherwise, `sgdGMF` provides some algorithmic alternative to select it from the data.
+Here, we consider the Onatski method, which search for the optimal rank using an adjusted eigenvalue thresholding approach to identify the optimal elbow point of a residual screeplot.
+
 
 ```{r rank}
-vglm = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family, method = "onatski",
-                   return.eta = TRUE, return.mu = TRUE, return.res = TRUE)
-
-cat("Selected rank: ", vglm$ncomp)
+ncomp = sgdgmf.rank(Y = Y, X = X, Z = Z, family = family, method = "onatski")$ncomp
+cat("Selected rank: ", ncomp)
 ```
+
+The `sgdGMF.rank` function first estimate a vector generalized linear model, corresponding to the case $u_i^\top v_j = 0$, then extract the covariance matrix of the deviance residuals of the model and, finally, find the elbow of the covariance screeplot using the specified thresholding method.
+Additionally, we set some return parameters as `TRUE` to save some useful information that will be analyzed later on.
+
 
 ## Model estimation
 
-Estimate a Poisson GMF model using iterated least squares.
+Now, we are ready to estimate the Poisson GMF model using the `sgdgmf.fit` function.
 
 ```{r fit}
-ncomp = vglm$ncomp
 gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "bsgd")
 ```
 
+The default optimizer in `sgdgmf.fit` is `method = "airwls"`, which uses alternated iterative re-weighted least square.
+Instead, we here set `method = "bsgd"`, which employs the stochastic gradient descent method with block-subsampling strategy proposed in Castiglione, et al. (2024, arXiv).
+
 ## Model validation
 
-Compute the correlation between the observed data and the predicted values.
+Let us now check the model performance.
+First, we compute the correlation between the observed data and the predicted values.
 
 ```{r cor}
-cat(" VGLM: ", 100 * round(cor(c(Y), c(vglm$mu)), 4), "\n",
-    "  GMF: ", 100 * round(cor(c(Y), c(gmf$mu)), 4), sep = "")
-```
-Compute the partial deviance residuals holding out from the model the estimated 
-matrix factorization. Additionally, compute the spectrum of such a residual matrix.
+yhat_glm = fitted(gmf, type = "response", partial = TRUE) # VGLM model without matrix factorization
+yhat_gmf = fitted(gmf, type = "response", partial = FALSE) # complete GMF model
 
-```{r resid}
-res = residuals(gmf, spectrum = TRUE, ncomp = 20)
+cat(" VGLM: ", 100 * round(cor(c(Y), c(yhat_glm)), 4), "\n",
+    "  GMF: ", 100 * round(cor(c(Y), c(yhat_gmf)), 4), "\n", sep = "")
 ```
+Recall that VGLM is a particular case of GMF, which only include the regression effects and does not include a residual matrix factorization in the linear predictor.
+As we can observe, the correlation of the GMF predictions is much higher than the correlation calculated under the VGLM model.
+This suggests that the matrix factorization is actually able to explain a significant portion of the information contained in the data, that was not possible to explain using the regression effect alone.
 
-Compare the residuals of two competing models: VGLM and GMF.
-Notice that VGLM is a particular case of GMF of which only include the regression
-effects and does not include a residual matrix factorization in the linear predictor.
+To better understand the contribution of the matrix factorization, we now compare the residuals of the VGLM and GMF models.
 
 ```{r hist, fig.width = 7, fig.height = 5}
-plt.res.fit.glm = plot(gmf, type = "res-fit", partial = TRUE)
+plt.res.fit.glm  = plot(gmf, type = "res-fit", partial = TRUE)
 plt.res.hist.glm = plot(gmf, type = "hist", partial = TRUE)
-plt.res.fit.gmf = plot(gmf, type = "res-fit", partial = FALSE)
+plt.res.fit.gmf  = plot(gmf, type = "res-fit", partial = FALSE)
 plt.res.hist.gmf = plot(gmf, type = "hist", partial = FALSE)
 
 ggpubr::ggarrange(
@@ -115,7 +152,10 @@ ggpubr::ggarrange(
 
 ```
 
-Plot the variance explained by each principal component of the residual matrix.
+The GMF residuals exhibit a more regular behaviour, being almost symmetrically distributed around 0 and not exhibiting any extreme value.
+
+Another useful indicator of the quality of the matrix factorization is given by the residual screeplot.
+If we observe a elbow in the plot, this suggest that probably, we are not using the correct number of latent factors.
 
 ```{r spectrum, fig.width = 7, fig.height = 3}
 plt.eig.glm = screeplot(gmf, partial = TRUE) + ggtitle("Residual screeplot (VGLM)")
@@ -124,9 +164,14 @@ plt.eig.gmf = screeplot(gmf, partial = FALSE) + ggtitle("Residual screeplot (GMF
 ggpubr::ggarrange(plt.eig.glm, plt.eig.gmf, nrow = 1, ncol = 2, align = "hv")
 ```
 
+Indeed, under the VGLM model, we observe two extremely high eigenvalues, which is an indication that introducing 2 latent factors in the model is a sensible choice.
+On the other hand, the residual screeplot of the complete GMF model presents a smooth decay of the eigenvalues without an evident elbow, which is good, because this mean that we do not need to introduce additional factors in the matrix factorization.
+
+
 ## Observations vs fitted values
 
-Plot the abundance predicted by each method comparing it with the observed matrix.
+Another useful check is to plot the prediction map and to compare it with the observed data.
+This control can be performed using the function `image` and permits to identify systematical biases in the reconstruction map.
 
 ```{r pred, fig.width = 7, fig.height = 3.5}
 plt.ant = image(gmf, limits = range(c(Y)), type = "data")
@@ -138,6 +183,9 @@ ggpubr::ggarrange(
   nrow = 1, ncol = 2, common.legend = TRUE, legend = "bottom", align = "hv")
 ```
 
+Similarly, we can use the function `image` to plot the residuals.
+Here, for the sake of exposition, we consider the deviance and Poisson residuals, which are two standard definitions of residuals in the GML literature.
+
 ```{r resid2, fig.width = 7, fig.height = 3.5}
 plt.dev = image(gmf, type = "deviance", resid = TRUE, symmetric = TRUE)
 plt.prs = image(gmf, type = "pearson", resid = TRUE, symmetric = TRUE)
@@ -148,7 +196,14 @@ ggpubr::ggarrange(
   nrow = 1, ncol = 2, common.legend = FALSE, legend = "bottom", align = "hv")
 ```
 
+Both the prediction and the residual maps do not highlight any systematic bias in the matrix reconstruction, confirming the goodness of the proposed GMF model for the ant abundance data under consideration.
+
 ## Latent scores and low-dimensional representation
+
+Finally, we are interested to interpret the results.
+To this aim, the `sgdGMF` package provides some graphical and analytical solutions.
+For instance, we might be interested in visualizing the estimated latent factors and loadings.
+This can be done using the `biplot` function.
 
 ```{r scores, fig.width = 7, fig.height = 4}
 plt = biplot(gmf)
@@ -156,6 +211,16 @@ ggpubr::ggarrange(
   plt$scores + ggtitle("Environments"), 
   plt$loadings + ggtitle("Species"), 
   nrow = 1, ncol = 2, align = "hv")
+```
+
+As an alternative, we can extract and inspect the pointwise estimates of the latent score and loading matrices.
+
+```{r}
+# Scores
+head(coef(gmf, type = "scores"))
+
+# Loadings
+head(coef(gmf, type = "loadings"))
 ```
 
 
