@@ -42,6 +42,17 @@ set.control.newton(
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TTUE})}
 }
 \description{
-Check if the input control parameters are allowed and set them to default
-values if they are not. Returns a list of well-defined control parameters.
+Check if the input control parameters of the quasi-Newton algorithm  are
+allowed and set them to default values if they are not. Returns a list of
+well-defined control parameters.
+}
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.newton()
+
+# Parametrized call
+set.control.newton(maxiter = 1000, stepsize = 0.01, tol = 1e-04)
+
 }

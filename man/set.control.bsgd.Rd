@@ -57,3 +57,14 @@ set.control.bsgd(
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.
 }
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.bsgd()
+
+# Parametrized call
+set.control.bsgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+
+
+}

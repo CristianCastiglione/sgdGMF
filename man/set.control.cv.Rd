@@ -5,7 +5,7 @@
 \title{Check and set the cross-validation parameters}
 \usage{
 set.control.cv(
-  criterion = c("dev", "aic", "bic", "sic"),
+  criterion = c("dev", "aic", "bic"),
   refit = TRUE,
   nfolds = 5,
   proportion = 0.3,
@@ -33,4 +33,14 @@ set.control.cv(
 \description{
 Check if the input cross-validation parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined cross-validation parameters.
+}
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.cv()
+
+# Parametrized call
+set.control.cv(criterion = "bic", proportion = 0.2)
+
 }

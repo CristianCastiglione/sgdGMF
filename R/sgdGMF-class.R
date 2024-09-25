@@ -60,7 +60,6 @@ setClass("sgdgmf",
     objective = "numeric",
     aic = "numeric",
     bic = "numeric",
-    sic = "numeric",
     exe.time = "vector",
     trace = "data.frame",
     summary.cv = "data.frame"
@@ -151,7 +150,7 @@ deviance.sgdgmf = function (object, normalize = FALSE) {
     m = ncol(object$Y)
     mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
     dev0 = sum(object$family$dev.resids(object$Y, mu0, 1), na.rm = TRUE)
-    dev = dev / mu0
+    dev = dev / dev0
   }
   return (dev)
 }
@@ -185,22 +184,6 @@ BIC.sgdgmf = function (object) {
   nm = prod(dim(object$Y)) - sum(is.na(object$Y))
   bic = dev + df * log(nm)
   return (bic)
-}
-
-#' @title Compute the SIC of a GMF model
-#'
-#' @description Compute the Bayesian information criterion (SIC) of an estimated GMF object
-#'
-#' @param object an object of class \code{sgdgmf}
-#'
-#' @method SIC sgdgmf
-#' @export
-SIC.sgdgmf = function (object) {
-  dev = deviance(object, normalize = FALSE)
-  df = object$npar
-  nm = prod(dim(object$Y)) - sum(is.na(object$Y))
-  sic = dev + df * log(nm) / nm
-  return (sic)
 }
 
 #' @title Print the fundamental characteristics of a GMF

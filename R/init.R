@@ -2,31 +2,50 @@
 #' @title Initialize the parameters of a generalized matrix factorization model
 #'
 #' @description
-#' Provide four initialization methods to set the initial values of the parameters of
+#' Provide four initialization methods to set the initial values of
 #' a generalized matrix factorization (GMF) model identified by a \code{\link{glm}} family
 #' and a linear predictor of the form \eqn{g(\mu) = \eta = X B^\top + A Z^\top + U V^\top},
 #' with bijective link function \eqn{g(\cdot)}.
-#' See \code{\link{sgdgmf}} for more details on the model specification.
+#' See \code{\link{sgdgmf.fit}} for more details on the model specification.
 #'
 #' @param Y matrix of responses (\eqn{n \times m})
 #' @param X matrix of row-specific fixed effects (\eqn{n \times p})
 #' @param Z matrix of column-specific fixed effects (\eqn{q \times m})
 #' @param ncomp rank of the latent matrix factorization
-#' @param family a family as in the \code{\link{glm}} interface
+#' @param family a model family, as in the \code{\link{glm}} interface
 #' @param method optimization method to be used for the initial fit
 #' @param type type of residuals to be used for initializing \code{U} via incomplete SVD decomposition
 #' @param niter number of iterations to refine the initial estimate (only if \code{method="ols"} or \code{"svd"})
 #' @param values a list of custom initial values for \code{B}, \code{A}, \code{U} and \code{V}
-#' @param verbose print the status of the initialization process
-#' @param parallel if \code{TRUE}, allows for parallel computing using the \code{foreach} package
-#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @param verbose if \code{TRUE}, prints the status of the initialization process
+#' @param parallel if \code{TRUE}, allows for parallel computing using the \code{foreach} package (only if \code{method="glm"})
+#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE} and \code{method="glm"})
 #' @param savedata if \code{TRUE}, stores a copy of the input data
 #'
 #' @return
-#' A list containing the initial values of \code{B}, \code{A}, \code{U}, \code{V} and \code{phi}.
+#' An \code{initgmf} object, namely a list, containing the initial estimates of the GMF parameters.
+#' In particular, the returned object collects the following information:
+#' \itemize{
+#'   \item \code{Y}: response matrix (only if \code{savedata=TRUE})
+#'   \item \code{X}: row-specific covariate matrix (only if \code{savedata=TRUE})
+#'   \item \code{Z}: column-specific covariate matrix (only if \code{savedata=TRUE})
+#'   \item \code{B}: the estimated col-specific coefficient matrix
+#'   \item \code{A}: the estimated row-specific coefficient matrix
+#'   \item \code{U}: the estimated factor matrix
+#'   \item \code{V}: the estimated loading matrix
+#'   \item \code{phi}: the estimated dispersion parameter
+#'   \item \code{method}: the selected estimation method
+#'   \item \code{family}: the model family
+#'   \item \code{ncomp}: rank of the latent matrix factorization
+#'   \item \code{type}: type of residuals used for the initialization of \code{U}
+#'   \item \code{verbose}: if \code{TRUE}, print the status of the initialization process
+#'   \item \code{parallel}: if \code{TRUE}, allows for parallel computing
+#'   \item \code{nthreads}: number of cores to be used in parallel
+#'   \item \code{savedata}: if \code{TRUE}, stores a copy of the input data
+#' }
 #'
 #' @details
-#' If \code{method = "svd"}, the initialization is performed fitting a sequence of linear
+#' If \code{method = "ols"}, the initialization is performed fitting a sequence of linear
 #' regressions followed by a residual SVD decomposition.
 #' To account for non-Gaussian distribution of the data, regression and
 #' decomposition are applied on the transformed response matrix \eqn{Y_h = (g \circ h)(Y)},
@@ -37,19 +56,21 @@
 #'
 #' If \code{method = "glm"}, the initialization is performed by fitting a sequence of
 #' generalized linear models followed by a residual SVD decomposition.
-#' In particular, we use independent GLM fit with \eqn{y_j \sim X \beta_j} to set \eqn{\beta_j}.
-#' Similarly, we fit the model \eqn{y_i \sim Z \alpha_i + o_i} with offset \eqn{o_i = B x_i}
-#' to set \eqn{\alpha_j}. Then, \eqn{U} and \eqn{V} are obtained via SVD on the final
-#' working residuals.
+#' In particular, to set \eqn{\beta_j}, we use independent GLM fit with \eqn{y_j \sim X \beta_j}.
+#' Similarly, to set \eqn{\alpha_i}, we fit the model \eqn{y_i \sim Z \alpha_i + o_i}, with offset \eqn{o_i = B x_i}.
+#' Then, we obtain \eqn{U} via SVD on the residuals. Finally, we obtain \eqn{V} via independent GLM fit
+#' under the model \eqn{y_j \sim U v_j + o_j}, with offset \eqn{o_i = X \beta_j + A z_j}.
 #'
-#'If  \code{method = "random"}, the initialization is performed using independent Gaussian
-#' random values for all the parameters in the model
+#' Both under \code{method = "ols"} and \code{method = "glm"}, it is possible to specify the
+#' parameter \code{type} to change the type of residuals used for the SVD decomposition.
+#'
+#' If  \code{method = "random"}, the initialization is performed using independent Gaussian
+#' random values for all the parameters in the model.
 #'
 #' If \code{method = "values"}, the initialization is performed using user-specified
-#' values provided as an input.
+#' values provided as an input, which must have compatible dimensions.
 #'
-#' @examples
-#' ...
+#' @example examples/example-init.R
 #'
 #' @export init.gmf.param
 init.gmf.param = function (
@@ -58,7 +79,7 @@ init.gmf.param = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
-    method = c("svd", "ols", "glm", "random", "values"),
+    method = c("ols", "glm", "random", "values"),
     type = c("deviance", "pearson", "working", "link"),
     niter = 0,
     values = list(),
@@ -72,7 +93,6 @@ init.gmf.param = function (
 
   # Initialize the parameters using the selected method
   init = switch(method,
-    "svd" = init.param.ols(Y, X, Z, ncomp, family, type, verbose),
     "ols" = init.param.ols(Y, X, Z, ncomp, family, type, verbose),
     "glm" = init.param.glm(Y, X, Z, ncomp, family, type, verbose, parallel, nthreads),
     "random" = init.param.random(Y, X, Z, ncomp),
@@ -109,14 +129,6 @@ init.gmf.param = function (
   # Return the initial estimates
   return (init)
 }
-
-# @title OLS-SVD initialization
-#
-# @description
-# Initialize the parameters of a GMF model fitting a sequence of multivariate
-# linear regression followed by a residual SVD decomposition. It allows to
-# recursively refine the initial estimate by repeating the process a pre-specified
-# number of times. See \code{\link{init.gmf.param}} for more details.
 
 #' @rdname init.gmf.param
 #' @keywords internal
@@ -209,12 +221,6 @@ init.param.ols = function (
   list(U = U, V = V, A = A, B = B, phi = phi)
 }
 
-
-# @title GLM-SVD initialization
-#
-# @description
-# Initialize the parameters of a GMF model fitting a sequence of GLMs followed
-# by a residual SVD decomposition. See \code{\link{init.gmf.param}} for more details.
 
 #' @rdname init.gmf.param
 #' @keywords internal
@@ -367,12 +373,6 @@ init.param.random = function (
   list(U = U, V = V, A = A, B = B, phi = phi)
 }
 
-# @title SVD initialization
-#
-# @description
-# Initialize the parameters of a GMF model using custom values provided by the user
-# and estimating the unspecified parameters using the same procedure described in
-# \code{\link{init.param.svd}}. See \code{\link{init.gmf.param}} for more details.
 
 #' @rdname init.gmf.param
 #' @keywords internal

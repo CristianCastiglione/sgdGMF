@@ -29,3 +29,14 @@ please refer to
 \code{\link{set.control.csgd}} (\code{method="csgd"}),
 \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
 }
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.alg()
+
+# Parametrized call
+set.control.alg(method = "airwls", control = list(maxiter = 200, stepsize = 0.3))
+
+
+}

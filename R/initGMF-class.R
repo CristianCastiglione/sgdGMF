@@ -86,19 +86,6 @@ BIC.initgmf = function (object) {
   return (bic)
 }
 
-#' @method SIC initgmf
-#' @export
-SIC.initgmf = function (object) {
-  if (!object$savedata) {
-    stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
-  }
-  dev = deviance(object, normalize = FALSE)
-  df = prod(dim(object$B)) + prod(dim(object$A)) + prod(dim(object$U)) + prod(dim(object$V))
-  nm = prod(dim(object$Y)) - sum(is.na(object$Y))
-  sic = dev + df * log(nm) / nm
-  return (sic)
-}
-
 #' @title Extract the coefficient of an initialized GMF model
 #'
 #' @description

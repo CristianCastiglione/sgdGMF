@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit.R
 \name{sgdgmf.fit}
 \alias{sgdgmf.fit}
-\title{Factorize a matrix of non-Gaussian observations via SGD}
+\title{Factorize a matrix of non-Gaussian observations using GMF}
 \usage{
 sgdgmf.fit(
   Y,
@@ -68,7 +68,6 @@ In particular, the returned object collects the following information:
   \item \code{objective}: the penalized objective function at the end of the optimization
   \item \code{aic}: Akaike information criterion
   \item \code{bic}: Bayesian information criterion
-  \item \code{sic}: modified Schwarz information criterion
   \item \code{exe.time}: the total execution time in seconds
   \item \code{trace}: a trace matrix recording the optimization history
   \item \code{summary.cv}:
@@ -81,23 +80,26 @@ It is an alternative to PCA when the observed data are binary, counts, positive
 scores or, more generally, when the conditional distribution of the observations
 can be appropriately described using a dispersion exponential family
 or a quasi-likelihood model.
-Some examples are Gaussian, Gamma, Binomial and Poisson laws.
+Some examples are Gaussian, Gamma, Binomial and Poisson probability laws.
 
 The dependence among the observations and the variables in the sample can be
 taken into account through appropriate row- and column-specific regression effects.
-The residual variability is then modeled through a low-rank latent matrix factorization.
+The residual variability is then modeled through a low-rank matrix factorization.
 
-For the estimation, the package implements two deterministic optimization methods
-and four stochastic optimization algorithms.
+For the estimation, the package implements two deterministic optimization methods,
+(AIRWLS and Newton) and two stochastic optimization algorithms (coordinate-wise
+and block-wise adaptive SGD).
 }
 \details{
+\strong{Model specification}
+
 The model we consider is defined as follows.
 Let \eqn{Y = (y_{ij})} be a matrix of observed data of dimension \eqn{n \times m}.
 We assume for the \eqn{(i,j)}th observation in the matrix a dispersion exponential family law
 \eqn{(y_{ij} \mid \theta_{ij}) \sim EF(\theta_{ij}, \phi)}, where \eqn{\theta_{ij}} is the
 natural parameter and \eqn{\phi} is the dispersion parameter.
 Recall that the conditional probability density function of \eqn{y_{ij}} is given by
-\deqn{f (y_{ij}; \psi) = \exp \big[ w_{ij} \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi) \big],}
+\deqn{f (y_{ij}; \psi) = \exp \big[ w_{ij} \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - w_{ij} c(y_{ij}, \phi) \big],}
 where \eqn{\psi} is the vector of unknown parameters to be estimated,
 \eqn{b(\cdot)} is a convex twice differentiable log-partition function,
 and \eqn{c(\cdot,\cdot)} is the cumulant function of the family.
@@ -118,29 +120,94 @@ through the equation \eqn{E(y_{ij}) = \mu_{ij} = b'(\theta_{ij})}.
 Similarly, the variance of \eqn{y_{ij}} is given by
 \eqn{\text{Var}(y_{ij}) = \phi \,\nu(\mu_{ij}) = \phi \,b''(\mu_{ij})}, where \eqn{\nu(\cdot)}
 is the so-called variance function of the family.
+Finally, we denote by \eqn{D_\phi(y,\mu)} the deviance function of the family, which
+is defined as \eqn{D_\phi(y,\mu) = - 2 \log\{ f(y, \psi) / f_0 (y) \}},
+where \eqn{f_0(y)} is the likelihood of the saturated model.
 
-The estimation of the model parameters is performed by minimizing the penalized negative log-likelihood function
-\deqn{\ell_\lambda (\psi; y) = - 2 \sum_{i,j = 1}^{n,m} \log f(y_{ij}; \psi) + \lambda \| U \|_F^2 + \lambda \| V \|_F^2,}
-where \eqn{\lambda > 0} is a regularization parameter and \eqn{\|\cdot\|_F} is the Frobenious norm.
-Quasi-likelihood models, where \eqn{f(y; \psi)} is substituted by
-\eqn{Q(y, \mu) = \exp \big[ \int_y^\mu \{(y - t) / \phi \nu(t)\} \,dt \big] / \phi},
-can also be considered.
-The regularization parameters for \eqn{U} and \eqn{V} do not have necessary the same value.
+The estimation of the model parameters is performed by minimizing the penalized deviance function
+\deqn{\displaystyle \ell_\lambda (\psi; y) = - \sum_{i = 1}^{n} \sum_{j = 1}^{m} D_\phi(y_{ij}, \mu_{ij}) + \frac{\lambda_{\scriptscriptstyle U}}{2} \| U \|_F^2 + \frac{\lambda_{\scriptscriptstyle V}}{2} \| V \|_F^2,}
+where \eqn{\lambda_{\scriptscriptstyle U} > 0} and \eqn{\lambda_{\scriptscriptstyle V} > 0} are regularization parameters and \eqn{\|\cdot\|_F} is the Frobenious norm.
 Additional \eqn{\ell_2} penalization terms can be introduced to regularize \eqn{B} and \eqn{\Gamma}.
+Quasi-likelihood models, where \eqn{D_\phi(y, \mu)} is substituted by
+\eqn{Q_\phi(y, \mu) = - \log \phi - \int_y^\mu \{(y - t) / \nu(t)\} \,dt / \phi},
+can be considered as well.
+
+\strong{Estimation algorithms}
 
 To obtain the penalized maximum likelihood estimate, we here employs
-six different algorithms
+four different algorithms
 \itemize{
-  \item AIRWLS: alternated iterative re-weighted least squares
-  \item Newton: quasi-Newton algorithm with diagonal Hessian
-  \item M-SGD: memoized stochastic gradient descent
-  \item C-SGD: coordinate-wise stochastic gradient descent
-  \item R-SGD: row-wise stochastic gradient descent
-  \item B-SGD: block-wise stochastic gradient descent
+  \item AIRWLS: alternated iterative re-weighted least squares (\code{method="airwls"});
+  \item Newton: quasi-Newton algorithm with diagonal Hessian (\code{method="newton"});
+  \item C-SGD: coordinate-wise stochastic gradient descent (\code{method="vsgd"});
+  \item B-SGD: block-wise stochastic gradient descent (\code{method="bsgd"}).
 }
+
+\strong{Likelihood families}
+
+Currently, all standard \code{glm} families are supported, including \code{neg.bin}
+and \code{negative.binomial} families from the \code{MASS} package.
+In such a case, the deviance function we consider takes the form
+\eqn{D_\phi(y, \mu) = 2 \big[ y \log(y / \mu) - (y + \phi) \log\{ (y + \phi) / (\mu + \phi) \} \big]}.
+This correspond a Negative Binomial model with the variance function \eqn{\nu(\mu) = \mu + \mu^2 / \phi}.
+Then, for \eqn{\phi \rightarrow \infty}, the Negative Binomial likelihood converges
+to a Poisson likelihood, having linear variance function, say \eqn{\nu(\mu) = \mu}.
+Notice that the over-dispersion parameter, that here is denoted as \eqn{\phi},
+in the \code{MASS} package is referred to as \eqn{\theta}.
 }
 \examples{
-...
+library(sgdGMF)
+
+# Set the data dimensions
+n = 100; m = 20; d = 5
+
+# Set the time range, phases, frequences and amplitudes of the underlying signals
+time = seq(from = 0, to = 1, length = n)
+phase = sort(2*runif(d), decreasing = FALSE)
+freq = sort(2*runif(d), decreasing = FALSE)
+amp = sort(runif(d), decreasing = TRUE)
+
+Time = tcrossprod(time, rep(1, d))
+Phase = tcrossprod(rep(1, n), phase)
+Freq = tcrossprod(rep(1, n), freq)
+Amp = diag(amp)
+
+# Combine the latent signals using independent Gaussian coefficients
+U = sin(2 * pi * Freq * (Time + Phase)) \%*\% Amp
+V = matrix(rnorm(m*d), nrow = m, ncol = d)
+eta = tcrossprod(U, V)
+
+# Generate data using Poisson, Binomial and Gamma models
+mu_pois = exp(eta)
+Y_pois = matrix(rpois(n*m, lambda = mu_pois), nrow = n, ncol = m)
+
+mu_bin = plogis(2*eta)
+Y_bin = matrix(rbinom(n*m, size = 1, prob = mu_bin), nrow = n, ncol = m)
+
+mu_gam = exp(eta)
+Y_gam = matrix(rgamma(n*m, shape = 2, scale = mu_gam), nrow = n, ncol = m)
+
+# Initialize the GMF parameters assuming 3 latent factors
+gmf_pois = sgdgmf.fit(Y_pois, ncomp = 3, family = poisson(), method = "airwls")
+gmf_bin = sgdgmf.fit(Y_bin, ncomp = 3, family = binomial(), method = "airwls")
+gmf_gam = sgdgmf.fit(Y_gam, ncomp = 3, family = Gamma(link = "log"), method = "airwls")
+
+# Get the fitted values in the link and response scales
+mu_hat_pois = fitted(gmf_pois, type = "response")
+mu_hat_bin = fitted(gmf_bin, type = "response")
+mu_hat_gam = fitted(gmf_gam, type = "response")
+
+# Compare the results
+par(mfrow = c(3,3), mar = c(1,1,3,1))
+image(Y_pois, axes = FALSE, main = expression(Y[Pois]))
+image(mu_pois, axes = FALSE, main = expression(mu[Pois]))
+image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))
+image(Y_bin, axes = FALSE, main = expression(Y[Bin]))
+image(mu_bin, axes = FALSE, main = expression(mu[Bin]))
+image(mu_hat_bin, axes = FALSE, main = expression(hat(mu)[Bin]))
+image(Y_gam, axes = FALSE, main = expression(Y[Gam]))
+image(mu_gam, axes = FALSE, main = expression(mu[Gam]))
+image(mu_hat_gam, axes = FALSE, main = expression(hat(mu)[Gam]))
 
 }
 \references{
@@ -151,4 +218,9 @@ Journal of Machine Learning Research, 23: 1-29.
 Wang, L. and Carvalho, L. (2023).
 \emph{Deviance matrix factorization.}
 Electronic Journal of Statistics, 17(2): 3762-3810.
+}
+\seealso{
+\code{\link{refit.sgdgmf}}, \code{\link{coef.sgdgmf}}, \code{\link{resid.sgdgmf}},
+\code{\link{fitted.sgdgmf}}, \code{\link{predict.sgdgmf}}, \code{\link{plot.sgdgmf}},
+\code{\link{screeplot.sgdgmf}}, \code{\link{biplot.sgdgmf}}, \code{\link{image.sgdgmf}}
 }

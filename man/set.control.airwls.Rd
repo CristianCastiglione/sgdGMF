@@ -45,6 +45,18 @@ set.control.airwls(
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
 }
 \description{
-Check if the input control parameters are allowed and set them to default
-values if they are not. Returns a list of well-defined control parameters.
+Check if the input control parameters of the AIRWLS algorithm are allowed
+and set them to default values if they are not. Returns a list of
+well-defined control parameters.
+}
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.airwls()
+
+# Parametrized call
+set.control.airwls(maxiter = 100, nsteps = 5, stepsize = 0.3)
+
+
 }

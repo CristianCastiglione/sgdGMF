@@ -14,7 +14,7 @@ init.gmf.param(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
-  method = c("svd", "ols", "glm", "random", "values"),
+  method = c("ols", "glm", "random", "values"),
   type = c("deviance", "pearson", "working", "link"),
   niter = 0,
   values = list(),
@@ -74,7 +74,7 @@ init.param.custom(
 
 \item{ncomp}{rank of the latent matrix factorization}
 
-\item{family}{a family as in the \code{\link{glm}} interface}
+\item{family}{a model family, as in the \code{\link{glm}} interface}
 
 \item{method}{optimization method to be used for the initial fit}
 
@@ -84,26 +84,45 @@ init.param.custom(
 
 \item{values}{a list of custom initial values for \code{B}, \code{A}, \code{U} and \code{V}}
 
-\item{verbose}{print the status of the initialization process}
+\item{verbose}{if \code{TRUE}, prints the status of the initialization process}
 
-\item{parallel}{if \code{TRUE}, allows for parallel computing using the \code{foreach} package}
+\item{parallel}{if \code{TRUE}, allows for parallel computing using the \code{foreach} package (only if \code{method="glm"})}
 
-\item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
+\item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE} and \code{method="glm"})}
 
 \item{savedata}{if \code{TRUE}, stores a copy of the input data}
 }
 \value{
-A list containing the initial values of \code{B}, \code{A}, \code{U}, \code{V} and \code{phi}.
+An \code{initgmf} object, namely a list, containing the initial estimates of the GMF parameters.
+In particular, the returned object collects the following information:
+\itemize{
+  \item \code{Y}: response matrix (only if \code{savedata=TRUE})
+  \item \code{X}: row-specific covariate matrix (only if \code{savedata=TRUE})
+  \item \code{Z}: column-specific covariate matrix (only if \code{savedata=TRUE})
+  \item \code{B}: the estimated col-specific coefficient matrix
+  \item \code{A}: the estimated row-specific coefficient matrix
+  \item \code{U}: the estimated factor matrix
+  \item \code{V}: the estimated loading matrix
+  \item \code{phi}: the estimated dispersion parameter
+  \item \code{method}: the selected estimation method
+  \item \code{family}: the model family
+  \item \code{ncomp}: rank of the latent matrix factorization
+  \item \code{type}: type of residuals used for the initialization of \code{U}
+  \item \code{verbose}: if \code{TRUE}, print the status of the initialization process
+  \item \code{parallel}: if \code{TRUE}, allows for parallel computing
+  \item \code{nthreads}: number of cores to be used in parallel
+  \item \code{savedata}: if \code{TRUE}, stores a copy of the input data
+}
 }
 \description{
-Provide four initialization methods to set the initial values of the parameters of
+Provide four initialization methods to set the initial values of
 a generalized matrix factorization (GMF) model identified by a \code{\link{glm}} family
 and a linear predictor of the form \eqn{g(\mu) = \eta = X B^\top + A Z^\top + U V^\top},
 with bijective link function \eqn{g(\cdot)}.
-See \code{\link{sgdgmf}} for more details on the model specification.
+See \code{\link{sgdgmf.fit}} for more details on the model specification.
 }
 \details{
-If \code{method = "svd"}, the initialization is performed fitting a sequence of linear
+If \code{method = "ols"}, the initialization is performed fitting a sequence of linear
 regressions followed by a residual SVD decomposition.
 To account for non-Gaussian distribution of the data, regression and
 decomposition are applied on the transformed response matrix \eqn{Y_h = (g \circ h)(Y)},
@@ -114,19 +133,73 @@ positive constant, typically \code{0.1} or \code{0.01}.
 
 If \code{method = "glm"}, the initialization is performed by fitting a sequence of
 generalized linear models followed by a residual SVD decomposition.
-In particular, we use independent GLM fit with \eqn{y_j \sim X \beta_j} to set \eqn{\beta_j}.
-Similarly, we fit the model \eqn{y_i \sim Z \alpha_i + o_i} with offset \eqn{o_i = B x_i}
-to set \eqn{\alpha_j}. Then, \eqn{U} and \eqn{V} are obtained via SVD on the final
-working residuals.
+In particular, to set \eqn{\beta_j}, we use independent GLM fit with \eqn{y_j \sim X \beta_j}.
+Similarly, to set \eqn{\alpha_i}, we fit the model \eqn{y_i \sim Z \alpha_i + o_i}, with offset \eqn{o_i = B x_i}.
+Then, we obtain \eqn{U} via SVD on the residuals. Finally, we obtain \eqn{V} via independent GLM fit
+under the model \eqn{y_j \sim U v_j + o_j}, with offset \eqn{o_i = X \beta_j + A z_j}.
+
+Both under \code{method = "ols"} and \code{method = "glm"}, it is possible to specify the
+parameter \code{type} to change the type of residuals used for the SVD decomposition.
 
 If  \code{method = "random"}, the initialization is performed using independent Gaussian
-random values for all the parameters in the model
+random values for all the parameters in the model.
 
 If \code{method = "values"}, the initialization is performed using user-specified
-values provided as an input.
+values provided as an input, which must have compatible dimensions.
 }
 \examples{
-...
+library(sgdGMF)
+
+# Set the data dimensions
+n = 100; m = 20; d = 5
+
+# Set the time range, phases, frequences and amplitudes of the underlying signals
+time = seq(from = 0, to = 1, length = n)
+phase = sort(2*runif(d), decreasing = FALSE)
+freq = sort(2*runif(d), decreasing = FALSE)
+amp = sort(runif(d), decreasing = TRUE)
+
+Time = tcrossprod(time, rep(1, d))
+Phase = tcrossprod(rep(1, n), phase)
+Freq = tcrossprod(rep(1, n), freq)
+Amp = diag(amp)
+
+# Combine the latent signals using independent Gaussian coefficients
+U = sin(2 * pi * Freq * (Time + Phase)) \%*\% Amp
+V = matrix(rnorm(m*d), nrow = m, ncol = d)
+eta = tcrossprod(U, V)
+
+# Generate data using Poisson, Binomial and Gamma models
+mu_pois = exp(eta)
+Y_pois = matrix(rpois(n*m, lambda = mu_pois), nrow = n, ncol = m)
+
+mu_bin = plogis(2*eta)
+Y_bin = matrix(rbinom(n*m, size = 1, prob = mu_bin), nrow = n, ncol = m)
+
+mu_gam = exp(eta)
+Y_gam = matrix(rgamma(n*m, shape = 2, scale = mu_gam), nrow = n, ncol = m)
+
+# Initialize the GMF parameters assuming 3 latent factors
+init_pois = init.gmf.param(Y_pois, ncomp = 3, family = poisson(), method = "ols")
+init_bin = init.gmf.param(Y_bin, ncomp = 3, family = binomial(), method = "ols")
+init_gam = init.gmf.param(Y_gam, ncomp = 3, family = Gamma(link = "log"), method = "ols")
+
+# Get the fitted values in the link and response scales
+mu_hat_pois = fitted(init_pois, type = "response")
+mu_hat_bin = fitted(init_bin, type = "response")
+mu_hat_gam = fitted(init_gam, type = "response")
+
+# Compare the results
+par(mfrow = c(3,3), mar = c(1,1,3,1))
+image(Y_pois, axes = FALSE, main = expression(Y[Pois]))
+image(mu_pois, axes = FALSE, main = expression(mu[Pois]))
+image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))
+image(Y_bin, axes = FALSE, main = expression(Y[Bin]))
+image(mu_bin, axes = FALSE, main = expression(mu[Bin]))
+image(mu_hat_bin, axes = FALSE, main = expression(hat(mu)[Bin]))
+image(Y_gam, axes = FALSE, main = expression(Y[Gam]))
+image(mu_gam, axes = FALSE, main = expression(mu[Gam]))
+image(mu_hat_gam, axes = FALSE, main = expression(hat(mu)[Gam]))
 
 }
 \keyword{internal}

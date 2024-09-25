@@ -25,7 +25,7 @@ sgdgmf.cv.step(
 Returns a \code{data.frame}  containing the current number of latent factors
 in the model (\code{ncomp}), the fold identifier (\code{fold}), the degrees of
 freedom, i.e. the number of parameters, of the model (\code{df}), the AIC, BIC
-and SIC and deviance (respectively, \code{aic}, \code{bic}, \code{sic}, \code{dev})
+and deviance (respectively, \code{aic}, \code{bic}, \code{dev})
 calculated on the train and test sets.
 }
 \description{

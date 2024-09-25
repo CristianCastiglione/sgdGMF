@@ -57,3 +57,13 @@ set.control.csgd(
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.
 }
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.csgd()
+
+# Parametrized call
+set.control.csgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+
+}

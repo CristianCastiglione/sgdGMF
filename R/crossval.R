@@ -26,6 +26,8 @@
 #' @references
 #' ...
 #'
+#' @example examples/example-crossval.R
+#'
 #' @export sgdgmf.cv
 sgdgmf.cv = function (
     Y,
@@ -41,6 +43,8 @@ sgdgmf.cv = function (
     control.alg = list(),
     control.cv = list()
 ) {
+
+  method = match.arg(method)
 
   # Sanity check for the cross-validation options
   control.cv = do.call("set.control.cv", control.cv)
@@ -190,8 +194,7 @@ sgdgmf.cv = function (
           df = mean(cv$df[idx]),
           dev = mean(cv$dev[idx], na.rm = TRUE),
           aic = mean(cv$aic[idx], na.rm = TRUE),
-          bic = mean(cv$bic[idx], na.rm = TRUE),
-          sic = mean(cv$sic[idx], na.rm = TRUE)
+          bic = mean(cv$bic[idx], na.rm = TRUE)
         )
         avgcv = rbind(avgcv, avgstat)
       }
@@ -199,14 +202,12 @@ sgdgmf.cv = function (
     ncomp = switch(criterion,
       "dev" = avgcv$ncomp[which.min(avgcv$dev)],
       "aic" = avgcv$ncomp[which.min(avgcv$aic)],
-      "bic" = avgcv$ncomp[which.min(avgcv$bic)],
-      "sic" = avgcv$ncomp[which.min(avgcv$sic)])
+      "bic" = avgcv$ncomp[which.min(avgcv$bic)])
   } else {
     ncomp = switch(criterion,
       "dev" = cv$ncomp[which.min(cv$dev)],
       "aic" = cv$ncomp[which.min(cv$aic)],
-      "bic" = cv$ncomp[which.min(cv$bic)],
-      "sic" = cv$ncomp[which.min(cv$sic)])
+      "bic" = cv$ncomp[which.min(cv$bic)])
   }
 
   if (refit) {
@@ -248,7 +249,7 @@ sgdgmf.cv = function (
 #' Returns a \code{data.frame}  containing the current number of latent factors
 #' in the model (\code{ncomp}), the fold identifier (\code{fold}), the degrees of
 #' freedom, i.e. the number of parameters, of the model (\code{df}), the AIC, BIC
-#' and SIC and deviance (respectively, \code{aic}, \code{bic}, \code{sic}, \code{dev})
+#' and deviance (respectively, \code{aic}, \code{bic}, \code{dev})
 #' calculated on the train and test sets.
 #'
 #' @keywords internal
@@ -295,13 +296,13 @@ sgdgmf.cv.step = function (
   dev.test = sum(family$dev.resids(test, mu, 1), na.rm = TRUE)
   aic.train = dev.train + 2 * df
   bic.train = dev.train + df * log(n.train)
-  sic.train = dev.train + df * log(n.train) / n.train
 
   # Return a data-frame with all the GoF statistics
   data.frame(
     ncomp = ncomp, fold = fold, df = df,
-    aic = aic.train / n.train, bic = bic.train / n.train,
-    sic = sic.train / n.train, dev = dev.test / n.test
+    aic = aic.train / n.train,
+    bic = bic.train / n.train,
+    dev = dev.test / n.test
   )
 }
 

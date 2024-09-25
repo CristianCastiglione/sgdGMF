@@ -122,11 +122,12 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
   return (penalty)
 }
 
-#' @title Check and set the initialization parameters
+#' @title Check and set the initialization parameters for a GMF model
 #'
 #' @description
 #' Check if the input initialization parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined initialization parameters.
+#' values if they are not. Returns a list of well-defined options which specify how
+#' to initialize a GMF model.
 #'
 #' @param method initialization method
 #' @param type residual type to be decomposed
@@ -137,10 +138,14 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #' @param parallel if \code{TRUE}, use parallel computing for the \code{"glm"} method
 #' @param nthreads number of cores to be used in the \code{"glm"} method
 #'
-#' @details
-#' It takes in input a list of options which define how to initialize the GMF model
-#' parameters. It returns a list of safe initialization parameters containing the
-#' following elements:
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.init()
+#'
+#' # Parametrized call
+#' set.control.init(method = "glm", type = "deviance", niter = 10)
 #'
 #' @export set.control.init
 set.control.init = function (
@@ -192,8 +197,9 @@ set.control.init = function (
 #' @title Check and set the control parameters for the AIRWLS algorithm
 #'
 #' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
+#' Check if the input control parameters of the AIRWLS algorithm are allowed
+#' and set them to default values if they are not. Returns a list of
+#' well-defined control parameters.
 #'
 #' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
 #' @param maxiter maximum number of iterations
@@ -207,6 +213,16 @@ set.control.init = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.airwls()
+#'
+#' # Parametrized call
+#' set.control.airwls(maxiter = 100, nsteps = 5, stepsize = 0.3)
+#'
 #'
 #' @export set.control.airwls
 set.control.airwls = function (
@@ -269,8 +285,9 @@ set.control.airwls = function (
 #' @title Check and set the control parameters for the Newton algorithm
 #'
 #' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
+#' Check if the input control parameters of the quasi-Newton algorithm  are
+#' allowed and set them to default values if they are not. Returns a list of
+#' well-defined control parameters.
 #'
 #' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
 #' @param maxiter maximum number of iterations
@@ -283,6 +300,15 @@ set.control.airwls = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE}
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TTUE})
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.newton()
+#'
+#' # Parametrized call
+#' set.control.newton(maxiter = 1000, stepsize = 0.01, tol = 1e-04)
 #'
 #' @export set.control.newton
 set.control.newton = function (
@@ -436,6 +462,15 @@ set.control.msgd = function (
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.csgd()
+#'
+#' # Parametrized call
+#' set.control.csgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 #'
 #' @export set.control.csgd
 set.control.csgd = function (
@@ -601,6 +636,16 @@ set.control.rsgd = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.bsgd()
+#'
+#' # Parametrized call
+#' set.control.bsgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+#'
+#'
 #' @export set.control.bsgd
 set.control.bsgd = function (
     normalize = TRUE,
@@ -689,6 +734,16 @@ set.control.bsgd = function (
 #' \code{\link{set.control.csgd}} (\code{method="csgd"}),
 #' \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.alg()
+#'
+#' # Parametrized call
+#' set.control.alg(method = "airwls", control = list(maxiter = 200, stepsize = 0.3))
+#'
+#'
 #' @export set.control.alg
 set.control.alg = function (
     method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
@@ -725,9 +780,18 @@ set.control.alg = function (
 #' @param parallel if \code{TRUE}, allows for parallel computing
 #' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Empty call
+#' set.control.cv()
+#'
+#' # Parametrized call
+#' set.control.cv(criterion = "bic", proportion = 0.2)
+#'
 #' @export set.control.cv
 set.control.cv = function (
-    criterion = c("dev", "aic", "bic", "sic"),
+    criterion = c("dev", "aic", "bic"),
     refit = TRUE,
     nfolds = 5,
     proportion = 0.3,

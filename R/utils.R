@@ -108,36 +108,71 @@ make.pos.diag = function(U) {
 #' @keywords internal
 whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
 
-  v = diag(sigma)
+  W = NULL
   method = match.arg(method)
-  if (method == "ZCA" | method == "PCA") {
-    eS = eigen(sigma, symmetric = TRUE)
-    U = eS$vectors
-    lambda = eS$values
-  }
-  if (method == "ZCA-cor" | method == "PCA-cor") {
-    R = stats::cov2cor(sigma)
-    eR = eigen(R, symmetric = TRUE)
-    G = eR$vectors
-    theta = eR$values
-  }
-  if (method == "ZCA") {
-    W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
-  }
-  if (method == "PCA") {
-    U = make.pos.diag(U)
-    W = diag(1 / sqrt(lambda)) %*% t(U)
-  }
-  if (method == "Cholesky") {
-    W = solve(t(chol(sigma)))
-  }
-  if (method == "ZCA-cor"){
-    W = G %*% diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
-  }
-  if (method == "PCA-cor") {
-    G = make.pos.diag(G)
-    W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
-  }
+  switch(method,
+    "ZCA" = {
+      eS = eigen(sigma, symmetric = TRUE)
+      U = eS$vectors
+      lambda = eS$values
+      W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
+    },
+    "ZCA-cor" = {
+      R = stats::cov2cor(sigma)
+      eR = eigen(R, symmetric = TRUE)
+      G = eR$vectors
+      theta = eR$values
+      W = G %*% diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
+    },
+    "PCA" = {
+      eS = eigen(sigma, symmetric = TRUE)
+      U = eS$vectors
+      lambda = eS$values
+      U = make.pos.diag(U)
+      W = diag(1 / sqrt(lambda)) %*% t(U)
+    },
+    "PCA-cor" = {
+      v = diag(sigma)
+      R = stats::cov2cor(sigma)
+      eR = eigen(R, symmetric = TRUE)
+      G = eR$vectors
+      theta = eR$values
+      G = make.pos.diag(G)
+      W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
+    },
+    "Cholesky" = {
+      W = solve(t(chol(sigma)))
+    })
+
+
+  # if (method == "ZCA" | method == "PCA") {
+  #   eS = eigen(sigma, symmetric = TRUE)
+  #   U = eS$vectors
+  #   lambda = eS$values
+  # }
+  # if (method == "ZCA-cor" | method == "PCA-cor") {
+  #   R = stats::cov2cor(sigma)
+  #   eR = eigen(R, symmetric = TRUE)
+  #   G = eR$vectors
+  #   theta = eR$values
+  # }
+  # if (method == "ZCA") {
+  #   W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
+  # }
+  # if (method == "PCA") {
+  #   U = make.pos.diag(U)
+  #   W = diag(1 / sqrt(lambda)) %*% t(U)
+  # }
+  # if (method == "Cholesky") {
+  #   W = solve(t(chol(sigma)))
+  # }
+  # if (method == "ZCA-cor"){
+  #   W = G %*% diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
+  # }
+  # if (method == "PCA-cor") {
+  #   G = make.pos.diag(G)
+  #   W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
+  # }
 
   return(W)
 }
@@ -174,7 +209,13 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
       S = sd(c(U))
       U = U / sqrt(S)
       V = V * sqrt(S)
-    } else {
+    }
+    if (is.matrix(U) & ncol(U) == 1){
+      S = sd(c(U))
+      U = U / sqrt(S)
+      V = V * sqrt(S)
+    }
+    if (is.matrix(U) & ncol(U) > 1) {
       try({
         # Compute the covariance of U
         S = cov(U)

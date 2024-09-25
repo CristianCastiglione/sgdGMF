@@ -2,7 +2,7 @@
 % Please edit documentation in R/control.R
 \name{set.control.init}
 \alias{set.control.init}
-\title{Check and set the initialization parameters}
+\title{Check and set the initialization parameters for a GMF model}
 \usage{
 set.control.init(
   method = c("ols", "glm", "random", "values"),
@@ -34,10 +34,16 @@ set.control.init(
 }
 \description{
 Check if the input initialization parameters are allowed and set them to default
-values if they are not. Returns a list of well-defined initialization parameters.
+values if they are not. Returns a list of well-defined options which specify how
+to initialize a GMF model.
 }
-\details{
-It takes in input a list of options which define how to initialize the GMF model
-parameters. It returns a list of safe initialization parameters containing the
-following elements:
+\examples{
+library(sgdGMF)
+
+# Empty call
+set.control.init()
+
+# Parametrized call
+set.control.init(method = "glm", type = "deviance", niter = 10)
+
 }
