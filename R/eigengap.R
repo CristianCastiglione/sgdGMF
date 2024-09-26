@@ -41,6 +41,8 @@
 #' \emph{Deviance matrix factorization.}
 #' Electronic Journal of Statistics, 17(2): 3762-3810
 #'
+#' @example examples/example-eigengap.R
+#'
 #' @export sgdgmf.rank
 sgdgmf.rank = function (
     Y,
