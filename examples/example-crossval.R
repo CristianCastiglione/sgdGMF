@@ -21,12 +21,11 @@ eta = tcrossprod(U, V)
 
 # Generate data using Poisson, Binomial and Gamma models
 mu_pois = exp(eta)
-Y_pois = matrix(rpois(n*m, lambda = mu_pois), nrow = n, ncol = m)
-
 mu_bin = plogis(2*eta)
-Y_bin = matrix(rbinom(n*m, size = 1, prob = mu_bin), nrow = n, ncol = m)
-
 mu_gam = exp(eta)
+
+Y_pois = matrix(rpois(n*m, lambda = mu_pois), nrow = n, ncol = m)
+Y_bin = matrix(rbinom(n*m, size = 1, prob = mu_bin), nrow = n, ncol = m)
 Y_gam = matrix(rgamma(n*m, shape = 2, scale = mu_gam), nrow = n, ncol = m)
 
 # Initialize the GMF parameters assuming 3 latent factors
