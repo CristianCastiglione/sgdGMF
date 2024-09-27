@@ -5,7 +5,8 @@
 \title{Check and set the control parameters for the select optimization algorithm}
 \usage{
 set.control.alg(
-  method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
+  method = c("airwls", "newton", "sgd"),
+  sampling = c("block", "coord"),
   control = list()
 )
 }

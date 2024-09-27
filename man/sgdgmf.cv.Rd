@@ -12,7 +12,8 @@ sgdgmf.cv(
   ncomps = seq(from = 1, to = 10, by = 1),
   weights = NULL,
   offset = NULL,
-  method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
+  method = c("airwls", "newton", "sgd"),
+  sampling = c("block", "coord"),
   penalty = list(),
   control.init = list(),
   control.alg = list(),
@@ -35,6 +36,8 @@ sgdgmf.cv(
 \item{offset}{an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.}
 
 \item{method}{estimation method to minimize the negative penalized log-likelihood}
+
+\item{sampling}{sub-sampling strategy to use if \code{method = "sgd"}}
 
 \item{penalty}{list of penalty parameters (see \code{\link{set.penalty}} for more details)}
 
