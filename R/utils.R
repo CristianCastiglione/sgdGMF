@@ -118,6 +118,7 @@ whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor"
       W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
     },
     "ZCA-cor" = {
+      v = diag(sigma)
       R = stats::cov2cor(sigma)
       eR = eigen(R, symmetric = TRUE)
       G = eR$vectors
