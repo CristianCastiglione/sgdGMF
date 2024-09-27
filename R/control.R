@@ -365,82 +365,6 @@ set.control.newton = function (
 }
 
 
-#' @title Check and set the control parameters for the memoized-SGD algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' @export set.control.msgd
-set.control.msgd = function (
-    normalize = TRUE,
-    maxiter = 100,
-    eps = 1e-08,
-    nafill = 10,
-    tol = 1e-05,
-    size = 100,
-    burn = 90,
-    rate0 = 0.01,
-    decay = 1.0,
-    damping = 1e-04,
-    rate1 = 0.05,
-    rate2 = 0.01,
-    parallel = FALSE,
-    nthreads = 1,
-    verbose = FALSE,
-    frequency = 10,
-    progress = FALSE
-) {
-  # Set the default control parameters
-  ctr = list()
-  ctr$normalize = TRUE
-  ctr$maxiter = 100
-  ctr$eps = 1e-08
-  ctr$nafill = 10
-  ctr$tol = 1e-05
-  ctr$size = 100
-  ctr$burn = 90
-  ctr$rate0 = 0.01
-  ctr$decay = 1.0
-  ctr$damping = 1e-04
-  ctr$rate1 = 0.05
-  ctr$rate2 = 0.01
-  ctr$parallel = FALSE
-  ctr$nthreads = 1
-  ctr$verbose = FALSE
-  ctr$frequency = 10
-  ctr$progress = FALSE
-
-  # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
-  if (is.numeric(size) && size >= 1) ctr$size = floor(size) else message("size")
-  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn else message("burn")
-  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0 else message("rate0")
-  if (is.numeric(decay) && decay > 0) ctr$decay = decay else message("decay")
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
-  if (is.numeric(rate1) && rate1 > 0) ctr$rate1 = rate1 else message("rate1")
-  if (is.numeric(rate2) && rate2 > 0) ctr$rate2 = rate2 else message("rate2")
-  if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
-  if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
-  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
-  if (is.logical(progress)) ctr$progress = progress else message("progress")
-
-  # Addional consistency checks
-  if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("nafill")}
-  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
-  if (ctr$rate1 > 1 - 1e-08) {ctr$rate1 = 1 - 1e-08; message("rate1")}
-  if (ctr$rate2 > 1 - 1e-08) {ctr$rate2 = 1 - 1e-08; message("rate2")}
-  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("frequency")}
-
-  # Return the checked parameters
-  return (ctr)
-}
-
 #' @title Check and set the control parameters for the coordinate-SGD algorithm
 #'
 #' @description
@@ -472,8 +396,8 @@ set.control.msgd = function (
 #' # Parametrized call
 #' set.control.csgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 #'
-#' @export set.control.csgd
-set.control.csgd = function (
+#' @export set.control.coord.sgd
+set.control.coord.sgd = function (
     normalize = TRUE,
     maxiter = 1000,
     eps = 1e-08,
@@ -540,80 +464,6 @@ set.control.csgd = function (
   return (ctr)
 }
 
-#' @title Check and set the control parameters for the rowwise-SGD algorithm
-#'
-#' @description
-#' Check if the input control parameters are allowed and set them to default
-#' values if they are not. Returns a list of well-defined control parameters.
-#'
-#' @export set.control.rsgd
-set.control.rsgd = function (
-    normalize = TRUE,
-    maxiter = 100,
-    eps = 1e-08,
-    nafill = 10,
-    tol = 1e-05,
-    size = 100,
-    burn = 90,
-    rate0 = 0.01,
-    decay = 1.0,
-    damping = 1e-04,
-    rate1 = 0.05,
-    rate2 = 0.01,
-    verbose = FALSE,
-    frequency = 10,
-    progress = FALSE
-) {
-  # Set the default control parameters
-  ctr = list()
-  ctr$normalize = TRUE
-  ctr$maxiter = 100
-  ctr$eps = 1e-08
-  ctr$nafill = 10
-  ctr$tol = 1e-05
-  ctr$size = 100
-  ctr$burn = 90
-  ctr$rate0 = 0.01
-  ctr$decay = 1.0
-  ctr$damping = 1e-04
-  ctr$rate1 = 0.05
-  ctr$rate2 = 0.01
-  ctr$verbose = FALSE
-  ctr$frequency = 10
-  ctr$progress = FALSE
-
-  message = function (var)
-    warning(paste0("R-SGD control: '", var,"' was set to default value."),
-            call. = FALSE, immediate. = TRUE, domain = NULL)
-
-  # Standard safety checks
-  if (is.logical(normalize)) ctr$normalize = normalize else message("normalize")
-  if (is.numeric(maxiter) && maxiter >= 1) ctr$maxiter = floor(maxiter) else message("maxiter")
-  if (is.numeric(eps) && eps > 0) ctr$eps = eps else message("eps")
-  if (is.numeric(nafill) && nafill >= 1) ctr$nafill = floor(nafill) else message("nafill")
-  if (is.numeric(tol) && tol > 0) ctr$tol = tol else message("tol")
-  if (is.numeric(size) && size >= 1) ctr$size = floor(size) else message("size")
-  if (is.numeric(burn) && burn > 0 && burn <= 1) ctr$burn = burn else message("burn")
-  if (is.numeric(rate0) && rate0 > 0) ctr$rate0 = rate0 else message("rate0")
-  if (is.numeric(decay) && decay > 0) ctr$decay = decay else message("decay")
-  if (is.numeric(damping) && damping > 0) ctr$damping = damping else message("damping")
-  if (is.numeric(rate1) && rate1 > 0) ctr$rate = rate1 else message("rate1")
-  if (is.numeric(rate2) && rate2 > 0) ctr$rate = rate2 else message("rate2")
-  if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
-  if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
-  if (is.logical(progress)) ctr$progress = progress else message("progress")
-
-  # Additional consistency checks
-  if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("nafill")}
-  if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
-  if (ctr$rate1 > 1 - 1e-08) {ctr$rate1 = 1 - 1e-08; message("rate1")}
-  if (ctr$rate2 > 1 - 1e-08) {ctr$rate2 = 1 - 1e-08; message("rate2")}
-  if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("frequency")}
-
-  # Return the corrected control parameters
-  return (ctr)
-}
-
 #' @title Check and set the control parameters for the blockwise-SGD algorithm
 #'
 #' @description
@@ -646,8 +496,8 @@ set.control.rsgd = function (
 #' set.control.bsgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 #'
 #'
-#' @export set.control.bsgd
-set.control.bsgd = function (
+#' @export set.control.block.sgd
+set.control.block.sgd = function (
     normalize = TRUE,
     maxiter = 1000,
     eps = 1e-08,
@@ -746,20 +596,22 @@ set.control.bsgd = function (
 #'
 #' @export set.control.alg
 set.control.alg = function (
-    method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
+    method = c("airwls", "newton", "sgd"),
+    sampling = c("block", "coord"),
     control = list()
 ) {
   # Check the optimization method
   method = match.arg(method)
+  sampling = match.arg(sampling)
 
   # Set the input values for the control parameters, check whether the
   # they are allowed and, if they aren't, set them to default values
   if (method == "airwls") control = do.call("set.control.airwls", control)
   if (method == "newton") control = do.call("set.control.newton", control)
-  if (method == "msgd") control = do.call("set.control.msgd", control)
-  if (method == "csgd") control = do.call("set.control.csgd", control)
-  if (method == "rsgd") control = do.call("set.control.rsgd", control)
-  if (method == "bsgd") control = do.call("set.control.bsgd", control)
+  if (method == "sgd" & sampling == "block") control = do.call("set.control.block.sgd", control)
+  if (method == "sgd" & sampling == "coord") control = do.call("set.control.coord.sgd", control)
+  # if (method == "msgd") control = do.call("set.control.msgd", control)
+  # if (method == "rsgd") control = do.call("set.control.rsgd", control)
 
   # Return the corrected control parameters
   return (control)
