@@ -26,6 +26,7 @@
 #' @param weights an optional matrix of weights (\eqn{n \times m})
 #' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.
 #' @param method estimation method to minimize the negative penalized log-likelihood
+#' @param sampling sub-sampling strategy to use if \code{method = "sgd"}
 #' @param penalty list of penalty parameters (see \code{\link{set.penalty}} for more details)
 #' @param control.init list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)
 #' @param control.alg list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)
@@ -152,7 +153,8 @@ sgdgmf.fit = function (
     ncomp = 2,
     weights = NULL,
     offset = NULL,
-    method = c("airwls", "newton", "msgd", "csgd", "rsgd", "bsgd"),
+    method = c("airwls", "newton", "sgd"),
+    sampling = c("block", "coord"),
     penalty = list(),
     control.init = list(),
     control.alg = list()
@@ -176,6 +178,7 @@ sgdgmf.fit = function (
 
   # Check the optimization method
   method = match.arg(method)
+  sampling = match.arg(sampling)
 
   # Check the penalty terms
   lambda = do.call("set.penalty", penalty)
@@ -184,15 +187,7 @@ sgdgmf.fit = function (
   control.init = do.call("set.control.init", control.init)
 
   # Check the control parameters for the optimization
-  control.alg = switch(method,
-    "airwls" = do.call("set.control.airwls", control.alg),
-    "newton" = do.call("set.control.newton", control.alg),
-    "msgd" = do.call("set.control.msgd", control.alg),
-    "csgd" = do.call("set.control.csgd", control.alg),
-    "rsgd" = do.call("set.control.rsgd", control.alg),
-    "bsgd" = do.call("set.control.bsgd", control.alg))
-
-  alg = control.alg
+  control.alg = set.control.alg(method, sampling, control.alg)
 
   # Initialize the parameters
   time.init = proc.time()
@@ -206,6 +201,8 @@ sgdgmf.fit = function (
 
   # Select the correct estimation method
   time.optim = proc.time()
+
+  alg = control.alg
   if (method == "airwls") {
     # AIRWLS algorithm
     fit = cpp.fit.airwls(
@@ -229,43 +226,7 @@ sgdgmf.fit = function (
       parallel = alg$parallel, nthreads = alg$nthreads
     )
   }
-  if (method == "msgd") {
-    # Memoized SGD algorithm
-    fit = cpp.fit.msgd(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
-      size = alg$size, burn = alg$burn, rate0 = alg$rate0, decay = alg$decay,
-      damping = alg$damping, rate1 = control$rate1, rate2 = alg$rate2,
-      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
-      frequency = alg$frequency, progress = alg$progress
-    )
-  }
-  if (method == "csgd") {
-    # Coordinatewise SGD algorithm
-    fit = cpp.fit.csgd(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
-      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
-      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
-      frequency = alg$frequency, progress = alg$progress
-    )
-  }
-  if (method == "rsgd") {
-    # Rowwise SGD algorithm
-    fit = cpp.fit.rsgd(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
-      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
-      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
-      frequency = alg$frequency, progress = alg$progress
-    )
-  }
-  if (method == "bsgd") {
+  if (method == "sgd" & sampling == "block") {
     # Blockwise SGD algorithm
     fit = cpp.fit.bsgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
@@ -277,6 +238,19 @@ sgdgmf.fit = function (
       frequency = alg$frequency, progress = alg$progress
     )
   }
+  if (method == "sgd" & sampling == "coord") {
+    # Coordinatewise SGD algorithm
+    fit = cpp.fit.csgd(
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
+      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
+      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
+      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
+      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
+      frequency = alg$frequency, progress = alg$progress
+    )
+  }
+
   time.optim = as.numeric(proc.time() - time.optim)[3]
   time.tot = time.init + time.optim
   exe.time = c(init = time.init, optim = time.optim, tot = time.tot)
@@ -304,6 +278,7 @@ sgdgmf.fit = function (
   # Output list
   out = list()
   out$method = method
+  out$sampling = sampling
   out$family = family
   out$ncomp = ncomp
   out$npar = m*p + n*q + (n+m)*ncomp
