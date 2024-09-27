@@ -12,6 +12,7 @@
 #' @param weights an optional matrix of weights (\eqn{n \times m})
 #' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.
 #' @param method estimation method to minimize the negative penalized log-likelihood
+#' @param sampling sub-sampling strategy to use if \code{method = "sgd"}
 #' @param penalty list of penalty parameters (see \code{\link{set.penalty}} for more details)
 #' @param control.init list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)
 #' @param control.alg list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)
@@ -37,7 +38,8 @@ sgdgmf.cv = function (
     ncomps = seq(from = 1, to = 10, by = 1),
     weights = NULL,
     offset = NULL,
-    method = c("airwls", "newton", "msgd", "csgd", "rsgd", "csgd"),
+    method = c("airwls", "newton", "sgd"),
+    sampling = c("block", "coord"),
     penalty = list(),
     control.init = list(),
     control.alg = list(),
@@ -49,13 +51,7 @@ sgdgmf.cv = function (
   # Sanity check for the cross-validation options
   control.cv = do.call("set.control.cv", control.cv)
   control.init = do.call("set.control.init", control.init)
-  control.alg = switch(method,
-    "airwls" = do.call("set.control.airwls", control.alg),
-    "newton" = do.call("set.control.newton", control.alg),
-    "msgd" = do.call("set.control.msgd", control.alg),
-    "csgd" = do.call("set.control.csgd", control.alg),
-    "rsgd" = do.call("set.control.rsgd", control.alg),
-    "bsgd" = do.call("set.control.bsgd", control.alg))
+  control.alg = set.control.alg(method, sampling, control.alg)
 
   # Data dimensions
   n = nrow(Y)
@@ -142,9 +138,9 @@ sgdgmf.cv = function (
 
       # Run the estimation and compute the GoF statistics
       sgdgmf.cv.step(
-        train = train, test = test, X = X, Z = Z, family = family,
-        ncomp = ncomp, maxcomp = maxcomp, fold = fold, nfolds = nfolds,
-        method = method, penalty = penalty, control.init = control.init,
+        train = train, test = test, X = X, Z = Z, family = family, ncomp = ncomp,
+        maxcomp = maxcomp, fold = fold, nfolds = nfolds, method = method,
+        sampling = sampling, penalty = penalty, control.init = control.init,
         control.alg = control.alg, control.cv = control.cv)
     }
   } else {
@@ -171,9 +167,9 @@ sgdgmf.cv = function (
 
       # Run the estimation and compute the GoF statistics
       sgdgmf.cv.step(
-        train = train, test = test, X = X, Z = Z, family = family,
-        ncomp = ncomp, maxcomp = maxcomp, fold = fold, nfolds = nfolds,
-        method = method, penalty = penalty, control.init = control.init,
+        train = train, test = test, X = X, Z = Z, family = family, ncomp = ncomp,
+        maxcomp = maxcomp, fold = fold, nfolds = nfolds, method = method,
+        sampling = sampling, penalty = penalty, control.init = control.init,
         control.alg = control.alg, control.cv = control.cv)
     }
   }
@@ -254,8 +250,8 @@ sgdgmf.cv = function (
 #'
 #' @keywords internal
 sgdgmf.cv.step = function (
-    train, test, X, Z, family,
-    ncomp, maxcomp, fold, nfolds, method, penalty,
+    train, test, X, Z, family, ncomp, maxcomp,
+    fold, nfolds, method, sampling, penalty,
     control.init, control.alg, control.cv
 ) {
   # Set the model dimensions
@@ -284,12 +280,12 @@ sgdgmf.cv.step = function (
   # Estimated mean matrix
   mu = sgdgmf.fit(
     Y = train, X = X, Z = Z, family = family,
-    ncomp = ncomp, method = method, penalty = penalty,
+    ncomp = ncomp, method = method, sampling = sampling, penalty = penalty,
     control.init = control.init, control.alg = control.alg)$mu
 
   # Train and test sample sizes
-  n.train = n * m * (1-f)
-  n.test = n * m * f
+  n.train = n * m * (1-f) - sum(is.na(train))
+  n.test = n * m * f - sum(is.na(test))
 
   # Train and test goodness-of-fit measures
   dev.train = sum(family$dev.resids(train, mu, 1), na.rm = TRUE)
