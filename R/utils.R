@@ -144,36 +144,6 @@ whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor"
       W = solve(t(chol(sigma)))
     })
 
-
-  # if (method == "ZCA" | method == "PCA") {
-  #   eS = eigen(sigma, symmetric = TRUE)
-  #   U = eS$vectors
-  #   lambda = eS$values
-  # }
-  # if (method == "ZCA-cor" | method == "PCA-cor") {
-  #   R = stats::cov2cor(sigma)
-  #   eR = eigen(R, symmetric = TRUE)
-  #   G = eR$vectors
-  #   theta = eR$values
-  # }
-  # if (method == "ZCA") {
-  #   W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
-  # }
-  # if (method == "PCA") {
-  #   U = make.pos.diag(U)
-  #   W = diag(1 / sqrt(lambda)) %*% t(U)
-  # }
-  # if (method == "Cholesky") {
-  #   W = solve(t(chol(sigma)))
-  # }
-  # if (method == "ZCA-cor"){
-  #   W = G %*% diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
-  # }
-  # if (method == "PCA-cor") {
-  #   G = make.pos.diag(G)
-  #   W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
-  # }
-
   return(W)
 }
 
@@ -272,4 +242,103 @@ partition = function (y, p = 0.3) {
 
   # Return the splitted data
   list(train = train, test = test)
+}
+
+#' @title Simulate non-Gaussian data from a GMF model
+#'
+#' @description
+#' Simulate synthetic non-Gaussian data from a generalized matrix factorization (GMF) model.
+#'
+#' by first generating the score and loading
+#' matrices, forming the linear predictor and, then,
+#'
+#' Create score and loading matrices that can be used as the base for synthetic data
+#' simulation following a generalized matrix factorization model as data generating
+#' mechanism.
+#'
+#' @param n number of observations
+#' @param m number of variables
+#' @param ncomp rank of the latent matrix factorization
+#' @param family a \code{glm} family (see \code{\link{family}} for more details)
+#' @param dispersion a positive dispersion parameter
+#'
+#' @details
+#' The loadings, \code{V}, are independently sampled from a standard normal distribution.
+#' The scores, \code{U}, are simulated according to sinusoidal signals evaluated at different
+#' phases, frequencies and amplitudes. These parameters are randomly sampled from independent
+#' uniform distributions.
+#'
+#' @return
+#' A list containing the following objects:
+#' \itemize{
+#'   \item \code{Y}: simulated response matrix
+#'   \item \code{U}: simulated factor matrix
+#'   \item \code{V}: simulated loading matrix
+#'   \item \code{eta}: linear predictor matrix
+#'   \item \code{mu}: conditional mean matrix
+#'   \item \code{phi}: scalar dispersion parameter
+#'   \item \code{family}: model family
+#'   \item \code{ncomp}: rank of the latent matrix factorization
+#'   \item \code{param}: a list containing time, phase, frequency and amplitude vectors used to generate \code{U}
+#' }
+#'
+#'
+#' @examples
+#' # Set the data dimensions
+#' n = 100; m = 20; d = 5
+#'
+#' # Generate data using Poisson, Binomial and Gamma models
+#' data_pois = sim.gmf.data(n = n, m = m, d = d, family = poisson())
+#' data_bin = sim.gmf.data(n = n, m = m, d = d, family = binomial())
+#' data_gam = sim.gmf.data(n = n, m = m, d = d, family = Gamma(link = "log"), dispersion = 0.25)
+#'
+#' # Compare the results
+#' par(mfrow = c(3,3), mar = c(1,1,3,1))
+#' image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
+#' image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
+#' image(data_pois$U, axes = FALSE, main = expression(U[Pois]))
+#' image(data_bin$Y, axes = FALSE, main = expression(Y[Bin]))
+#' image(data_bin$mu, axes = FALSE, main = expression(mu[Bin]))
+#' image(data_bin$U, axes = FALSE, main = expression(U[Bin]))
+#' image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
+#' image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
+#' image(data_gam$U, axes = FALSE, main = expression(U[Gam]))
+#'
+#' @export sim.gmf.data
+sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1) {
+
+  d = ncomp
+
+  # Set the time range, phases, frequences and amplitudes of the underlying signals
+  time = seq(from = 0, to = 1, length = n)
+  phase = sort(2*runif(d), decreasing = FALSE)
+  freq = sort(2*runif(d), decreasing = FALSE)
+  amp = sort(runif(d), decreasing = TRUE)
+
+  # Combine the latent signals using independent Gaussian coefficients
+  V = matrix(rnorm(m*d), nrow = m, ncol = d)
+  U = do.call("cbind", lapply(1:d, function(h){
+    amp[h] * sin(2 * pi * freq[h] * (time + phase[h]))
+  }))
+
+  # Compute the linear predictor, the conditional mean and the dispersion parameter
+  eta = tcrossprod(U, V)
+  mu = family$linkinv(eta)
+  phi = 3*rbeta(1, 2, 3)
+  phi = ifelse(!is.null(dispersion), abs(dispersion), 3*rbeta(1, 2, 3))
+
+  # Simulate the data using an dispersion exponential family distribution
+  Y = matrix(
+    switch(family$family,
+      "gaussian" = stats::rnorm(n*m, mean = mu, sd = sqrt(phi)),
+      "binomial" = stats::rbinom(n*m, size = 1, prob = mu),
+      "poisson" = stats::rpois(n*m, lambda = mu),
+      "Gamma" = stats::rgamma(n*m, shape = 1 / phi, scale = phi * mu),
+      "negbinom" = MASS::rnegbin(n*m, mu = mu, theta = phi)),
+    nrow = n, ncol = m)
+
+  # Return the simulated signals
+  list(Y = Y, U = U, V = V, eta = eta, mu = mu, phi = phi,
+       n = n, m = m, ncomp = ncomp, family = family,
+       param = list(time = time, phase = phase, freq = freq, amp = amp))
 }
