@@ -126,18 +126,16 @@ whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor"
     },
     "PCA" = {
       eS = eigen(sigma, symmetric = TRUE)
-      U = eS$vectors
+      U = make.pos.diag(eS$vectors)
       lambda = eS$values
-      U = make.pos.diag(U)
       W = diag(1 / sqrt(lambda)) %*% t(U)
     },
     "PCA-cor" = {
       v = diag(sigma)
       R = stats::cov2cor(sigma)
       eR = eigen(R, symmetric = TRUE)
-      G = eR$vectors
+      G = make.pos.diag(eR$vectors)
       theta = eR$values
-      G = make.pos.diag(G)
       W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
     },
     "Cholesky" = {
