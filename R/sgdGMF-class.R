@@ -38,6 +38,7 @@
 setClass("sgdgmf",
   slots = list(
     method = "character",
+    sampling = "character",
     family = "list",
     ncomp = "numeric",
     npar = "numeric",
