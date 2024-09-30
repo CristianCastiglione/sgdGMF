@@ -39,3 +39,24 @@ If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
 \code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
 By doing so, \code{B} and \code{V} are kept fixed.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 120, m = 20, ncomp = 5, family = poisson())
+train = sample(1:120, size = 100)
+test = setdiff(1:120, train)
+
+Y = data$Y[train, ]
+newY = data$Y[test, ]
+
+# Fit a GMF model with 3 latent factors
+gmf = sgdgmf.fit(Y, ncomp = 3, family = poisson())
+
+# Get the fitted values of a GMF model
+predict(gmf) # returns the overall fitted values in link scale
+predict(gmf, type = "response") # returns the overall fitted values in response scale
+predict(gmf, partial = TRUE) # returns the partial fitted values in link scale
+predict(gmf, newY = newY) # returns the predictions for the new set of responses
+
+}

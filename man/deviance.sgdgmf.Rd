@@ -2,13 +2,38 @@
 % Please edit documentation in R/sgdGMF-class.R
 \name{deviance.sgdgmf}
 \alias{deviance.sgdgmf}
-\title{Compute the deviance of a GMF model}
+\alias{AIC.sgdgmf}
+\alias{BIC.sgdgmf}
+\title{Compute deviance, AIC and BIC of a GMF model}
 \usage{
 \method{deviance}{sgdgmf}(object, normalize = FALSE)
+
+\method{AIC}{sgdgmf}(object, k = 2)
+
+\method{BIC}{sgdgmf}(object)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{normalize}{if \code{TRUE}, normalize the result using the null-deviance}
+
+\item{k}{the penalty parameter to be used for AIC; the default is \code{k = 2}}
 }
 \description{
-Compute the deviance of an estimated GMF object
+Compute deviance, AIC and BIC of a GMF object
+}
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model with 3 latent factors
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Get the GMF deviance, AIC and BIC
+deviance(gmf)
+AIC(gmf)
+BIC(gmf)
+
 }

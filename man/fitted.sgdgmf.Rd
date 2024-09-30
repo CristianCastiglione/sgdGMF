@@ -16,3 +16,18 @@
 \description{
 Computes the fitted values of a GMF model.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model with 3 latent factors
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Get the fitted values of a GMF model
+fitted(gmf) # returns the overall fitted values in link scale
+fitted(gmf, type = "response") # returns the overall fitted values in response scale
+fitted(gmf, partial = TRUE) # returns the partial fitted values in link scale
+
+}

@@ -15,6 +15,7 @@ sgdgmf.cv.step(
   fold,
   nfolds,
   method,
+  sampling,
   penalty,
   control.init,
   control.alg,

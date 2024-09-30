@@ -18,3 +18,18 @@
 Return the estimated coefficients of a GMF model, i.e., the row- and column-specific
 regression effects, the latent scores and loadings.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model with 3 latent factors
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Get the estimated coefficients of a GMF model
+coefficients(gmf) # returns all the coefficients
+coefficients(gmf, type = "scores") # returns only the scores, say U
+coefficients(gmf, type = "loadings") # returns only the loadings, say V
+
+}

@@ -24,3 +24,27 @@
 \description{
 Refine the estimated latent scores of a GMF model via IRWLS
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model using SGD
+gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
+
+# Refine the score matrix estimate
+gmf_new = refit(gmf)
+
+# Get the fitted values in the link and response scales
+mu_hat_old = fitted(gmf_old, type = "response")
+mu_hat_new = fitted(gmf_new, type = "response")
+
+# Compare the results
+par(mfrow = c(2,2), mar = c(1,1,3,1))
+image(data$Y, axes = FALSE, main = expression(Y))
+image(data$mu, axes = FALSE, main = expression(mu))
+image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
+image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
+
+}

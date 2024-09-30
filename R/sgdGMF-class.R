@@ -75,6 +75,29 @@ setClass("sgdgmf",
 #' @param parallel if \code{TRUE}, use parallel computing using the \code{foreach} package
 #' @param nthreads number of cores to be used in the \code{"glm"} method
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model using SGD
+#' gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
+#'
+#' # Refine the score matrix estimate
+#' gmf_new = refit(gmf)
+#'
+#' # Get the fitted values in the link and response scales
+#' mu_hat_old = fitted(gmf_old, type = "response")
+#' mu_hat_new = fitted(gmf_new, type = "response")
+#'
+#' # Compare the results
+#' par(mfrow = c(2,2), mar = c(1,1,3,1))
+#' image(data$Y, axes = FALSE, main = expression(Y))
+#' image(data$mu, axes = FALSE, main = expression(mu))
+#' image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
+#' image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
+#'
 #' @method refit sgdgmf
 #' @export
 refit.sgdgmf = function (
@@ -136,11 +159,27 @@ refit.sgdgmf = function (
   return (object)
 }
 
-#' @title Compute the deviance of a GMF model
+#' @title Compute deviance, AIC and BIC of a GMF model
 #'
-#' @description Compute the deviance of an estimated GMF object
+#' @description Compute deviance, AIC and BIC of a GMF object
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param normalize if \code{TRUE}, normalize the result using the null-deviance
+#' @param k the penalty parameter to be used for AIC; the default is \code{k = 2}
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model with 3 latent factors
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the GMF deviance, AIC and BIC
+#' deviance(gmf)
+#' AIC(gmf)
+#' BIC(gmf)
 #'
 #' @method deviance sgdgmf
 #' @export
@@ -156,27 +195,17 @@ deviance.sgdgmf = function (object, normalize = FALSE) {
   return (dev)
 }
 
-#' @title Compute the AIC of a GMF model
-#'
-#' @description Compute the Akaike information criterion (AIC) of an estimated GMF object
-#'
-#' @param object an object of class \code{sgdgmf}
-#'
+#' @rdname deviance.sgdgmf
 #' @method AIC sgdgmf
 #' @export
-AIC.sgdgmf = function (object) {
+AIC.sgdgmf = function (object, k = 2) {
   dev = deviance(object, normalize = FALSE)
   df = object$npar
-  aic = dev + 2 * df
+  aic = dev + k * df
   return (aic)
 }
 
-#' @title Compute the BIC of a GMF model
-#'
-#' @description Compute the Bayesian information criterion (BIC) of an estimated GMF object
-#'
-#' @param object an object of class \code{sgdgmf}
-#'
+#' @rdname deviance.sgdgmf
 #' @method BIC sgdgmf
 #' @export
 BIC.sgdgmf = function (object) {
@@ -192,6 +221,18 @@ BIC.sgdgmf = function (object) {
 #' @description Print some summary information of a GMF model.
 #'
 #' @param object an object of class \code{sgdgmf}
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model with 3 latent factors
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Print the GMF object
+#' print(gmf)
 #'
 #' @method print sgdgmf
 #' @export
@@ -230,6 +271,20 @@ print.sgdgmf = function (object) {
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of coefficients which should be returned
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model with 3 latent factors
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the estimated coefficients of a GMF model
+#' coefficients(gmf) # returns all the coefficients
+#' coefficients(gmf, type = "scores") # returns only the scores, say U
+#' coefficients(gmf, type = "loadings") # returns only the loadings, say V
 #'
 #' @method coefficients sgdgmf
 #' @export
@@ -296,6 +351,20 @@ coef.sgdgmf = function (
 #' the correct number of principal components to include into the GMF model or to
 #' detect some residual dependence structures not already explained by the model.
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model with 3 latent factors
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the deviance residuals of a GMF model
+#' residuals(gmf) # returns the overall deviance residuals
+#' residuals(gmf, partial = TRUE) # returns the partial residuals
+#' residuals(gmf, spectrum = TRUE) # returns the eigenvalues of the residual var-cov matrix
+#'
 #' @method residuals sgdgmf
 #' @export
 residuals.sgdgmf = function (
@@ -349,7 +418,12 @@ residuals.sgdgmf = function (
   if (spectrum) {
     rcov = cov(res)
     ncomp = max(1, min(ncomp, ncol(res)))
-    pca = RSpectra::eigs_sym(rcov, ncomp)
+    pca = NULL
+    if (ncomp == ncol(res)) {
+      pca = eigen(rcov)
+    } else {
+      pca = RSpectra::eigs_sym(rcov, ncomp)
+    }
 
     # Estimate the explained and residual variance
     var.eig = pca$values
@@ -390,6 +464,20 @@ resid.sgdgmf = function (
 #' @param object an object of class \code{sgdgmf}
 #' @param type the type of fitted values which should be returned
 #' @param partial if \code{TRUE}, returns the partial fitted values
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model with 3 latent factors
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the fitted values of a GMF model
+#' fitted(gmf) # returns the overall fitted values in link scale
+#' fitted(gmf, type = "response") # returns the overall fitted values in response scale
+#' fitted(gmf, partial = TRUE) # returns the partial fitted values in link scale
 #'
 #' @method fitted sgdgmf
 #' @export
@@ -440,6 +528,26 @@ fitted.sgdgmf = function (
 #' \code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
 #' By doing so, \code{B} and \code{V} are kept fixed.
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 120, m = 20, ncomp = 5, family = poisson())
+#' train = sample(1:120, size = 100)
+#' test = setdiff(1:120, train)
+#'
+#' Y = data$Y[train, ]
+#' newY = data$Y[test, ]
+#'
+#' # Fit a GMF model with 3 latent factors
+#' gmf = sgdgmf.fit(Y, ncomp = 3, family = poisson())
+#'
+#' # Get the fitted values of a GMF model
+#' predict(gmf) # returns the overall fitted values in link scale
+#' predict(gmf, type = "response") # returns the overall fitted values in response scale
+#' predict(gmf, partial = TRUE) # returns the partial fitted values in link scale
+#' predict(gmf, newY = newY) # returns the predictions for the new set of responses
+#'
 #' @method predict sgdgmf
 #' @export
 predict.sgdgmf = function (
@@ -477,9 +585,16 @@ predict.sgdgmf = function (
   } else {
     # Check the input matrices
     if (!is.numeric(newY)) stop("Type error: 'newY' is not numeric.")
-    if (!is.numeric(newX)) stop("Type error: 'newX' is not numeric.")
     if (!is.matrix(newY)) stop("Type error: 'newY' is not a matrix.")
-    if (!is.matrix(newX)) stop("Type error: 'newX' is not a matrix.")
+    if (!is.null(newX) && !is.numeric(newX)) stop("Type error: 'newX' is not numeric.")
+    if (!is.null(newX) && !is.matrix(newX)) stop("Type error: 'newX' is not a matrix.")
+    if (is.null(newX)) {
+      if (ncol(object$X) == 1 && sd(object$X[,1]) == 0) {
+        newX = matrix(object$X[1,1], nrow = nrow(newY), ncol = 1)
+      } else {
+        stop("Unspecified input: 'newX' must be provided.")
+      }
+    }
 
     # Check the dimensions of the input matrices
     ny = nrow(newY); my = ncol(newY)
@@ -517,7 +632,7 @@ predict.sgdgmf = function (
       # Close the connection to the clusters
       parallel::stopCluster(clust)
     } else {
-      # Estimate the latent scores independently and a parallel GLM fitting strategy
+      # Estimate the latent scores independently with parallel GLM fitting strategy
       # (the row-by-row estimation is performed sequentially)
       newV = cbind(object$Z, object$V)
       newO = tcrossprod(newX, object$B)
@@ -548,6 +663,12 @@ predict.sgdgmf = function (
       "coef" = list(
         B = object$B, A = newA,
         U = newU, V = object$V))
+  }
+
+  if (is.list(pred)) {
+    pred = lapply(pred, function(p) {dimnames(p) = NULL; p})
+  } else {
+    dimnames(pred) = NULL
   }
 
   # Output
@@ -582,7 +703,7 @@ simulate.sgdgmf = function (
 ) {
   type = match.arg(type)
 
-  stop("This method is not implmented yet.", call. = FALSE)
+  stop("S3 method `simulate` is not implmented yet.", call. = FALSE)
   # ...
   # ...
   # ...
@@ -612,6 +733,20 @@ simulate.sgdgmf = function (
 #' infer how much signal can be explained by each principal component. Similarly,
 #' we can use the latent spectrum in non-Gaussian data settings to infer the correct
 #' number of principal components to include into the GMF model.
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the partial residual spectrum of a GMF model
+#' eigenval(gmf) # returns the eigenvalues of the var-cov matrix of the deviance residuals
+#' eigenval(gmf, type = "pearson") # returns the eigenvalues obtained using the Pearson residuals
+#' eigenval(gmf, normalize = TRUE) # returns the eigenvalues obrained using the correlation matrix
 #'
 #' @keywords internal
 eigenval.sgdgmf = function (
@@ -681,6 +816,21 @@ eigenval.sgdgmf = function (
 #' @param partial if \code{TRUE}, computes the partial residuals
 #' @param normalize if \code{TRUE}, standardizes the residuals column-by-column
 #' @param fillna if \code{TRUE}, fills the \code{NA} values with \code{0}
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Plot the residual-based GMF diagnostics
+#' plot(gmf, type = "res-fit") # Residuals vs fitted values
+#' plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
+#' plot(gmf, type = "qq") # Residual QQ-plot
+#' plot(gmf, type = "hist") # Residual histogram
 #'
 #' @method plot sgdgmf
 #' @export
@@ -781,6 +931,21 @@ plot.sgdgmf = function (
 #' @param cumulative if \code{TRUE}, plots the cumulative sum of the eigenvalues
 #' @param proportion if \code{TRUE}, plots the fractions of explained variance
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the partial residual spectrum of a GMF model
+#' screeplot(gmf) # screeplot of the var-cov matrix of the deviance residuals
+#' screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
+#' screeplot(gmf, cumulative = TRUE) # cumulative screeplot
+#' screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
+#'
 #' @method screeplot sgdgmf
 #' @export
 screeplot.sgdgmf = function (
@@ -822,10 +987,24 @@ screeplot.sgdgmf = function (
 #' @param labels a vector of labels which should be plotted
 #' @param palette the color-palette which should be used
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the biplot of a GMF model
+#' biplot(gmf) # 1st vs 2nd principal components
+#' biplot(gmf, choices = 2:3) #2nd vs 3rd principal components
+#'
 #' @method biplot sgdgmf
 #' @export
 biplot.sgdgmf = function (
-    object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL
+    object, choices = 1:2, arrange = TRUE, byrow = FALSE,
+    normalize = FALSE, labels = NULL, palette = NULL
 ) {
   # Get the data dimensions
   n = nrow(object$U)
@@ -885,8 +1064,16 @@ biplot.sgdgmf = function (
     scale_colour_gradientn(colours = palette$loadings) + theme(legend.position = "bottom") +
     labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Loadings")
 
+  plt = NULL
+  if (arrange && byrow)
+    plt = ggpubr::ggarrange(plt.scores, plt.loadings, nrow = 2, align = "v", legend = "right")
+  if (arrange && !byrow)
+    plt = ggpubr::ggarrange(plt.scores, plt.loadings, ncol = 2, align = "h")
+  if (!arrange)
+    plt = list(scores = plt.scores, loadings = plt.loadings)
+
   # Return the ggplot objects
-  list(scores = plt.scores, loadings = plt.loadings)
+  return(plt)
 }
 
 #' @title Heatmap of a GMF model
@@ -903,6 +1090,22 @@ biplot.sgdgmf = function (
 #' @param transpose if \code{TRUE}, transposes the matrix before plotting it
 #' @param limits the color limits which should be used
 #' @param palette the color-palette which should be used
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Get the heatmap of a GMF model
+#' image(gmf, type = "data") # original data
+#' image(gmf, type = "response") # fitted values in response scale
+#' image(gmf, type = "scores") # estimated score matrix
+#' image(gmf, type = "loadings") # estimated loading matrix
+#' image(gmf, type = "deviance") # deviance residual matrix
 #'
 #' @method image sgdgmf
 #' @export

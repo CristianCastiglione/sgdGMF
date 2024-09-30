@@ -8,7 +8,7 @@ data_pois = sim.gmf.data(n = n, m = m, ncomp = d, family = poisson())
 data_bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
 data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
 
-# Initialize the GMF parameters assuming 3 latent factors
+# Estimate the GMF parameters assuming 3 latent factors
 gmf_pois = sgdgmf.fit(data_pois$Y, ncomp = 3, family = poisson(), method = "airwls")
 gmf_bin = sgdgmf.fit(data_bin$Y, ncomp = 3, family = binomial(), method = "airwls")
 gmf_gam = sgdgmf.fit(data_gam$Y, ncomp = 3, family = Gamma(link = "log"), method = "airwls")

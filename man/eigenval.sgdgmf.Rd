@@ -38,4 +38,19 @@ infer how much signal can be explained by each principal component. Similarly,
 we can use the latent spectrum in non-Gaussian data settings to infer the correct
 number of principal components to include into the GMF model.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Get the partial residual spectrum of a GMF model
+eigenval(gmf) # returns the eigenvalues of the var-cov matrix of the deviance residuals
+eigenval(gmf, type = "pearson") # returns the eigenvalues obtained using the Pearson residuals
+eigenval(gmf, normalize = TRUE) # returns the eigenvalues obrained using the correlation matrix
+
+}
 \keyword{internal}

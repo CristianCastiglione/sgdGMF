@@ -4,7 +4,15 @@
 \alias{biplot.sgdgmf}
 \title{Biplot of a GMF model}
 \usage{
-\method{biplot}{sgdgmf}(object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL)
+\method{biplot}{sgdgmf}(
+  object,
+  choices = 1:2,
+  arrange = TRUE,
+  byrow = FALSE,
+  normalize = FALSE,
+  labels = NULL,
+  palette = NULL
+)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
@@ -20,4 +28,18 @@
 \description{
 Plot the observations on a two-dimensional projection determined by the
 estimated score matrix
+}
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Get the biplot of a GMF model
+biplot(gmf) # 1st vs 2nd principal components
+biplot(gmf, choices = 2:3) #2nd vs 3rd principal components
+
 }

@@ -39,3 +39,19 @@ available: residuals against observation indices, residuals agains fitted values
 absolute square-root residuals against fitted values, histogram of the residuals,
 residual QQ-plot, residual ECDF-plot.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Plot the residual-based GMF diagnostics
+plot(gmf, type = "res-fit") # Residuals vs fitted values
+plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
+plot(gmf, type = "qq") # Residual QQ-plot
+plot(gmf, type = "hist") # Residual histogram
+
+}

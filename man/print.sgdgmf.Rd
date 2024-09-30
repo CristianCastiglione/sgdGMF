@@ -12,3 +12,16 @@
 \description{
 Print some summary information of a GMF model.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model with 3 latent factors
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Print the GMF object
+print(gmf)
+
+}
