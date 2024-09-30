@@ -174,12 +174,12 @@ refit.sgdgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model with 3 latent factors
-#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the GMF deviance, AIC and BIC
-#' deviance(gmf)
-#' AIC(gmf)
-#' BIC(gmf)
+#' deviance(init)
+#' AIC(init)
+#' BIC(init)
 #'
 #' @method deviance sgdgmf
 #' @export
@@ -584,15 +584,15 @@ predict.sgdgmf = function (
         U = object$U, V = object$V))
   } else {
     # Check the input matrices
-    if (!is.numeric(newY)) stop("Type error: 'newY' is not numeric.")
-    if (!is.matrix(newY)) stop("Type error: 'newY' is not a matrix.")
-    if (!is.null(newX) && !is.numeric(newX)) stop("Type error: 'newX' is not numeric.")
-    if (!is.null(newX) && !is.matrix(newX)) stop("Type error: 'newX' is not a matrix.")
+    if (!is.numeric(newY)) stop("Type error: 'newY' is not numeric.", call. = FALSE)
+    if (!is.matrix(newY)) stop("Type error: 'newY' is not a matrix.", call. = FALSE)
+    if (!is.null(newX) && !is.numeric(newX)) stop("Type error: 'newX' is not numeric.", call. = FALSE)
+    if (!is.null(newX) && !is.matrix(newX)) stop("Type error: 'newX' is not a matrix.", call. = FALSE)
     if (is.null(newX)) {
       if (ncol(object$X) == 1 && sd(object$X[,1]) == 0) {
         newX = matrix(object$X[1,1], nrow = nrow(newY), ncol = 1)
       } else {
-        stop("Unspecified input: 'newX' must be provided.")
+        stop("Unspecified input: 'newX' must be provided.", call. = FALSE)
       }
     }
 
@@ -600,14 +600,14 @@ predict.sgdgmf = function (
     ny = nrow(newY); my = ncol(newY)
     nx = nrow(newX); px = ncol(newX)
 
-    if (my != m ) stop("Incompatible dimensions: 'newY' has wrong dimentions.")
-    if (px != p ) stop("Incompatible dimensions: 'newX' has wrong dimentions.")
-    if (nx != ny) stop("Incompatible dimensions: 'newX' has wrong dimentions.")
+    if (my != m ) stop("Incompatible dimensions: 'newY' has wrong dimentions.", call. = FALSE)
+    if (px != p ) stop("Incompatible dimensions: 'newX' has wrong dimentions.", call. = FALSE)
+    if (nx != ny) stop("Incompatible dimensions: 'newX' has wrong dimentions.", call. = FALSE)
 
     # Check the parallelization settings
-    if (!is.logical(parallel)) stop("'parallel' must be a logical values")
-    if (!is.numeric(nthreads)) stop("'nthreads' mus be a positive integer value")
-    if (floor(nthreads) < 1) stop("'nthreads' mus be a positive integer value")
+    if (!is.logical(parallel)) stop("'parallel' must be a logical values", call. = FALSE)
+    if (!is.numeric(nthreads)) stop("'nthreads' mus be a positive integer value", call. = FALSE)
+    if (floor(nthreads) < 1) stop("'nthreads' mus be a positive integer value", call. = FALSE)
 
     idA = 1:q
     idU = (q+1):(q+d)
@@ -698,7 +698,7 @@ predict.sgdgmf = function (
 #' @export
 simulate.sgdgmf = function (
     object, newY = NULL, newX = NULL,
-    type = c("link", "response", "terms", "coef"),
+    type = c("data", "link", "response", "terms", "coef"),
     parallel = FALSE, nthreads = 1
 ) {
   type = match.arg(type)
@@ -1105,7 +1105,7 @@ biplot.sgdgmf = function (
 #' image(gmf, type = "response") # fitted values in response scale
 #' image(gmf, type = "scores") # estimated score matrix
 #' image(gmf, type = "loadings") # estimated loading matrix
-#' image(gmf, type = "deviance") # deviance residual matrix
+#' image(gmf, type = "deviance", resid = TRUE) # deviance residual matrix
 #'
 #' @method image sgdgmf
 #' @export

@@ -46,6 +46,21 @@ the eigenvalues of the residuals covariance/correlation matrix.
 Moreover, if required, return the partial residual of the model obtained by
 excluding the matrix decomposition from the linear predictor.
 }
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model with 3 latent factors
+init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+
+# Get the deviance residuals of a GMF model
+residuals(init) # returns the overall deviance residuals
+residuals(init, partial = TRUE) # returns the partial residuals
+residuals(init, spectrum = TRUE) # returns the eigenvalues of the residual var-cov matrix
+
+}
 \seealso{
 \code{\link{residuals.sgdgmf}} and \code{\link{resid.sgdgmf}} for more details on the residual computation.
 }

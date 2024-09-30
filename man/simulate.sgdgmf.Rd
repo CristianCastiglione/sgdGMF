@@ -8,7 +8,7 @@
   object,
   newY = NULL,
   newX = NULL,
-  type = c("link", "response", "terms", "coef"),
+  type = c("data", "link", "response", "terms", "coef"),
   parallel = FALSE,
   nthreads = 1
 )
