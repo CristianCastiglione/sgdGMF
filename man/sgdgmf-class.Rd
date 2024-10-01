@@ -5,7 +5,10 @@
 \alias{sgdgmf-class}
 \title{S3 class: sgdgmf}
 \description{
-A short description...
+A fitted GMF object returned by function \code{sgdgmf} and of class \code{"sgdgmf"}.
+Method functions \code{print}, \code{deviance}, \code{AIC}, \code{BIC}, \code{coefficient},
+\code{residuals}, \code{fitted}, \code{predict}, \code{plot}, \code{screeplot},
+\code{biplot} and \code{image} exist for this class.
 }
 \section{Slots}{
 

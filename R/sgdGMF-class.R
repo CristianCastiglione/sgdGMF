@@ -3,7 +3,11 @@
 #' @title S3 class: sgdgmf
 #'
 #' @description
-#' A short description...
+#' A fitted GMF object returned by functions \code{sgdgmf.fit} and \code{sgdgmf.cv}
+#' and of class \code{sgdgmf}. Method functions \code{print}, \code{deviance},
+#' \code{AIC}, \code{BIC}, \code{coefficient}, \code{residuals}, \code{fitted},
+#' \code{predict}, \code{plot}, \code{screeplot}, \code{biplot} and \code{image}
+#' exist for this class.
 #'
 #' @slot method estimation method to minimize the negative penalized log-likelihood
 #' @slot family a \code{glm} family (see \code{\link{family}} for more details)
@@ -28,7 +32,6 @@
 #' @slot objective objective function at the end of the estimation
 #' @slot aic Akaike information criterion of the estimated model
 #' @slot bic Bayesian information criterion of the estimated model
-#' @slot cbic Corrected Bayesian information criterion of the estimated model
 #' @slot exe.time Final execution time in seconds
 #' @slot trace data frame collecting the optimization history
 #' @slot summary.cv data frame collecting the cross-validation history
