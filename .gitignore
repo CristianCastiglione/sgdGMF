@@ -90,14 +90,6 @@ sandbox
 sandbox/
 sandbox/**
 
-# Data folder
-data/splatter
-data/splatter/
-data/splatter/**
-data/bubble
-data/bubble/
-data/bubble/**
-
 # Compressed files
 *.zip
 inst/doc
