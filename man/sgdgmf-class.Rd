@@ -5,10 +5,11 @@
 \alias{sgdgmf-class}
 \title{S3 class: sgdgmf}
 \description{
-A fitted GMF object returned by function \code{sgdgmf} and of class \code{"sgdgmf"}.
-Method functions \code{print}, \code{deviance}, \code{AIC}, \code{BIC}, \code{coefficient},
-\code{residuals}, \code{fitted}, \code{predict}, \code{plot}, \code{screeplot},
-\code{biplot} and \code{image} exist for this class.
+A fitted GMF object returned by functions \code{sgdgmf.fit} and \code{sgdgmf.cv}
+and of class \code{sgdgmf}. Method functions \code{print}, \code{deviance},
+\code{AIC}, \code{BIC}, \code{coefficient}, \code{residuals}, \code{fitted},
+\code{predict}, \code{plot}, \code{screeplot}, \code{biplot} and \code{image}
+exist for this class.
 }
 \section{Slots}{
 
@@ -58,8 +59,6 @@ Method functions \code{print}, \code{deviance}, \code{AIC}, \code{BIC}, \code{co
 \item{\code{aic}}{Akaike information criterion of the estimated model}
 
 \item{\code{bic}}{Bayesian information criterion of the estimated model}
-
-\item{\code{cbic}}{Corrected Bayesian information criterion of the estimated model}
 
 \item{\code{exe.time}}{Final execution time in seconds}
 

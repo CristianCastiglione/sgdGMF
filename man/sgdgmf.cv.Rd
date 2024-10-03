@@ -48,13 +48,27 @@ sgdgmf.cv(
 \item{control.cv}{list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)}
 }
 \value{
-...
+If \code{refit = FALSE}, the function returns a list containing \code{control.init},
+\code{control.alg}, \code{control.cv} and \code{summary.cv}. The latter is a matrix
+collecting the cross-validation results for each combination of fold and latent
+dimension.
+
+If \code{refit = TRUE}, the function returns an object of class \code{sgdgmf},
+obtained by refitting the model on the whole data matrix using the latent dimension
+selected via cross-validation. The returned object also contains the \code{summary.cv}
+information along with the other standard output of the \code{\link{sgdgmf.fit}} function.
 }
 \description{
-K-fold cross-validation for generalized matrix factorization (GMF) models
+K-fold cross-validation for generalized matrix factorization (GMF) models.
 }
 \details{
-...
+Cross-validation is performed by minimizing the estimated out-of-sample error, which
+can be measured in terms of averaged deviance, AIC or BIC calculated on fold-specific
+test sets. Within each fold, the test set is defined as a fixed proportion of entries
+in the response matrix which are held out from the estimation process.
+In practice, the test set entries are hidden by \code{NA} values when training the
+model. Then, the predicted, i.e. imputed, values are used to compute the fold-specific
+out-of-sample error.
 }
 \examples{
 library(sgdGMF)
@@ -89,7 +103,4 @@ image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
 image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
 image(mu_hat_gam, axes = FALSE, main = expression(hat(mu)[Gam]))
 
-}
-\references{
-...
 }
