@@ -350,8 +350,8 @@ init.param.random = function (
   d = ncomp
 
   # Derive covariate dimensions
-  p = 0
-  q = 0
+  p = 1
+  q = 1
   if (!is.null(X)) p = ncol(X) # n x p matrix
   if (!is.null(Z)) q = ncol(Z) # m x q matrix
 
