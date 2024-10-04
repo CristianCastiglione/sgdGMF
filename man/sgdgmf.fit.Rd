@@ -79,7 +79,7 @@ In particular, the returned object collects the following information:
 \description{
 Fit a generalized matrix factorization (GMF) model for non-Gaussian data using
 either deterministic or stochastic optimization methods.
-It is an alternative to PCA when the observed data are binary, counts, positive
+It is an alternative to PCA when the observed data are binary, counts, and positive
 scores or, more generally, when the conditional distribution of the observations
 can be appropriately described using a dispersion exponential family
 or a quasi-likelihood model.
@@ -108,15 +108,15 @@ where \eqn{\psi} is the vector of unknown parameters to be estimated,
 and \eqn{c(\cdot,\cdot)} is the cumulant function of the family.
 
 The conditional mean of \eqn{y_{ij}}, say \eqn{\mu_{ij}}, is then modeled as
-\deqn{g(\mu_{ij}) = \eta_{ij} = x_i^\top \beta_j + \gamma_i^\top z_j + u_i^\top v_j,}
+\deqn{g(\mu_{ij}) = \eta_{ij} = x_i^\top \beta_j + \alpha_i^\top z_j + u_i^\top v_j,}
 where \eqn{g(\cdot)} is a bijective twice differentiable link function, \eqn{\eta_{ij}} is
 a linear predictor, \eqn{x_i \in \mathbb{R}^p} and \eqn{z_j \in \mathbb{R}^q} are
-observed covariate vectors, \eqn{\beta_j \in \mathbb{R}^p} and \eqn{\gamma_j \in \mathbb{R}^q}
+observed covariate vectors, \eqn{\beta_j \in \mathbb{R}^p} and \eqn{\alpha_j \in \mathbb{R}^q}
 are unknown regression parameters and, finally, \eqn{u_i \in \mathbb{R}^d} and
 \eqn{v_j \in \mathbb{R}^d} are latent vector explaining the residual varibility
 not captured by the regression effects.
 Equivalently, in matrix form, we have
-\eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top.}
+\eqn{g(\mu) = \eta = X B^\top + A Z^\top + U V^\top.}
 
 The natural parameter \eqn{\theta_{ij}} is linked to the conditional mean of \eqn{y_{ij}}
 through the equation \eqn{E(y_{ij}) = \mu_{ij} = b'(\theta_{ij})}.
@@ -130,7 +130,7 @@ where \eqn{f_0(y)} is the likelihood of the saturated model.
 The estimation of the model parameters is performed by minimizing the penalized deviance function
 \deqn{\displaystyle \ell_\lambda (\psi; y) = - \sum_{i = 1}^{n} \sum_{j = 1}^{m} D_\phi(y_{ij}, \mu_{ij}) + \frac{\lambda_{\scriptscriptstyle U}}{2} \| U \|_F^2 + \frac{\lambda_{\scriptscriptstyle V}}{2} \| V \|_F^2,}
 where \eqn{\lambda_{\scriptscriptstyle U} > 0} and \eqn{\lambda_{\scriptscriptstyle V} > 0} are regularization parameters and \eqn{\|\cdot\|_F} is the Frobenious norm.
-Additional \eqn{\ell_2} penalization terms can be introduced to regularize \eqn{B} and \eqn{\Gamma}.
+Additional \eqn{\ell_2} penalization terms can be introduced to regularize \eqn{B} and \eqn{A}.
 Quasi-likelihood models, where \eqn{D_\phi(y, \mu)} is substituted by
 \eqn{Q_\phi(y, \mu) = - \log \phi - \int_y^\mu \{(y - t) / \nu(t)\} \,dt / \phi},
 can be considered as well.
@@ -142,8 +142,8 @@ four different algorithms
 \itemize{
   \item AIRWLS: alternated iterative re-weighted least squares (\code{method="airwls"});
   \item Newton: quasi-Newton algorithm with diagonal Hessian (\code{method="newton"});
-  \item C-SGD: coordinate-wise stochastic gradient descent (\code{method="vsgd"});
-  \item B-SGD: block-wise stochastic gradient descent (\code{method="bsgd"}).
+  \item C-SGD: adaptive stochastic gradient descent with coordinate-wise sub-sampling (\code{method="sgd", sampling="coord"});
+  \item B-SGD: adaptive stochastic gradient descent with block-wise sub-sampling (\code{method="sgd", sampling="block"}).
 }
 
 \strong{Likelihood families}
