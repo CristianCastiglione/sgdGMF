@@ -90,8 +90,8 @@ taken into account through appropriate row- and column-specific regression effec
 The residual variability is then modeled through a low-rank matrix factorization.
 
 For the estimation, the package implements two deterministic optimization methods,
-(AIRWLS and Newton) and two stochastic optimization algorithms (coordinate-wise
-and block-wise adaptive SGD).
+(AIRWLS and Newton) and two stochastic optimization algorithms (adaptive SGD with
+coordinate-wise and block-wise sub-sampling).
 }
 \details{
 \strong{Model specification}
