@@ -146,3 +146,4 @@ testthat::test_that("Frobenious matrix penalty", {
 
   testthat::expect_equal(pen, sum((U * U) %*% diag(lambda)))
 })
+

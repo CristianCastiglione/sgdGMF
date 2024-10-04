@@ -57,3 +57,42 @@ testthat::test_that("SVD orthogonalization", {
   # Check if U and V have the column norm
   testthat::expect_equal(colSums(new$V^2), RSpectra::svds(tcrossprod(new$U, new$V), d)$d^2)
 })
+
+
+testthat::test_that("GMF data simulation", {
+  n = 100; m = 10; d = 5
+
+  pois = sim.gmf.data(n = n, m = m, ncomp = d, family = poisson())
+  bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
+  gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"))
+
+  # Check if the matrices have the correct dimensions
+  testthat::expect_equal(dim(pois$Y), c(n,m))
+  testthat::expect_equal(dim(bin$Y), c(n,m))
+  testthat::expect_equal(dim(gam$Y), c(n,m))
+
+  testthat::expect_equal(dim(pois$eta), c(n,m))
+  testthat::expect_equal(dim(bin$eta), c(n,m))
+  testthat::expect_equal(dim(gam$eta), c(n,m))
+
+  testthat::expect_equal(dim(pois$mu), c(n,m))
+  testthat::expect_equal(dim(bin$mu), c(n,m))
+  testthat::expect_equal(dim(gam$mu), c(n,m))
+
+  testthat::expect_equal(dim(pois$U), c(n,d))
+  testthat::expect_equal(dim(bin$U), c(n,d))
+  testthat::expect_equal(dim(gam$U), c(n,d))
+
+  testthat::expect_equal(dim(pois$V), c(m,d))
+  testthat::expect_equal(dim(bin$V), c(m,d))
+  testthat::expect_equal(dim(gam$V), c(m,d))
+
+  # Check if the generated data respect their natural constraints
+  testthat::expect_true(all(pois$Y >= 0 & is.integer(pois$Y)))
+  testthat::expect_true(all(bin$Y %in% c(0,1) & is.integer(pois$Y)))
+  testthat::expect_true(all(gam$Y > 0))
+
+  testthat::expect_true(all(pois$mu >= 0))
+  testthat::expect_true(all(bin$mu >= 0 & bin$mu <= 1))
+  testthat::expect_true(all(gam$mu > 0))
+})

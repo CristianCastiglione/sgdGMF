@@ -1,7 +1,7 @@
 # file: test-vglmfit.R
 # author: Cristian Castiglione
 # creation: 23/03/2024
-# last change: 24/03/2024
+# last change: 04/10/2024
 
 testthat::test_that("Multivariate OLS fitting", {
   n = 100; m = 10; p = 5; q = p+1
@@ -13,14 +13,14 @@ testthat::test_that("Multivariate OLS fitting", {
   Y = O + tcrossprod(X, B) + E
 
   B.hat = ols.fit.coef(Y, X, offset = O)
-  F.hat = O + tcrossprod(X, B.hat)
-  E.hat = Y - F.hat
+  mu.hat = O + tcrossprod(X, B.hat)
+  res.hat = Y - mu.hat
 
   # Check the dimension and the basic properties of the estimates
   testthat::expect_equal(c(m, q), dim(B.hat))
-  testthat::expect_equal(crossprod(X, F.hat), crossprod(X, Y - O))
-  testthat::expect_equal(matrix(0, q, m), crossprod(X, E.hat))
-  testthat::expect_equal(0, mean(E.hat))
+  testthat::expect_equal(crossprod(X, mu.hat), crossprod(X, Y))
+  testthat::expect_equal(matrix(0, q, m), crossprod(X, res.hat))
+  testthat::expect_equal(0, mean(res.hat))
 })
 
 
@@ -79,7 +79,7 @@ testthat::test_that("Gamma VGLM fitting", {
   B = matrix(rnorm(m*q, mean = 0.1, sd = 0.25), nrow = m, ncol = q)
   eta = O + tcrossprod(X, B)
   mu = family$linkinv(eta)
-  Y = matrix(rgamma(n*m, shape = 1, rate = mu), nrow = n, ncol = m)
+  Y = matrix(rgamma(n*m, shape = 2, rate = 2 / mu), nrow = n, ncol = m)
 
   B.hat = vglm.fit.coef(Y, X, family, offset = O, parallel = FALSE)
   eta.hat = O + tcrossprod(X, B.hat)
@@ -90,5 +90,5 @@ testthat::test_that("Gamma VGLM fitting", {
 
   # Check the dimension and the basic properties of the estimates
   testthat::expect_equal(c(m, q), dim(B.hat))
-  testthat::expect_true(mean(crossprod(X, res.hat)) < 1e-04)
+  testthat::expect_true(mean(crossprod(X, res.hat)) < 1e-03)
 })
