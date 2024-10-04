@@ -66,7 +66,7 @@ Cross-validation is performed by minimizing the estimated out-of-sample error, w
 can be measured in terms of averaged deviance, AIC or BIC calculated on fold-specific
 test sets. Within each fold, the test set is defined as a fixed proportion of entries
 in the response matrix which are held out from the estimation process.
-In practice, the test set entries are hidden by \code{NA} values when training the
+To this end, the test set entries are hidden by \code{NA} values when training the
 model. Then, the predicted, i.e. imputed, values are used to compute the fold-specific
 out-of-sample error.
 }

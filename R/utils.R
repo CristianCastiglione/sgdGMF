@@ -105,6 +105,9 @@ make.pos.diag = function(U) {
 #' @description Compute the whitening matrix from a given covariance matrix
 #' @param sigma covariance matrix.
 #' @param method determines the type of whitening transformation.
+#' @details
+#' This function is an internal re-implementation of the function \code{whiteningMatrix}
+#' in the \code{whitening} package. See the original documentation to get more details.
 #' @keywords internal
 whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
 

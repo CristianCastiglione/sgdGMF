@@ -17,4 +17,8 @@ whitening.matrix(
 \description{
 Compute the whitening matrix from a given covariance matrix
 }
+\details{
+This function is an internal re-implementation of the function \code{whiteningMatrix}
+in the \code{whitening} package. See the original documentation to get more details.
+}
 \keyword{internal}
