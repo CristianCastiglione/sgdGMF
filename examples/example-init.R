@@ -4,9 +4,9 @@ library(sgdGMF)
 n = 100; m = 20; d = 5
 
 # Generate data using Poisson, Binomial and Gamma models
-data_pois = sim.gmf.data(n = n, m = m, d = d, family = poisson())
-data_bin = sim.gmf.data(n = n, m = m, d = d, family = binomial())
-data_gam = sim.gmf.data(n = n, m = m, d = d, family = Gamma(link = "log"), dispersion = 0.25)
+data_pois = sim.gmf.data(n = n, m = m, ncomp = d, family = poisson())
+data_bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
+data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
 
 # Initialize the GMF parameters assuming 3 latent factors
 init_pois = init.gmf.param(data_pois$Y, ncomp = 3, family = poisson(), method = "ols")
