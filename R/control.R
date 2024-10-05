@@ -643,7 +643,7 @@ set.control.alg = function (
 #'
 #' @export set.control.cv
 set.control.cv = function (
-    criterion = c("dev", "aic", "bic"),
+    criterion = c("dev", "mae", "mse", "aic", "bic"),
     refit = TRUE,
     nfolds = 5,
     proportion = 0.3,

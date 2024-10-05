@@ -200,6 +200,8 @@ sgdgmf.cv = function (
           ncomp = ncomp,
           df = mean(cv$df[idx]),
           dev = mean(cv$dev[idx], na.rm = TRUE),
+          mae = mean(cv$mae[idx], na.rm = TRUE),
+          mse = mean(cv$mse[idx], na.rm = TRUE),
           aic = mean(cv$aic[idx], na.rm = TRUE),
           bic = mean(cv$bic[idx], na.rm = TRUE)
         )
@@ -209,12 +211,16 @@ sgdgmf.cv = function (
     ncomp = switch(criterion,
       "dev" = avgcv$ncomp[which.min(avgcv$dev)],
       "aic" = avgcv$ncomp[which.min(avgcv$aic)],
-      "bic" = avgcv$ncomp[which.min(avgcv$bic)])
+      "bic" = avgcv$ncomp[which.min(avgcv$bic)],
+      "mae" = avgcv$ncomp[which.min(avgcv$mae)],
+      "mse" = avgcv$ncomp[which.min(avgcv$mse)])
   } else {
     ncomp = switch(criterion,
       "dev" = cv$ncomp[which.min(cv$dev)],
       "aic" = cv$ncomp[which.min(cv$aic)],
-      "bic" = cv$ncomp[which.min(cv$bic)])
+      "bic" = cv$ncomp[which.min(cv$bic)],
+      "mae" = cv$ncomp[which.min(cv$mae)],
+      "mse" = cv$ncomp[which.min(cv$mse)])
   }
 
   if (refit) {
@@ -295,21 +301,31 @@ sgdgmf.cv.step = function (
     control.init = control.init, control.alg = control.alg)$mu
 
   # Train and test sample sizes
-  n.train = n * m * (1-f) - sum(is.na(train))
-  n.test = n * m * f - sum(is.na(test))
+  n.train = n * m * (1-f)
+  n.test = n * m * f
 
   # Train and test goodness-of-fit measures
   dev.train = sum(family$dev.resids(train, mu, 1), na.rm = TRUE)
   dev.test = sum(family$dev.resids(test, mu, 1), na.rm = TRUE)
   aic.train = dev.train + 2 * df
   bic.train = dev.train + df * log(n.train)
+  mae.train = sum(abs(train - mu), na.rm = TRUE)
+  mae.test = sum(abs(test - mu), na.rm = TRUE)
+  mse.train = sum((train - mu)^2, na.rm = TRUE)
+  mse.test = sum((test - mu)^2, na.rm = TRUE)
 
   # Return a data-frame with all the GoF statistics
   data.frame(
-    ncomp = ncomp, fold = fold, df = df,
+    ncomp = ncomp,
+    fold = fold,
+    df = df,
+    train = n.train,
+    test = n.test,
     aic = aic.train / n.train,
     bic = bic.train / n.train,
-    dev = dev.test / n.test
+    dev = dev.test / n.test,
+    mae = mae.test / n.test,
+    mse = mse.test / n.test
   )
 }
 
