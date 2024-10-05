@@ -2,7 +2,10 @@
 #' @title S3 class: initgmf
 #'
 #' @description
-#' A short description...
+#' An initialized GMF object returned by the function \code{sgdgmf.init} and of class
+#' \code{initgmf}. Method functions \code{print}, \code{deviance}, \code{AIC}, \code{BIC},
+#' \code{coefficients}, \code{residuals}, \code{fitted}, \code{predict}, \code{plot},
+#' \code{screeplot}, \code{biplot} and \code{image} exist for this class.
 #'
 #' @slot method initialization method to approximatelly minimize the negative penalized log-likelihood
 #' @slot family a \code{glm} family (see \code{\link{family}} for more details)

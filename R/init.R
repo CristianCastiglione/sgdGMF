@@ -72,8 +72,8 @@
 #'
 #' @example examples/example-init.R
 #'
-#' @export init.gmf.param
-init.gmf.param = function (
+#' @export sgdgmf.init
+sgdgmf.init = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -88,15 +88,17 @@ init.gmf.param = function (
     nthreads = 1,
     savedata = TRUE
 ) {
+  # Maybe I can change this function's name to sgdgmf.init
+
   # Set the initialization method
   method = match.arg(method)
 
   # Initialize the parameters using the selected method
   init = switch(method,
-    "ols" = init.param.ols(Y, X, Z, ncomp, family, type, verbose),
-    "glm" = init.param.glm(Y, X, Z, ncomp, family, type, verbose, parallel, nthreads),
-    "random" = init.param.random(Y, X, Z, ncomp),
-    "values" = init.param.custom(Y, X, Z, ncomp, family, values, verbose))
+    "ols" = sgdgmf.init.ols(Y, X, Z, ncomp, family, type, verbose),
+    "glm" = sgdgmf.init.glm(Y, X, Z, ncomp, family, type, verbose, parallel, nthreads),
+    "random" = sgdgmf.init.random(Y, X, Z, ncomp),
+    "values" = sgdgmf.init.custom(Y, X, Z, ncomp, family, values, verbose))
 
   # Save all the initialization options
   init$method = method
@@ -130,9 +132,9 @@ init.gmf.param = function (
   return (init)
 }
 
-#' @rdname init.gmf.param
+#' @rdname sgdgmf.init
 #' @keywords internal
-init.param.ols = function (
+sgdgmf.init.ols = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -222,9 +224,9 @@ init.param.ols = function (
 }
 
 
-#' @rdname init.gmf.param
+#' @rdname sgdgmf.init
 #' @keywords internal
-init.param.glm = function (
+sgdgmf.init.glm = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -333,9 +335,9 @@ init.param.glm = function (
 }
 
 
-#' @rdname init.gmf.param
+#' @rdname sgdgmf.init
 #' @keywords internal
-init.param.random = function (
+sgdgmf.init.random = function (
     Y,
     X = NULL,
     Z = NULL,
@@ -374,9 +376,9 @@ init.param.random = function (
 }
 
 
-#' @rdname init.gmf.param
+#' @rdname sgdgmf.init
 #' @keywords internal
-init.param.custom = function (
+sgdgmf.init.custom = function (
     Y,
     X = NULL,
     Z = NULL,

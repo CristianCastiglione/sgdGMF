@@ -36,7 +36,6 @@
 #' @slot trace data frame collecting the optimization history
 #' @slot summary.cv data frame collecting the cross-validation history
 #'
-## @import methods
 #' @export
 setClass("sgdgmf",
   slots = list(

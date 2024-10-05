@@ -9,9 +9,9 @@ data_bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
 data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
 
 # Initialize the GMF parameters assuming 3 latent factors
-init_pois = init.gmf.param(data_pois$Y, ncomp = 3, family = poisson(), method = "ols")
-init_bin = init.gmf.param(data_bin$Y, ncomp = 3, family = binomial(), method = "ols")
-init_gam = init.gmf.param(data_gam$Y, ncomp = 3, family = Gamma(link = "log"), method = "ols")
+init_pois = sgdgmf.init(data_pois$Y, ncomp = 3, family = poisson(), method = "ols")
+init_bin = sgdgmf.init(data_bin$Y, ncomp = 3, family = binomial(), method = "ols")
+init_gam = sgdgmf.init(data_gam$Y, ncomp = 3, family = Gamma(link = "log"), method = "ols")
 
 # Get the fitted values in the link and response scales
 mu_hat_pois = fitted(init_pois, type = "response")

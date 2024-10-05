@@ -105,7 +105,7 @@ sgdgmf.cv = function (
   # Common initialization
   if (common) {
     time.init = proc.time()
-    control.init$values = init.gmf.param(
+    control.init$values = sgdgmf.init(
       Y = Y, X = X, Z = Z, ncomp = maxcomp,
       family = family, method = control.init$method,
       type = control.init$type, niter = control.init$niter,
@@ -228,10 +228,12 @@ sgdgmf.cv = function (
     cat("Final refit with rank =", ncomp, "\n")
     control.init$values$U = control.init$values$U[, 1:ncomp, drop = FALSE]
     control.init$values$V = control.init$values$V[, 1:ncomp, drop = FALSE]
+
     fit = sgdgmf.fit(
       Y = Y, X = X, Z = Z, family = family,
       ncomp = ncomp, method = method, penalty = penalty,
       control.init = control.init, control.alg = control.alg)
+
     if (common) fit$exe.time[1] = time.init
   } else {
     # Do not re-fit the model, just return the summary statistics
