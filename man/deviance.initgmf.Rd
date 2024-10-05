@@ -29,12 +29,12 @@ library(sgdGMF)
 data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 
 # Fit a GMF model with 3 latent factors
-gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
 # Get the GMF deviance, AIC and BIC
-deviance(gmf)
-AIC(gmf)
-BIC(gmf)
+deviance(init)
+AIC(init)
+BIC(init)
 
 }
 \seealso{

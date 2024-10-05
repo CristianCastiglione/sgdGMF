@@ -100,10 +100,17 @@ sgdgmf.init = function (
     "random" = sgdgmf.init.random(Y, X, Z, ncomp),
     "values" = sgdgmf.init.custom(Y, X, Z, ncomp, family, values, verbose))
 
+  # Data dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+  p = ifelse(is.null(X), 1, ncol(X))
+  q = ifelse(is.null(Z), 1, ncol(Z))
+
   # Save all the initialization options
   init$method = method
   init$family = family
   init$ncomp = ncomp
+  init$npar = n * p + m * q + ncomp * (n + m)
   init$type = type
   init$verbose = verbose
   init$parallel = parallel
@@ -111,11 +118,6 @@ sgdgmf.init = function (
   init$savedata = savedata
 
   if (savedata) {
-    n = nrow(Y)
-    m = ncol(Y)
-    p = ifelse(is.null(X), 1, ncol(X))
-    q = ifelse(is.null(Z), 1, ncol(Z))
-
     init$Y = matrix(NA, nrow = n, ncol = m)
     init$X = matrix(NA, nrow = n, ncol = p)
     init$Z = matrix(NA, nrow = m, ncol = q)

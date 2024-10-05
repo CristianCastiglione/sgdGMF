@@ -61,12 +61,12 @@ setClass("initgmf",
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model with 3 latent factors
-#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the GMF deviance, AIC and BIC
-#' deviance(gmf)
-#' AIC(gmf)
-#' BIC(gmf)
+#' deviance(init)
+#' AIC(init)
+#' BIC(init)
 #'
 #' @method deviance initgmf
 #' @export
@@ -113,6 +113,53 @@ BIC.initgmf = function (object) {
   nm = prod(dim(object$Y)) - sum(is.na(object$Y))
   bic = dev + df * log(nm)
   return (bic)
+}
+
+#' @title Print the fundamental characteristics of an initialized GMF
+#'
+#' @description Print some summary information of an initialized GMF model.
+#'
+#' @param object an object of class \code{initgmf}
+#'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model with 3 latent factors
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Print the GMF object
+#' print(init)
+#'
+#' @method print initgmf
+#' @export
+print.initgmf = function (object) {
+  # Percentage of explained deviance
+  dev = 100 * (1 - deviance(object, normalize = TRUE))
+
+  # Elapsed execution time
+  # time.init = object$exe.time[1]
+  # time.opt = object$exe.time[2]
+  # time.tot = object$exe.time[3]
+
+  # Print the output
+  cat(gettextf("\n Number of samples: %d", nrow(object$U)))
+  cat(gettextf("\n Number of features: %d", nrow(object$V)))
+  cat(gettextf("\n Data sparsity: %.2f %%", 100 * mean(is.na(object$Y))))
+  cat(gettextf("\n Column covariates: %d", ncol(object$X)))
+  cat(gettextf("\n Row covariates: %d", ncol(object$Z)))
+  cat(gettextf("\n Latent space rank: %d", object$ncomp))
+  cat(gettextf("\n Number of parameters: %d", object$npar))
+  cat(gettextf("\n Model family: %s", object$family$family))
+  cat(gettextf("\n Model link: %s", object$family$link))
+  cat(gettextf("\n Estimation method: %s", object$method))
+  cat(gettextf("\n Explained deviance: %.2f %%", dev))
+  # cat(gettextf("\n Initialization exe. time: %.2f s (%.2f m)", time.init, time.init/60))
+  # cat(gettextf("\n Optimization exe. time: %.2f s (%.2f m)", time.opt, time.opt/60))
+  # cat(gettextf("\n Total execution time: %.2f s (%.2f m)", time.tot, time.tot/60))
+  cat("\n")
 }
 
 #' @title Extract the coefficient of an initialized GMF model
