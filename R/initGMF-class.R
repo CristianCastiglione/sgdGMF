@@ -524,11 +524,13 @@ screeplot.initgmf = function (
 #' @method biplot initgmf
 #' @export
 biplot.initgmf = function (
-    object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL
+    object, choices = 1:2, arrange = TRUE, byrow = FALSE,
+    normalize = FALSE, labels = NULL, palette = NULL
 ) {
   # Call the biplot method for sgdgmf objects
-  biplot.sgdgmf(object = object, choices = choices,
-                normalize = normalize, labels = labels, palette = palette)
+  biplot.sgdgmf(object = object, choices = choices, arrange = arrange,
+                byrow = byrow, normalize = normalize, labels = labels,
+                palette = palette)
 }
 
 #' @title Heatmap of an initialized GMF model
