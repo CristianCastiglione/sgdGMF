@@ -877,7 +877,7 @@ plot.sgdgmf = function (
       df = data.frame(residuals = c(res), index = c(1:prod(dim(res))))
       ggplot(data = df, map = aes(x = index, y = residuals)) +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
-        labs(x = "Index", y = "Residuals", title = "Residuals vs Fitted values")
+        labs(x = "Index", y = "Residuals", title = "Residuals vs Indicies")
     },
     "res-fit" = {
       df = data.frame(residuals = c(res), fitted = c(fit))
@@ -1006,7 +1006,8 @@ screeplot.sgdgmf = function (
 #' @export
 biplot.sgdgmf = function (
     object, choices = 1:2, arrange = TRUE, byrow = FALSE,
-    normalize = FALSE, labels = NULL, palette = NULL
+    normalize = FALSE, labels = NULL, palette = NULL,
+    titles = c(NULL, NULL)
 ) {
   # Get the data dimensions
   n = nrow(object$U)
@@ -1049,28 +1050,30 @@ biplot.sgdgmf = function (
   }
 
   # Create the score biplot
+  title.scores = ifelse(!is.null(titles[1]), titles[1], "Scores")
   plt.scores =
     ggplot(data = scores, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
     geom_hline(yintercept = 0, lty = 2, color = "grey40") +
     geom_vline(xintercept = 0, lty = 2, color = "grey40") +
     geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
     scale_colour_gradientn(colours = palette$scores) + theme(legend.position = "bottom") +
-    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Scores")
+    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = title.scores)
 
   # Create the loading biplot
+  title.loadings = ifelse(!is.null(titles[1]), titles[1], "Loadings")
   plt.loadings =
     ggplot(data = loadings, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
     geom_hline(yintercept = 0, lty = 2, color = "grey40") +
     geom_vline(xintercept = 0, lty = 2, color = "grey40") +
     geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
     scale_colour_gradientn(colours = palette$loadings) + theme(legend.position = "bottom") +
-    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = "Loadings")
+    labs(x = paste("PC", i), y = paste("PC", j), color = "Index", title = title.loadings)
 
   plt = NULL
   if (arrange && byrow)
     plt = ggpubr::ggarrange(plt.scores, plt.loadings, nrow = 2, align = "v", legend = "right")
   if (arrange && !byrow)
-    plt = ggpubr::ggarrange(plt.scores, plt.loadings, ncol = 2, align = "h")
+    plt = ggpubr::ggarrange(plt.scores, plt.loadings, ncol = 2, align = "h", legend = "bottom")
   if (!arrange)
     plt = list(scores = plt.scores, loadings = plt.loadings)
 
