@@ -42,7 +42,7 @@ library(sgdGMF)
 data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 
 # Fit a GMF model
-init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
 # Get the heatmap of a GMF model
 image(init, type = "data") # original data

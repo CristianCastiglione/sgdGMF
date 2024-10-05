@@ -6,7 +6,7 @@
 testthat::test_that("OLS initialization", {
   n = 100; m = 10; d = 5; f = Gamma(link = "log")
   dat = sim.gmf.data(n = n, m = m, ncomp = d, family = f, dispersion = 0.5)
-  init = init.param.ols(dat$Y, ncomp = d, family = f)
+  init = sgdgmf.init.ols(dat$Y, ncomp = d, family = f)
 
   # Output class
   testthat::expect_true(is.list(init))
@@ -25,7 +25,7 @@ testthat::test_that("OLS initialization", {
 testthat::test_that("GLM initialization", {
   n = 100; m = 10; d = 5; f = Gamma(link = "log")
   dat = sim.gmf.data(n = n, m = m, ncomp = d, family = f, dispersion = 0.5)
-  init = init.param.glm(dat$Y, ncomp = d, family = f)
+  init = sgdgmf.init.glm(dat$Y, ncomp = d, family = f)
 
   # Output class
   testthat::expect_true(is.list(init))
@@ -44,7 +44,7 @@ testthat::test_that("GLM initialization", {
 testthat::test_that("Random initialization", {
   n = 100; m = 10; d = 5; f = Gamma(link = "log")
   dat = sim.gmf.data(n = n, m = m, ncomp = d, family = f, dispersion = 0.5)
-  init = init.param.random(dat$Y, ncomp = d, family = f)
+  init = sgdgmf.init.random(dat$Y, ncomp = d, family = f)
 
   # Output class
   testthat::expect_true(is.list(init))
@@ -65,9 +65,9 @@ testthat::test_that("Random initialization", {
   n = 100; m = 10; d = 5; f = Gamma(link = "log")
   dat = sim.gmf.data(n = n, m = m, ncomp = d, family = f, dispersion = 0.5)
 
-  init.ols = init.gmf.param(dat$Y, ncomp = d, family = f, method = "ols")
-  init.glm = init.gmf.param(dat$Y, ncomp = d, family = f, method = "glm")
-  init.rnd = init.gmf.param(dat$Y, ncomp = d, family = f, method = "random")
+  init.ols = sgdgmf.init(dat$Y, ncomp = d, family = f, method = "ols")
+  init.glm = sgdgmf.init(dat$Y, ncomp = d, family = f, method = "glm")
+  init.rnd = sgdgmf.init(dat$Y, ncomp = d, family = f, method = "random")
 
   # Output class
   testthat::expect_true(is.list(init.ols))

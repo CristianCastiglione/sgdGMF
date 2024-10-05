@@ -23,7 +23,7 @@ library(sgdGMF)
 data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 
 # Fit a GMF model with 3 latent factors
-init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
 # Get the fitted values of a GMF model
 fitted(init) # returns the overall fitted values in link scale

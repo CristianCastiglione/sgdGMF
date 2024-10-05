@@ -418,4 +418,3 @@ sgdgmf.init.custom = function (
   # Return the obtained initial values
   return(values)
 }
-

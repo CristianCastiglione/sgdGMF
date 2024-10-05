@@ -133,7 +133,7 @@ BIC.initgmf = function (object) {
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model with 3 latent factors
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the estimated coefficients of a GMF model
 #' coefficients(init) # returns all the coefficients
@@ -190,7 +190,7 @@ coef.initgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model with 3 latent factors
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the deviance residuals of a GMF model
 #' residuals(init) # returns the overall deviance residuals
@@ -303,7 +303,7 @@ resid.initgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model with 3 latent factors
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the fitted values of a GMF model
 #' fitted(init) # returns the overall fitted values in link scale
@@ -367,7 +367,7 @@ fitted.initgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Plot the residual-based GMF diagnostics
 #' plot(init, type = "res-fit") # Residuals vs fitted values
@@ -418,7 +418,7 @@ plot.initgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the partial residual spectrum of a GMF model
 #' screeplot(init) # screeplot of the var-cov matrix of the deviance residuals
@@ -468,7 +468,7 @@ screeplot.initgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the biplot of a GMF model
 #' biplot(init) # 1st vs 2nd principal components
@@ -506,7 +506,7 @@ biplot.initgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the heatmap of a GMF model
 #' image(init, type = "data") # original data

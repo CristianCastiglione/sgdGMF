@@ -68,12 +68,12 @@ family = poisson()
 
 ```{r init}
 suppressWarnings({
-  init_glm_dev = sgdGMF::init.gmf.param(Y, X, Z, ncomp = 2, family = family, method = "glm", type = "deviance")
-  init_glm_prs = sgdGMF::init.gmf.param(Y, X, Z, ncomp = 2, family = family, method = "glm", type = "pearson")
-  init_glm_lnk = sgdGMF::init.gmf.param(Y, X, Z, ncomp = 2, family = family, method = "glm", type = "link")
-  init_ols_dev = sgdGMF::init.gmf.param(Y, X, Z, ncomp = 2, family = family, method = "ols", type = "deviance")
-  init_ols_prs = sgdGMF::init.gmf.param(Y, X, Z, ncomp = 2, family = family, method = "ols", type = "pearson")
-  init_ols_lnk = sgdGMF::init.gmf.param(Y, X, Z, ncomp = 2, family = family, method = "ols", type = "link")
+  init_glm_dev = sgdGMF::sgdgmf.init(Y, X, Z, ncomp = 2, family = family, method = "glm", type = "deviance")
+  init_glm_prs = sgdGMF::sgdgmf.init(Y, X, Z, ncomp = 2, family = family, method = "glm", type = "pearson")
+  init_glm_lnk = sgdGMF::sgdgmf.init(Y, X, Z, ncomp = 2, family = family, method = "glm", type = "link")
+  init_ols_dev = sgdGMF::sgdgmf.init(Y, X, Z, ncomp = 2, family = family, method = "ols", type = "deviance")
+  init_ols_prs = sgdGMF::sgdgmf.init(Y, X, Z, ncomp = 2, family = family, method = "ols", type = "pearson")
+  init_ols_lnk = sgdGMF::sgdgmf.init(Y, X, Z, ncomp = 2, family = family, method = "ols", type = "link")
 })
 ```
 
