@@ -4,23 +4,23 @@ Title: Estimation of generalized matrix factorization models via stochastic grad
 Version: 1.0
 Date: 2023-09-28
 Author: 
-    person("Cristian", "Castiglione", email = "cristian.castiglione@unipd.it", 
+    person("Cristian", "Castiglione", email = "cristian.castiglione@unibocconi.it", 
            role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
     person("Davide", "Risso", email = "davide.risso@unipd.it", 
            role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012")),
     person("Alexandre", "Segers", email = "alexandre.segers@ugent.be", 
            role = c("ctb"), comment = c(ORCID = "0009-0004-2028-7595"))
-Maintainer: Cristian Castiglione <cristian.castiglione@unipd.it>
+Maintainer: Cristian Castiglione <cristian_castiglione@libero.it>
 Description: The sgdGMF package provides an efficient infrastructure 
     to estimate high-dimensional generalized matrix factorization (GMF) models using
     penalized maximum likelihood under a dispersion exponential family specification.
     Either deterministic and stochastic methods are implemented for the numerical 
-    maximization. In particular, the package implements an 
-    original stochastic gradient descent (SGD) algorithm with a blocking minibatch strategy
-    to speed up the computations and an efficient adaptive learning rate schedule to
-    stabilize the convergence. Other methods considered for the optimization are the
-    alternated iterative re-weighted least squares (AIRWLS) and the quasi-Newton method
-    with diagonal approximation of the Fisher information matrix.
+    maximization. In particular, the package implements an original stochastic
+    gradient descent (SGD) algorithm with a block-wise minibatch strategy to speed up
+    the computations and an efficient adaptive learning rate schedule to stabilize
+    the convergence. Other methods considered for the optimization are the alternated
+    iterative re-weighted least squares (AIRWLS) and the quasi-Newton method with
+    diagonal approximation of the Fisher information matrix.
 License: MIT
 Imports: 
     Rcpp (>= 1.0.10),
