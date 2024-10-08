@@ -1,7 +1,7 @@
 
 #' @keywords internal
 qrrange = function (X, q = c(0.05, 0.95)) {
-  range = quantile(c(X),q)
+  range = stats::quantile(c(X),q)
   X[X > range[2]] = range[2]
   X[X < range[1]] = range[1]
   X
@@ -178,19 +178,19 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
   }
   if (method == "qr") {
     if (is.vector(U)){
-      S = sd(c(U))
+      S = stats::sd(c(U))
       U = U / sqrt(S)
       V = V * sqrt(S)
     }
     if (is.matrix(U) & ncol(U) == 1){
-      S = sd(c(U))
+      S = stats::sd(c(U))
       U = U / sqrt(S)
       V = V * sqrt(S)
     }
     if (is.matrix(U) & ncol(U) > 1) {
       try({
         # Compute the covariance of U
-        S = cov(U)
+        S = stats::cov(U)
 
         # Make the covariance of U identity
         W = whitening.matrix(S)
@@ -313,12 +313,12 @@ sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), disper
 
   # Set the time range, phases, frequences and amplitudes of the underlying signals
   time = seq(from = 0, to = 1, length = n)
-  phase = sort(2*runif(d), decreasing = FALSE)
-  freq = sort(2*runif(d), decreasing = FALSE)
-  amp = sort(runif(d), decreasing = TRUE)
+  phase = sort(stats::runif(d), decreasing = FALSE) * 2
+  freq = sort(stats::runif(d), decreasing = FALSE) * 2
+  amp = sort(stats::runif(d), decreasing = TRUE)
 
   # Combine the latent signals using independent Gaussian coefficients
-  V = matrix(rnorm(m*d), nrow = m, ncol = d)
+  V = matrix(stats::rnorm(m*d), nrow = m, ncol = d)
   U = do.call("cbind", lapply(1:d, function(h){
     amp[h] * sin(2 * pi * freq[h] * (time + phase[h]))
   }))
@@ -327,7 +327,7 @@ sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), disper
   eta = tcrossprod(U, V)
   mu = family$linkinv(eta)
   phi = 3*rbeta(1, 2, 3)
-  phi = ifelse(!is.null(dispersion), abs(dispersion), 3*rbeta(1, 2, 3))
+  phi = ifelse(!is.null(dispersion), abs(dispersion), 3 * stats::rbeta(1, 2, 3))
 
   # Simulate the data using an dispersion exponential family distribution
   Y = matrix(

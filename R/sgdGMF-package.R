@@ -28,6 +28,17 @@
 #' @importFrom foreach %do%
 #' @importFrom foreach %dopar%
 #' @importFrom foreach foreach
+#' @importFrom stats var sd
+#' @importFrom stats cov cor cov2cor
+#' @importFrom stats ecdf
+#' @importFrom stats median quantile
+#' @importFrom stats dnorm pnorm qnorm rnorm
+#' @importFrom stats dexp pexp qexp rexp
+#' @importFrom stats dgamma pgamma qgamma rgamma
+#' @importFrom stats dbeta pbeta qbeta rbeta
+#' @importFrom stats dunif punif qunif runif
+#' @importFrom stats dpois ppois qpois rpois
+#' @importFrom stats dbinom pbinom qbinom rbinom
 #' @importFrom stats fitted
 #' @importFrom stats predict
 #' @importFrom stats coef coefficients
@@ -35,8 +46,10 @@
 #' @importFrom stats deviance
 #' @importFrom stats BIC
 #' @importFrom stats deviance
+#' @importFrom stats qqplot qqnorm qqline
 #' @importFrom stats biplot
 #' @importFrom stats screeplot
+#' @importFrom utils head tail
 #' @importFrom graphics image
 #' @importFrom generics refit
 #' @import ggplot2

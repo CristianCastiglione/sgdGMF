@@ -208,7 +208,7 @@ sgdgmf.fit = function (
     fit = cpp.fit.airwls(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, nstep = alg$nstep, stepsize = alg$stepsize,
+      maxiter = alg$maxiter, nsteps = alg$nstep, stepsize = alg$stepsize,
       eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       damping = alg$damping, verbose = alg$verbose,
       frequency = alg$frequency, parallel = alg$parallel,

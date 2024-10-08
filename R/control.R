@@ -26,7 +26,7 @@ set.mat.X = function (X, n, mat = "X") {
     if (!is.matrix(X)) stop(paste(mat, "is not a matrix."))
     if (nrow(X) != n) stop(paste("The dimensions of", mat, "are not compatible with Y."))
     if (anyNA(X)) stop(paste(mat, "contains some NA."))
-    if (sum(apply(X, 2, sd) == 0) > 1) stop(paste(mat, "has too many constant columns."))
+    if (sum(apply(X, 2, stats::sd) == 0) > 1) stop(paste(mat, "has too many constant columns."))
     X = matrix(c(X), nrow = nrow(X), ncol = ncol(X))
   } else {
     X = matrix(1, nrow = n, ncol = 1)
@@ -46,7 +46,7 @@ set.mat.X = function (X, n, mat = "X") {
 set.family = function (family) {
 
   flag = TRUE
-  if (class(family) == "family") {
+  if (is(family, "family")) {
     # Gaussian family
     if (family$family == "gaussian") {
       if (family$link == "identity") {
@@ -570,7 +570,8 @@ set.control.block.sgd = function (
 #' Check if the input control parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined control parameters.
 #'
-#' @param method optimization method: \code{"airwls"}, \code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}
+#' @param method optimization method to use
+#' @param sampling sub-sampling method to use
 #' @param control list of algorithm-specific control parameters
 #'
 #' @details
@@ -581,8 +582,8 @@ set.control.block.sgd = function (
 #' please refer to
 #' \code{\link{set.control.airwls}} (\code{method="airwls"}),
 #' \code{\link{set.control.newton}} (\code{method="newton"}),
-#' \code{\link{set.control.csgd}} (\code{method="csgd"}),
-#' \code{\link{set.control.bsgd}} (\code{method="bsgd"}).
+#' \code{\link{set.control.block.sgd}} (\code{method="sgd"}, \code{sampling="block"}).
+#' \code{\link{set.control.coord.sgd}} (\code{method="sgd"}, \code{sampling="coord"}),
 #'
 #' @examples
 #' library(sgdGMF)
@@ -628,6 +629,7 @@ set.control.alg = function (
 #' @param refit if \code{TRUE}, refit the model with the selected rank and return the fitted model
 #' @param nfolds number of cross-validation folds
 #' @param proportion proportion of the data to be used as test set in each fold
+#' @param init initialization approach to use
 #' @param verbose if \code{TRUE}, print the cross-validation status
 #' @param parallel if \code{TRUE}, allows for parallel computing
 #' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})

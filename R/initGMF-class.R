@@ -14,6 +14,7 @@
 #' @slot verbose if \code{TRUE}, print the optimization status (default \code{TRUE})
 #' @slot parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach} (only if \code{method="glm"})
 #' @slot nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @slot savedata if \code{TRUE}, stores a copy of the input data
 #' @slot Y matrix of responses (\eqn{n \times m})
 #' @slot X matrix of row fixed effects (\eqn{n \times p})
 #' @slot Z matrix of column fixed effects (\eqn{m \times q})
@@ -267,6 +268,7 @@ residuals.initgmf = function (
     U = cbind(object$X, object$A, object$U)
     V = cbind(object$B, object$Z, object$V)
   }
+  Y = object$Y
   eta = tcrossprod(U, V)
   mu = family$linkinv(eta)
 
@@ -285,8 +287,8 @@ residuals.initgmf = function (
         na = which(is.na(x) | is.nan(x))
         r = length(na)
         m = mean(x, na.rm = TRUE)
-        s = sd(x, na.rm = TRUE)
-        x[na] = rnorm(r, mean = m, sd = s)
+        s = stats::sd(x, na.rm = TRUE)
+        x[na] = stats::rnorm(r, mean = m, sd = s)
       }
       return (x)
     })
@@ -299,7 +301,7 @@ residuals.initgmf = function (
 
   # Decompose the residuals using incomplete SVD
   if (spectrum) {
-    rcov = cov(res)
+    rcov = stats::cov(res)
     ncomp = max(1, min(ncomp, ncol(res)))
     pca = RSpectra::eigs_sym(rcov, ncomp)
 
@@ -502,6 +504,8 @@ screeplot.initgmf = function (
 #'
 #' @param object an object of class \code{initgmf}
 #' @param choices a length 2 vector specifying the components to plot
+#' @param arrange if \code{TRUE}, return a single plot with two panels
+#' @param byrow if \code{TRUE}, the panels are arranged row-wise (if \code{arrange=TRUE})
 #' @param normalize if \code{TRUE}, orthogonalizes the scores using SVD
 #' @param labels a vector of labels which should be plotted
 #' @param palette the color-palette which should be used

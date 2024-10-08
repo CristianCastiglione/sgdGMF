@@ -37,63 +37,63 @@ cpp.penalty <- function(u, p) {
     .Call(`_sgdGMF_cpp_penalty`, u, p)
 }
 
-pcc.gaussian.variance <- function(mu) {
+cpp.gaussian.variance <- function(mu) {
     .Call(`_sgdGMF_cpp_gaussian_variance`, mu)
 }
 
-pcc.gaussian.initialize <- function(y) {
+cpp.gaussian.initialize <- function(y) {
     .Call(`_sgdGMF_cpp_gaussian_initialize`, y)
 }
 
-pcc.gaussian.devresid <- function(y, mu) {
+cpp.gaussian.devresid <- function(y, mu) {
     .Call(`_sgdGMF_cpp_gaussian_devresid`, y, mu)
 }
 
-pcc.binomial.variance <- function(mu) {
+cpp.binomial.variance <- function(mu) {
     .Call(`_sgdGMF_cpp_binomial_variance`, mu)
 }
 
-pcc.binomial.initialize <- function(y) {
+cpp.binomial.initialize <- function(y) {
     .Call(`_sgdGMF_cpp_binomial_initialize`, y)
 }
 
-pcc.binomial.devresid <- function(y, mu) {
+cpp.binomial.devresid <- function(y, mu) {
     .Call(`_sgdGMF_cpp_binomial_devresid`, y, mu)
 }
 
-pcc.poisson.variance <- function(mu) {
+cpp.poisson.variance <- function(mu) {
     .Call(`_sgdGMF_cpp_poisson_variance`, mu)
 }
 
-pcc.poisson.initialize <- function(y) {
+cpp.poisson.initialize <- function(y) {
     .Call(`_sgdGMF_cpp_poisson_initialize`, y)
 }
 
-pcc.poisson.devresid <- function(y, mu) {
+cpp.poisson.devresid <- function(y, mu) {
     .Call(`_sgdGMF_cpp_poisson_devresid`, y, mu)
 }
 
-pcc.gamma.variance <- function(mu) {
+cpp.gamma.variance <- function(mu) {
     .Call(`_sgdGMF_cpp_gamma_variance`, mu)
 }
 
-pcc.gamma.initialize <- function(y) {
+cpp.gamma.initialize <- function(y) {
     .Call(`_sgdGMF_cpp_gamma_initialize`, y)
 }
 
-pcc.gamma.devresid <- function(y, mu) {
+cpp.gamma.devresid <- function(y, mu) {
     .Call(`_sgdGMF_cpp_gamma_devresid`, y, mu)
 }
 
-pcc.negbinom.variance <- function(mu) {
+cpp.negbinom.variance <- function(mu) {
     .Call(`_sgdGMF_cpp_negbinom_variance`, mu)
 }
 
-pcc.negbinom.initialize <- function(y) {
+cpp.negbinom.initialize <- function(y) {
     .Call(`_sgdGMF_cpp_negbinom_initialize`, y)
 }
 
-pcc.negbinom.devresid <- function(y, mu) {
+cpp.negbinom.devresid <- function(y, mu) {
     .Call(`_sgdGMF_cpp_negbinom_devresid`, y, mu)
 }
 

@@ -10,6 +10,7 @@
 #' exist for this class.
 #'
 #' @slot method estimation method to minimize the negative penalized log-likelihood
+#' @slot sampling sub-sampling strategy to use if \code{method = "sgd"}
 #' @slot family a \code{glm} family (see \code{\link{family}} for more details)
 #' @slot ncomp rank of the latent matrix factorization
 #' @slot npar number of parameters in the model
@@ -74,6 +75,7 @@ setClass("sgdgmf",
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
+#' @param verbose if \code{TRUE}, print the optimization status
 #' @param parallel if \code{TRUE}, use parallel computing using the \code{foreach} package
 #' @param nthreads number of cores to be used in the \code{"glm"} method
 #'
@@ -176,12 +178,12 @@ refit.sgdgmf = function (
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model with 3 latent factors
-#' init = init.gmf.param(data$Y, ncomp = 3, family = poisson())
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the GMF deviance, AIC and BIC
-#' deviance(init)
-#' AIC(init)
-#' BIC(init)
+#' deviance(gmf)
+#' AIC(gmf)
+#' BIC(gmf)
 #'
 #' @method deviance sgdgmf
 #' @export
@@ -591,7 +593,7 @@ predict.sgdgmf = function (
     if (!is.null(newX) && !is.numeric(newX)) stop("Type error: 'newX' is not numeric.", call. = FALSE)
     if (!is.null(newX) && !is.matrix(newX)) stop("Type error: 'newX' is not a matrix.", call. = FALSE)
     if (is.null(newX)) {
-      if (ncol(object$X) == 1 && sd(object$X[,1]) == 0) {
+      if (ncol(object$X) == 1 && stats::sd(object$X[,1]) == 0) {
         newX = matrix(object$X[1,1], nrow = nrow(newY), ncol = 1)
       } else {
         stop("Unspecified input: 'newX' must be provided.", call. = FALSE)
@@ -684,7 +686,8 @@ predict.sgdgmf = function (
 #' Simulate new data from a fitted generalized matrix factorization models
 #'
 #' @param object an object of class \code{sgdgmf}
-#' @param newdata optionally, a list containing new values for \code{X} and \code{Z}
+#' @param newY optionally, a matrix of new responses \code{Y}
+#' @param newX optionally, a matrix of new covariates \code{X}
 #' @param type the type of prediction which should be returned
 #' @param parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
@@ -696,6 +699,18 @@ predict.sgdgmf = function (
 #' \code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
 #' By doing so, \code{B} and \code{V} are kept fixed.
 #'
+#' @examples
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'
+#' # Simulate new data from a GMF model
+#' simulate(gmf)
+#'
 #' @method simulate sgdgmf
 #' @export
 simulate.sgdgmf = function (
@@ -705,10 +720,12 @@ simulate.sgdgmf = function (
 ) {
   type = match.arg(type)
 
-  stop("S3 method `simulate` is not implmented yet.", call. = FALSE)
+  message("S3 method `simulate` for `sgdgmf` objects is not implmented yet.")
   # ...
   # ...
   # ...
+
+  return(0)
 }
 
 #' @title Spectrum method for GMF models
@@ -750,7 +767,8 @@ simulate.sgdgmf = function (
 #' eigenval(gmf, type = "pearson") # returns the eigenvalues obtained using the Pearson residuals
 #' eigenval(gmf, normalize = TRUE) # returns the eigenvalues obrained using the correlation matrix
 #'
-#' @keywords internal
+#' @method eigenval sgdgmf
+#' @export
 eigenval.sgdgmf = function (
     object, ncomp = object$ncomp,
     type = c("deviance", "pearson", "working", "link"),
@@ -758,7 +776,6 @@ eigenval.sgdgmf = function (
 ) {
   # Set the type and stat parameters
   type = match.arg(type)
-  stat = match.arg(stat)
 
   # Compute the model residuals
   family = object$family
@@ -768,7 +785,7 @@ eigenval.sgdgmf = function (
     "deviance" = sign(object$Y - mu) * sqrt(abs(family$dev.resid(object$Y, mu, 1))),
     "pearson" = (object$Y - mu) / sqrt(abs(family$variance(mu))),
     "working" = (object$Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
-    "link" = (family$transform(objec$Y) - eta))
+    "link" = (family$transform(object$Y) - eta))
 
   # Fill the missing values using Gaussian random values
   if (anyNA(res)) {
@@ -776,8 +793,8 @@ eigenval.sgdgmf = function (
       na = which(is.na(x) | is.nan(x))
       r = length(na)
       m = mean(x, na.rm = TRUE)
-      s = sd(x, na.rm = TRUE)
-      x[na] = rnorm(r, mean = m, sd = s)
+      s = stats::sd(x, na.rm = TRUE)
+      x[na] = stats::rnorm(r, mean = m, sd = s)
       return (x)
     })
   }
@@ -788,11 +805,11 @@ eigenval.sgdgmf = function (
   }
 
   # Decompose the residuals using incomplete SVD
-  pca = RSpectra::eigs_sym(cov(res), ncomp)
+  pca = RSpectra::eigs_sym(stats::cov(res), ncomp)
 
   # Estimate the explained and residual variance
   var.eig = pca$values
-  var.tot = sum(diag(S))
+  var.tot = sum(diag(var.eig))
   var.exp = sum(var.eig)
   var.res = var.tot - var.exp
 
@@ -875,43 +892,43 @@ plot.sgdgmf = function (
   plt = switch(type,
     "res-idx" = {
       df = data.frame(residuals = c(res), index = c(1:prod(dim(res))))
-      ggplot(data = df, map = aes(x = index, y = residuals)) +
+      ggplot(data = df, mapping = aes(x = index, y = residuals)) +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
         labs(x = "Index", y = "Residuals", title = "Residuals vs Indicies")
     },
     "res-fit" = {
       df = data.frame(residuals = c(res), fitted = c(fit))
-      ggplot(data = df, map = aes(x = fitted, y = residuals)) +
+      ggplot(data = df, mapping = aes(x = fitted, y = residuals)) +
         geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
         labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
     },
     "std-fit" = {
       res = sqrt(abs(res))
       df = data.frame(residuals = c(res), fitted = c(fit))
-      ggplot(data = df, map = aes(x = fitted, y = residuals)) +
+      ggplot(data = df, mapping = aes(x = fitted, y = residuals)) +
         geom_point(alpha = 0.5) + geom_hline(yintercept = mean(res), col = 2, lty = 2) +
         labs(x = "Fitted values", y = "|Residuals|", title = "Residuals vs Fitted values")
     },
     "hist" = {
       df = data.frame(residuals = c(res))
-      ggplot(data = df, map = aes(x = residuals, y = after_stat(density))) +
+      ggplot(data = df, mapping = aes(x = residuals, y = after_stat(density))) +
         geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
         labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
     },
     "qq" = {
-      df = list2DF(qqnorm(scale(c(res)), plot.it = FALSE))
-      ggplot(data = df, map = aes(x = x, y = y)) +
+      df = list2DF(stats::qqnorm(scale(c(res)), plot.it = FALSE))
+      ggplot(data = df, mapping = aes(x = x, y = y)) +
         geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) + geom_point(alpha = 0.5) +
         labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
     },
     "ecdf" = {
       zn = scale(c(res))
       zz = seq(from = min(zn), to = max(zn), length = 100)
-      df1 = data.frame(x = zn, y = ecdf(zn)(zn))
-      df2 = data.frame(x = zz, y = pnorm(zz))
+      df1 = data.frame(x = zn, y = stats::ecdf(zn)(zn))
+      df2 = data.frame(x = zz, y = stats::pnorm(zz))
       ggplot() +
-        geom_line(data = df2, map = aes(x = x, y = y), color = 2) +
-        geom_point(data = df1, map = aes(x = x, y = y), alpha = 0.5) +
+        geom_line(data = df2, mapping = aes(x = x, y = y), color = 2) +
+        geom_point(data = df1, mapping = aes(x = x, y = y), alpha = 0.5) +
         labs(x = "Standardized residuals", y = "Empirical CDF", title = "Residual ECDF plot")
     })
 
@@ -970,7 +987,7 @@ screeplot.sgdgmf = function (
 
   # Draw the screeplot
   df = data.frame(components = 1:ncomp, lambdas = lambdas)
-  plt = ggplot(data = df, map = aes(x = components, y = lambdas)) + geom_col() +
+  plt = ggplot(data = df, mapping = aes(x = components, y = lambdas)) + geom_col() +
     labs(x = "Components", y = "Eigenvalues", title = "Residual screeplot")
 
   # Return the ggplot object
@@ -985,9 +1002,12 @@ screeplot.sgdgmf = function (
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param choices a length 2 vector specifying the components to plot
+#' @param arrange if \code{TRUE}, return a single plot with two panels
+#' @param byrow if \code{TRUE}, the panels are arranged row-wise (if \code{arrange=TRUE})
 #' @param normalize if \code{TRUE}, orthogonalizes the scores using SVD
 #' @param labels a vector of labels which should be plotted
 #' @param palette the color-palette which should be used
+#' @param titles a 2-dimensional string vector containing the plot titles
 #'
 #' @examples
 #' library(sgdGMF)
@@ -1052,7 +1072,7 @@ biplot.sgdgmf = function (
   # Create the score biplot
   title.scores = ifelse(!is.null(titles[1]), titles[1], "Scores")
   plt.scores =
-    ggplot(data = scores, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    ggplot(data = scores, mapping = aes(x = pc1, y = pc2, color = idx, label = idx)) +
     geom_hline(yintercept = 0, lty = 2, color = "grey40") +
     geom_vline(xintercept = 0, lty = 2, color = "grey40") +
     geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
@@ -1062,7 +1082,7 @@ biplot.sgdgmf = function (
   # Create the loading biplot
   title.loadings = ifelse(!is.null(titles[1]), titles[1], "Loadings")
   plt.loadings =
-    ggplot(data = loadings, map = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    ggplot(data = loadings, mapping = aes(x = pc1, y = pc2, color = idx, label = idx)) +
     geom_hline(yintercept = 0, lty = 2, color = "grey40") +
     geom_vline(xintercept = 0, lty = 2, color = "grey40") +
     geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
@@ -1156,7 +1176,7 @@ image.sgdgmf = function (
     if (symmetric) palette = grDevices::hcl.colors(100, palette = "RdBu")
   }
 
-  plt = ggplot(data = df, map = aes(x = variable, y = sample, fill = value)) +
+  plt = ggplot(data = df, mapping = aes(x = variable, y = sample, fill = value)) +
     geom_raster() + scale_fill_gradientn(colours = palette, limits = limits) +
     theme(axis.text = element_blank(), axis.ticks = element_blank()) +
     theme(legend.position = "bottom", panel.grid = element_blank()) +

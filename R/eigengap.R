@@ -20,7 +20,8 @@
 #' @param maxiter maximum number of iterations
 #' @param parallel if \code{TRUE}, allows for parallel computing using \code{foreach}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
-#' @param return.fit if \code{TRUE}, return the fitted value martix
+#' @param return.eta if \code{TRUE}, return the linear predictor martix
+#' @param return.mu if \code{TRUE}, return the fitted value martix
 #' @param return.res if \code{TRUE}, return the residual matrix
 #' @param return.cov if \code{TRUE}, return the covariance matrix of the residuals
 #'
@@ -198,9 +199,9 @@ eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
     j = ju
     yreg = lambdas[j:(j+4)]
     xreg = (j + (-1:3))^(2/3)
-    delta = 2 * abs(cov(yreg, xreg)) / var(xreg)
+    delta = 2 * abs(stats::cov(yreg, xreg)) / stats::var(xreg)
     flag = which(-diff(lambdas) >= delta)
-    ncomp = ifelse(length(flag) == 0, 0, tail(flag[flag <= maxcomp], 1))
+    ncomp = ifelse(length(flag) == 0, 0, utils::tail(flag[flag <= maxcomp], 1))
     ju = ncomp + 1
     tol = abs(ju - j)
     iter = iter + 1
@@ -240,7 +241,7 @@ eigengap.act = function (covmat, nobs, maxcomp = NULL) {
   d = ifelse(is.null(maxcomp), p, d)
 
   # Convert the covariance matrix to a correlation matrix
-  cormat = cov2cor(covmat)
+  cormat = stats::cov2cor(covmat)
 
   # Compute the spectrum of the correlation matrix of Y
   if (p == d) {
@@ -298,7 +299,7 @@ eigengap.oht = function (covmat, nobs, maxcomp = NULL) {
   # ncomp = max(1, sum(sqrt(lambdas) > thr))
 
   lambdas = eigen(covmat)$values
-  thr = 2.858 * median(lambdas)
+  thr = 2.858 * stats::median(lambdas)
   ncomp = max(1, sum(lambdas > thr))
 
   # Return the selected rank
