@@ -21,7 +21,7 @@ Description: The sgdGMF package provides an efficient infrastructure
     the convergence. Other methods considered for the optimization are the alternated
     iterative re-weighted least squares (AIRWLS) and the quasi-Newton method with
     diagonal approximation of the Fisher information matrix.
-License: MIT
+License: MIT + file LICENSE
 Imports: 
     Rcpp (>= 1.0.10),
     RcppArmadillo,
@@ -32,13 +32,18 @@ Imports:
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
+Depends: 
+    R (>= 4.0.0),
+    MASS,
+    generics,
+    ggplot2,
+    reshape2,
+    viridisLite
 Suggests: 
     testthat (>= 3.0.0),
     Rtsne,
     dplyr,
-    ggplot2,
     ggpubr,
-    reshape2,
     viridis,
     knitr,
     rmarkdown
