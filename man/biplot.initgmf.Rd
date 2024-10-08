@@ -4,12 +4,24 @@
 \alias{biplot.initgmf}
 \title{Biplot of an initialized GMF model}
 \usage{
-\method{biplot}{initgmf}(object, choices = 1:2, normalize = FALSE, labels = NULL, palette = NULL)
+\method{biplot}{initgmf}(
+  object,
+  choices = 1:2,
+  arrange = TRUE,
+  byrow = FALSE,
+  normalize = FALSE,
+  labels = NULL,
+  palette = NULL
+)
 }
 \arguments{
 \item{object}{an object of class \code{initgmf}}
 
 \item{choices}{a length 2 vector specifying the components to plot}
+
+\item{arrange}{if \code{TRUE}, return a single plot with two panels}
+
+\item{byrow}{if \code{TRUE}, the panels are arranged row-wise (if \code{arrange=TRUE})}
 
 \item{normalize}{if \code{TRUE}, orthogonalizes the scores using SVD}
 

@@ -17,6 +17,8 @@
 
 \item{normalize}{if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal}
 
+\item{verbose}{if \code{TRUE}, print the optimization status}
+
 \item{parallel}{if \code{TRUE}, use parallel computing using the \code{foreach} package}
 
 \item{nthreads}{number of cores to be used in the \code{"glm"} method}

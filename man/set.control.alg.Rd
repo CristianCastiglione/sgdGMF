@@ -11,7 +11,9 @@ set.control.alg(
 )
 }
 \arguments{
-\item{method}{optimization method: \code{"airwls"}, \code{"newton"}, \code{"msgd"}, \code{"csgd"}, \code{"rsgd"}, \code{"bsgd"}}
+\item{method}{optimization method to use}
+
+\item{sampling}{sub-sampling method to use}
 
 \item{control}{list of algorithm-specific control parameters}
 }
@@ -27,8 +29,8 @@ For a detailed description of all the algorithm-specific control parameters,
 please refer to
 \code{\link{set.control.airwls}} (\code{method="airwls"}),
 \code{\link{set.control.newton}} (\code{method="newton"}),
-\code{\link{set.control.csgd}} (\code{method="csgd"}),
-\code{\link{set.control.bsgd}} (\code{method="bsgd"}).
+\code{\link{set.control.block.sgd}} (\code{method="sgd"}, \code{sampling="block"}).
+\code{\link{set.control.coord.sgd}} (\code{method="sgd"}, \code{sampling="coord"}),
 }
 \examples{
 library(sgdGMF)

@@ -11,7 +11,8 @@
   byrow = FALSE,
   normalize = FALSE,
   labels = NULL,
-  palette = NULL
+  palette = NULL,
+  titles = c(NULL, NULL)
 )
 }
 \arguments{
@@ -19,11 +20,17 @@
 
 \item{choices}{a length 2 vector specifying the components to plot}
 
+\item{arrange}{if \code{TRUE}, return a single plot with two panels}
+
+\item{byrow}{if \code{TRUE}, the panels are arranged row-wise (if \code{arrange=TRUE})}
+
 \item{normalize}{if \code{TRUE}, orthogonalizes the scores using SVD}
 
 \item{labels}{a vector of labels which should be plotted}
 
 \item{palette}{the color-palette which should be used}
+
+\item{titles}{a 2-dimensional string vector containing the plot titles}
 }
 \description{
 Plot the observations on a two-dimensional projection determined by the

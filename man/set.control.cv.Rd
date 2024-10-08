@@ -24,6 +24,8 @@ set.control.cv(
 
 \item{proportion}{proportion of the data to be used as test set in each fold}
 
+\item{init}{initialization approach to use}
+
 \item{verbose}{if \code{TRUE}, print the cross-validation status}
 
 \item{parallel}{if \code{TRUE}, allows for parallel computing}

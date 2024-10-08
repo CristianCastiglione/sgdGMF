@@ -54,11 +54,13 @@ sgdgmf.rank(
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
 
+\item{return.eta}{if \code{TRUE}, return the linear predictor martix}
+
+\item{return.mu}{if \code{TRUE}, return the fitted value martix}
+
 \item{return.res}{if \code{TRUE}, return the residual matrix}
 
 \item{return.cov}{if \code{TRUE}, return the covariance matrix of the residuals}
-
-\item{return.fit}{if \code{TRUE}, return the fitted value martix}
 }
 \description{
 Select the number of significant principal components of a GMF model via

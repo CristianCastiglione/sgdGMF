@@ -4,7 +4,7 @@
 \alias{eigenval.sgdgmf}
 \title{Spectrum method for GMF models}
 \usage{
-eigenval.sgdgmf(
+\method{eigenval}{sgdgmf}(
   object,
   ncomp = object$ncomp,
   type = c("deviance", "pearson", "working", "link"),
@@ -53,4 +53,3 @@ eigenval(gmf, type = "pearson") # returns the eigenvalues obtained using the Pea
 eigenval(gmf, normalize = TRUE) # returns the eigenvalues obrained using the correlation matrix
 
 }
-\keyword{internal}

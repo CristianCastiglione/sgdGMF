@@ -16,13 +16,15 @@
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
 
+\item{newY}{optionally, a matrix of new responses \code{Y}}
+
+\item{newX}{optionally, a matrix of new covariates \code{X}}
+
 \item{type}{the type of prediction which should be returned}
 
 \item{parallel}{if \code{TRUE}, allows for parallel computing using the package \code{foreach}}
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
-
-\item{newdata}{optionally, a list containing new values for \code{X} and \code{Z}}
 }
 \description{
 Simulate new data from a fitted generalized matrix factorization models
@@ -33,4 +35,17 @@ used for the fit. In that case, the predictions corresponds to the fitted values
 If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
 \code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
 By doing so, \code{B} and \code{V} are kept fixed.
+}
+\examples{
+library(sgdGMF)
+
+# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+
+# Fit a GMF model
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+
+# Simulate new data from a GMF model
+simulate(gmf)
+
 }

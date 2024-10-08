@@ -27,6 +27,8 @@ An initialized GMF object returned by the function \code{sgdgmf.init} and of cla
 
 \item{\code{nthreads}}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
 
+\item{\code{savedata}}{if \code{TRUE}, stores a copy of the input data}
+
 \item{\code{Y}}{matrix of responses (\eqn{n \times m})}
 
 \item{\code{X}}{matrix of row fixed effects (\eqn{n \times p})}

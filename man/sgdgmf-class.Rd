@@ -16,6 +16,8 @@ exist for this class.
 \describe{
 \item{\code{method}}{estimation method to minimize the negative penalized log-likelihood}
 
+\item{\code{sampling}}{sub-sampling strategy to use if \code{method = "sgd"}}
+
 \item{\code{family}}{a \code{glm} family (see \code{\link{family}} for more details)}
 
 \item{\code{ncomp}}{rank of the latent matrix factorization}
