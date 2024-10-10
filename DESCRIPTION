@@ -28,7 +28,8 @@ Imports:
     RSpectra, 
     parallel, 
     doParallel, 
-    foreach
+    foreach,
+    methods
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
