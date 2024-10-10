@@ -320,8 +320,8 @@ Rcpp::List cpp_fit_newton (
 //' @param progress if \code{TRUE}, print an progress bar
 //' 
 //' @keywords internal
-// [[Rcpp::export("cpp.fit.csgd")]]
-Rcpp::List cpp_fit_csgd (
+// [[Rcpp::export("cpp.fit.coord.sgd")]]
+Rcpp::List cpp_fit_coord_sgd (
     const arma::mat & Y, 
     const arma::mat & X, 
     const arma::mat & B, 
@@ -402,8 +402,8 @@ Rcpp::List cpp_fit_csgd (
 //' @param progress if \code{TRUE}, print an progress bar
 //' 
 //' @keywords internal
-// [[Rcpp::export("cpp.fit.bsgd")]]
-Rcpp::List cpp_fit_bsgd (
+// [[Rcpp::export("cpp.fit.block.sgd")]]
+Rcpp::List cpp_fit_block_sgd (
     const arma::mat & Y, 
     const arma::mat & X, 
     const arma::mat & B, 
