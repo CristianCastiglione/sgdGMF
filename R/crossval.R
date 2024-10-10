@@ -156,6 +156,7 @@ sgdgmf.cv = function (
   # Cartesian product of groups and folds
   groups = expand.grid(fold = 1:nfolds, ncomp = ncomps)
   niter = nrow(groups)
+  iter = NULL
 
   # Register the clusters
   if (parallel) {
