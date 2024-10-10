@@ -30,7 +30,7 @@
 #' @importFrom foreach foreach
 #' @importFrom stats var sd
 #' @importFrom stats cov cor cov2cor
-#' @importFrom stats ecdf
+#' @importFrom stats ecdf density
 #' @importFrom stats median quantile
 #' @importFrom stats dnorm pnorm qnorm rnorm
 #' @importFrom stats dexp pexp qexp rexp
@@ -52,6 +52,7 @@
 #' @importFrom utils head tail
 #' @importFrom graphics image
 #' @importFrom generics refit
+#' @importFrom methods is
 #' @import ggplot2
 #' @importFrom reshape2 melt
 #' @importFrom viridisLite viridis

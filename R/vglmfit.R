@@ -63,6 +63,7 @@ vglm.fit.coef = function (
     }
   }
 
+  j = NULL
   if (!parallel) {
     # Sequential parameter estimation
     coefs = foreach(j = 1:m, .combine = "rbind") %do% {
