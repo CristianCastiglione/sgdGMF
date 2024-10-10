@@ -6,6 +6,9 @@
 \usage{
 make.pos.diag(U)
 }
+\arguments{
+\item{U}{target matrix}
+}
 \description{
 Fix sign ambiguity of eigen-vectors by making U positive diagonal
 }

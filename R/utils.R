@@ -63,6 +63,7 @@ norm.procrustes = function(A, B){
 
 #' @title Fix sign ambiguity of eigen-vectors
 #' @description Fix sign ambiguity of eigen-vectors by making U positive diagonal
+#' @param U target matrix
 #' @keywords internal
 make.pos.diag = function(U) {
   sweep(U, 2, sign(diag(U)), "*")
@@ -218,7 +219,7 @@ partition = function (y, p = 0.3) {
 #' @description
 #' Simulate synthetic non-Gaussian data from a generalized matrix factorization (GMF) model.
 #'
-#' @param description n number of observations
+#' @param n number of observations
 #' @param m number of variables
 #' @param ncomp rank of the latent matrix factorization
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
