@@ -2,11 +2,15 @@
 % Please edit documentation in R/genericfun.R
 \name{eigenval}
 \alias{eigenval}
-\title{Generic function to compute the eigenvalues of a matrix}
+\title{Object eigenvalues}
 \usage{
 eigenval(object, ...)
 }
-\description{
-Generic function to compute the eigenvalues of a matrix
+\arguments{
+\item{object}{an object to extract the eivenalues from}
+
+\item{...}{additional arguments passed to or from other methods}
 }
-\keyword{internal}
+\description{
+Generic function to compute and return the eigenvalues of a matrix
+}

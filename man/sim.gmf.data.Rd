@@ -33,13 +33,6 @@ A list containing the following objects:
 }
 \description{
 Simulate synthetic non-Gaussian data from a generalized matrix factorization (GMF) model.
-
-by first generating the score and loading
-matrices, forming the linear predictor and, then,
-
-Create score and loading matrices that can be used as the base for synthetic data
-simulation following a generalized matrix factorization model as data generating
-mechanism.
 }
 \details{
 The loadings, \code{V}, are independently sampled from a standard normal distribution.

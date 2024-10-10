@@ -2,11 +2,15 @@
 % Please edit documentation in R/genericfun.R
 \name{simulate}
 \alias{simulate}
-\title{Generic function to simulate new data from a statistical model}
+\title{Simulate new data}
 \usage{
 simulate(object, ...)
+}
+\arguments{
+\item{object}{an object from which simulate new data}
+
+\item{...}{additional arguments passed to or from other methods}
 }
 \description{
 Generic function to simulate new data from a statistical model
 }
-\keyword{internal}

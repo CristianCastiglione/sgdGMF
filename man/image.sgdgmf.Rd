@@ -17,6 +17,8 @@
 )
 }
 \arguments{
+\item{x}{an object of class \code{sgdgmf}}
+
 \item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of data/predictions/residuals which should be returned}
@@ -30,8 +32,6 @@
 \item{limits}{the color limits which should be used}
 
 \item{palette}{the color-palette which should be used}
-
-\item{object}{an object of class \code{sgdgmf}}
 }
 \description{
 Plots a heatmap of either the data, the fitted values, or the residual values
