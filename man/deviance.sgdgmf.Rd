@@ -6,14 +6,16 @@
 \alias{BIC.sgdgmf}
 \title{Compute deviance, AIC and BIC of a GMF model}
 \usage{
-\method{deviance}{sgdgmf}(object, normalize = FALSE)
+\method{deviance}{sgdgmf}(object, ..., normalize = FALSE)
 
-\method{AIC}{sgdgmf}(object, k = 2)
+\method{AIC}{sgdgmf}(object, ..., k = 2)
 
-\method{BIC}{sgdgmf}(object)
+\method{BIC}{sgdgmf}(object, ...)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{normalize}{if \code{TRUE}, normalize the result using the null-deviance}
 

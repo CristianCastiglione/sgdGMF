@@ -5,12 +5,18 @@
 \alias{coef.sgdgmf}
 \title{Extract the coefficient of a GMF model}
 \usage{
-\method{coefficients}{sgdgmf}(object, type = c("all", "colreg", "rowreg", "scores", "loadings"))
+\method{coefficients}{sgdgmf}(
+  object,
+  ...,
+  type = c("all", "colreg", "rowreg", "scores", "loadings")
+)
 
-\method{coef}{sgdgmf}(object, type = c("all", "colreg", "rowreg", "scores", "loadings"))
+\method{coef}{sgdgmf}(object, ..., type = c("all", "colreg", "rowreg", "scores", "loadings"))
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of coefficients which should be returned}
 }
@@ -28,8 +34,8 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Get the estimated coefficients of a GMF model
-coefficients(gmf) # returns all the coefficients
-coefficients(gmf, type = "scores") # returns only the scores, say U
-coefficients(gmf, type = "loadings") # returns only the loadings, say V
+str(coefficients(gmf)) # returns all the coefficients
+str(coefficients(gmf, type = "scores")) # returns only the scores, say U
+str(coefficients(gmf, type = "loadings")) # returns only the loadings, say V
 
 }

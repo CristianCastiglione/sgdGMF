@@ -4,10 +4,12 @@
 \alias{print.sgdgmf}
 \title{Print the fundamental characteristics of a GMF}
 \usage{
-\method{print}{sgdgmf}(object)
+\method{print}{sgdgmf}(x, ...)
 }
 \arguments{
-\item{object}{an object of class \code{sgdgmf}}
+\item{x}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 }
 \description{
 Print some summary information of a GMF model.

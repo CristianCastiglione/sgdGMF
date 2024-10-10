@@ -5,12 +5,18 @@
 \alias{coef.initgmf}
 \title{Extract the coefficient of an initialized GMF model}
 \usage{
-\method{coefficients}{initgmf}(object, type = c("all", "colreg", "rowreg", "scores", "loadings"))
+\method{coefficients}{initgmf}(
+  object,
+  ...,
+  type = c("all", "colreg", "rowreg", "scores", "loadings")
+)
 
-\method{coef}{initgmf}(object, type = c("all", "colreg", "rowreg", "scores", "loadings"))
+\method{coef}{initgmf}(object, ..., type = c("all", "colreg", "rowreg", "scores", "loadings"))
 }
 \arguments{
 \item{object}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of coefficients which should be returned}
 }
@@ -28,9 +34,9 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
 # Get the estimated coefficients of a GMF model
-coefficients(init) # returns all the coefficients
-coefficients(init, type = "scores") # returns only the scores, say U
-coefficients(init, type = "loadings") # returns only the loadings, say V
+str(coefficients(init)) # returns all the coefficients
+str(coefficients(init, type = "scores")) # returns only the scores, say U
+str(coefficients(init, type = "loadings")) # returns only the loadings, say V
 
 }
 \seealso{

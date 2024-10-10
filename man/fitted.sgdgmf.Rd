@@ -4,10 +4,12 @@
 \alias{fitted.sgdgmf}
 \title{Extract the fitted values of a GMF models}
 \usage{
-\method{fitted}{sgdgmf}(object, type = c("link", "response", "terms"), partial = FALSE)
+\method{fitted}{sgdgmf}(object, ..., type = c("link", "response", "terms"), partial = FALSE)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of fitted values which should be returned}
 
@@ -26,8 +28,7 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Get the fitted values of a GMF model
-fitted(gmf) # returns the overall fitted values in link scale
-fitted(gmf, type = "response") # returns the overall fitted values in response scale
-fitted(gmf, partial = TRUE) # returns the partial fitted values in link scale
+str(fitted(gmf)) # returns the overall fitted values in link scale
+str(fitted(gmf, type = "response")) # returns the overall fitted values in response scale
 
 }

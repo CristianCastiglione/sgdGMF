@@ -4,10 +4,12 @@
 \alias{print.initgmf}
 \title{Print the fundamental characteristics of an initialized GMF}
 \usage{
-\method{print}{initgmf}(object)
+\method{print}{initgmf}(x, ...)
 }
 \arguments{
-\item{object}{an object of class \code{initgmf}}
+\item{x}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 }
 \description{
 Print some summary information of an initialized GMF model.

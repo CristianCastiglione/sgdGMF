@@ -61,9 +61,9 @@ values if they are not. Returns a list of well-defined control parameters.
 library(sgdGMF)
 
 # Empty call
-set.control.csgd()
+set.control.coord.sgd()
 
 # Parametrized call
-set.control.csgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+set.control.coord.sgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 
 }

@@ -56,7 +56,7 @@ library(sgdGMF)
 set.control.airwls()
 
 # Parametrized call
-set.control.airwls(maxiter = 100, nsteps = 5, stepsize = 0.3)
+set.control.airwls(maxiter = 100, nstep = 5, stepsize = 0.3)
 
 
 }

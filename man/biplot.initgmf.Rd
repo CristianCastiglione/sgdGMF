@@ -5,7 +5,8 @@
 \title{Biplot of an initialized GMF model}
 \usage{
 \method{biplot}{initgmf}(
-  object,
+  x,
+  ...,
   choices = 1:2,
   arrange = TRUE,
   byrow = FALSE,
@@ -15,7 +16,9 @@
 )
 }
 \arguments{
-\item{object}{an object of class \code{initgmf}}
+\item{x}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{choices}{a length 2 vector specifying the components to plot}
 

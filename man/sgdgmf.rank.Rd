@@ -93,6 +93,7 @@ barplot(ncomp_pois$lambdas, main = "Poisson screeplot")
 barplot(ncomp_bin$lambdas, main = "Binomial screeplot")
 barplot(ncomp_gam$lambdas, main = "Gamma screeplot")
 par(mfrow = c(1,1))
+
 }
 \references{
 Onatski, A. (2010).

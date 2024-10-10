@@ -7,6 +7,7 @@
 \usage{
 \method{residuals}{initgmf}(
   object,
+  ...,
   type = c("deviance", "pearson", "working", "response", "link"),
   partial = FALSE,
   normalize = FALSE,
@@ -17,6 +18,7 @@
 
 \method{resid}{initgmf}(
   object,
+  ...,
   type = c("deviance", "pearson", "working", "response", "link"),
   partial = FALSE,
   normalize = FALSE,
@@ -27,6 +29,8 @@
 }
 \arguments{
 \item{object}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of residuals which should be returned}
 
@@ -56,9 +60,9 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
 # Get the deviance residuals of a GMF model
-residuals(init) # returns the overall deviance residuals
-residuals(init, partial = TRUE) # returns the partial residuals
-residuals(init, spectrum = TRUE) # returns the eigenvalues of the residual var-cov matrix
+str(residuals(init)) # returns the overall deviance residuals
+str(residuals(init, partial = TRUE)) # returns the partial residuals
+str(residuals(init, spectrum = TRUE)) # returns the eigenvalues of the residual var-cov matrix
 
 }
 \seealso{

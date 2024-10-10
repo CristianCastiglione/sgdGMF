@@ -5,7 +5,8 @@
 \title{Plot diagnostics for a GMF model}
 \usage{
 \method{plot}{sgdgmf}(
-  object,
+  x,
+  ...,
   type = c("res-idx", "res-fit", "std-fit", "hist", "qq", "ecdf"),
   resid = c("deviance", "pearson", "working", "response", "link"),
   subsample = FALSE,
@@ -16,7 +17,9 @@
 )
 }
 \arguments{
-\item{object}{an object of class \code{sgdgmf}}
+\item{x}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of plot which should be returned}
 

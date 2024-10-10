@@ -6,6 +6,7 @@
 \usage{
 \method{eigenval}{sgdgmf}(
   object,
+  ...,
   ncomp = object$ncomp,
   type = c("deviance", "pearson", "working", "link"),
   normalize = FALSE
@@ -13,6 +14,8 @@
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{ncomp}{number of eigenvalues to compute}
 
@@ -48,8 +51,8 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Get the partial residual spectrum of a GMF model
-eigenval(gmf) # returns the eigenvalues of the var-cov matrix of the deviance residuals
-eigenval(gmf, type = "pearson") # returns the eigenvalues obtained using the Pearson residuals
-eigenval(gmf, normalize = TRUE) # returns the eigenvalues obrained using the correlation matrix
+str(eigenval(gmf)) # returns the eigenvalues of the var-cov matrix of the deviance residuals
+str(eigenval(gmf, type = "pearson")) # returns the eigenvalues obtained using the Pearson residuals
+str(eigenval(gmf, normalize = TRUE)) # returns the eigenvalues obrained using the correlation matrix
 
 }

@@ -6,6 +6,7 @@
 \usage{
 \method{refit}{sgdgmf}(
   object,
+  ...,
   normalize = TRUE,
   verbose = FALSE,
   parallel = FALSE,
@@ -14,6 +15,8 @@
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{normalize}{if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal}
 
@@ -36,7 +39,7 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
 
 # Refine the score matrix estimate
-gmf_new = refit(gmf)
+gmf_new = refit(gmf_old)
 
 # Get the fitted values in the link and response scales
 mu_hat_old = fitted(gmf_old, type = "response")

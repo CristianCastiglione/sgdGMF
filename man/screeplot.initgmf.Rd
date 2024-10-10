@@ -5,7 +5,8 @@
 \title{Screeplot for the residuals of an initialized GMF model}
 \usage{
 \method{screeplot}{initgmf}(
-  object,
+  x,
+  ...,
   ncomp = 20,
   type = c("deviance", "pearson", "working", "response", "link"),
   partial = FALSE,
@@ -15,7 +16,9 @@
 )
 }
 \arguments{
-\item{object}{an object of class \code{sgdgmf}}
+\item{x}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{ncomp}{number of components to be plotted}
 

@@ -6,6 +6,7 @@
 \usage{
 \method{simulate}{sgdgmf}(
   object,
+  ...,
   newY = NULL,
   newX = NULL,
   type = c("data", "link", "response", "terms", "coef"),
@@ -15,6 +16,8 @@
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{newY}{optionally, a matrix of new responses \code{Y}}
 
@@ -46,6 +49,6 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Simulate new data from a GMF model
-simulate(gmf)
+str(simulate(gmf))
 
 }

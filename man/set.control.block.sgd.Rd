@@ -61,10 +61,10 @@ values if they are not. Returns a list of well-defined control parameters.
 library(sgdGMF)
 
 # Empty call
-set.control.bsgd()
+set.control.block.sgd()
 
 # Parametrized call
-set.control.bsgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+set.control.block.sgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 
 
 }

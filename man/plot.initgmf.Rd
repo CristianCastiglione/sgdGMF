@@ -5,7 +5,8 @@
 \title{Plot diagnostics for an initialized GMF model}
 \usage{
 \method{plot}{initgmf}(
-  object,
+  x,
+  ...,
   type = c("res-idx", "res-fit", "std-fit", "hist", "qq", "ecdf"),
   resid = c("deviance", "pearson", "working", "response", "link"),
   subsample = FALSE,
@@ -16,7 +17,9 @@
 )
 }
 \arguments{
-\item{object}{an object of class \code{initgmf}}
+\item{x}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of plot which should be returned}
 

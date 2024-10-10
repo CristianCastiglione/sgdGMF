@@ -5,7 +5,8 @@
 \title{Biplot of a GMF model}
 \usage{
 \method{biplot}{sgdgmf}(
-  object,
+  x,
+  ...,
   choices = 1:2,
   arrange = TRUE,
   byrow = FALSE,
@@ -16,7 +17,9 @@
 )
 }
 \arguments{
-\item{object}{an object of class \code{sgdgmf}}
+\item{x}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{choices}{a length 2 vector specifying the components to plot}
 

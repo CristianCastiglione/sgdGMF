@@ -4,10 +4,12 @@
 \alias{fitted.initgmf}
 \title{Extract the fitted values of an initialized GMF model}
 \usage{
-\method{fitted}{initgmf}(object, type = c("link", "response", "terms"), partial = FALSE)
+\method{fitted}{initgmf}(object, ..., type = c("link", "response", "terms"), partial = FALSE)
 }
 \arguments{
 \item{object}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of fitted values which should be returned}
 
@@ -26,9 +28,9 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
 # Get the fitted values of a GMF model
-fitted(init) # returns the overall fitted values in link scale
-fitted(init, type = "response") # returns the overall fitted values in response scale
-fitted(init, partial = TRUE) # returns the partial fitted values in link scale
+str(fitted(init)) # returns the overall fitted values in link scale
+str(fitted(init, type = "response")) # returns the overall fitted values in response scale
+str(fitted(init, partial = TRUE)) # returns the partial fitted values in link scale
 
 }
 \seealso{

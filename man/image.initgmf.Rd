@@ -5,7 +5,8 @@
 \title{Heatmap of an initialized GMF model}
 \usage{
 \method{image}{initgmf}(
-  object,
+  x,
+  ...,
   type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson",
     "working"),
   resid = FALSE,
@@ -16,7 +17,9 @@
 )
 }
 \arguments{
-\item{object}{an object of class \code{initgmf}}
+\item{x}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{type}{the type of data/predictions/residuals which should be returned}
 

@@ -6,6 +6,7 @@
 \usage{
 \method{predict}{sgdgmf}(
   object,
+  ...,
   newY = NULL,
   newX = NULL,
   type = c("link", "response", "terms", "coef"),
@@ -15,6 +16,8 @@
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{newY}{optionally, a matrix of new response variable}
 
@@ -54,9 +57,9 @@ newY = data$Y[test, ]
 gmf = sgdgmf.fit(Y, ncomp = 3, family = poisson())
 
 # Get the fitted values of a GMF model
-predict(gmf) # returns the overall fitted values in link scale
-predict(gmf, type = "response") # returns the overall fitted values in response scale
-predict(gmf, partial = TRUE) # returns the partial fitted values in link scale
-predict(gmf, newY = newY) # returns the predictions for the new set of responses
+str(predict(gmf)) # returns the overall fitted values in link scale
+str(predict(gmf, type = "response")) # returns the overall fitted values in response scale
+str(predict(gmf, type = "terms")) # returns the partial fitted values in link scale
+str(predict(gmf, newY = newY)) # returns the predictions for the new set of responses
 
 }

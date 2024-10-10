@@ -6,14 +6,16 @@
 \alias{BIC.initgmf}
 \title{Compute deviance, AIC and BIC of an initialized GMF model}
 \usage{
-\method{deviance}{initgmf}(object, normalize = FALSE)
+\method{deviance}{initgmf}(object, ..., normalize = FALSE)
 
-\method{AIC}{initgmf}(object, k = 2)
+\method{AIC}{initgmf}(object, ..., k = 2)
 
-\method{BIC}{initgmf}(object)
+\method{BIC}{initgmf}(object, ...)
 }
 \arguments{
 \item{object}{an object of class \code{initgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{normalize}{if \code{TRUE}, normalize the result using the null-deviance}
 
