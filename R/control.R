@@ -221,7 +221,7 @@ set.control.init = function (
 #' set.control.airwls()
 #'
 #' # Parametrized call
-#' set.control.airwls(maxiter = 100, nsteps = 5, stepsize = 0.3)
+#' set.control.airwls(maxiter = 100, nstep = 5, stepsize = 0.3)
 #'
 #'
 #' @export set.control.airwls
@@ -391,10 +391,10 @@ set.control.newton = function (
 #' library(sgdGMF)
 #'
 #' # Empty call
-#' set.control.csgd()
+#' set.control.coord.sgd()
 #'
 #' # Parametrized call
-#' set.control.csgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+#' set.control.coord.sgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 #'
 #' @export set.control.coord.sgd
 set.control.coord.sgd = function (
@@ -490,10 +490,10 @@ set.control.coord.sgd = function (
 #' library(sgdGMF)
 #'
 #' # Empty call
-#' set.control.bsgd()
+#' set.control.block.sgd()
 #'
 #' # Parametrized call
-#' set.control.bsgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
+#' set.control.block.sgd(maxiter = 2000, rate0 = 0.01, decay = 0.01)
 #'
 #'
 #' @export set.control.block.sgd
