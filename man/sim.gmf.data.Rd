@@ -7,8 +7,6 @@
 sim.gmf.data(n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1)
 }
 \arguments{
-\item{n}{number of observations}
-
 \item{m}{number of variables}
 
 \item{ncomp}{rank of the latent matrix factorization}
@@ -16,6 +14,8 @@ sim.gmf.data(n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1)
 \item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
 
 \item{dispersion}{a positive dispersion parameter}
+
+\item{description}{n number of observations}
 }
 \value{
 A list containing the following objects:

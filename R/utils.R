@@ -218,7 +218,7 @@ partition = function (y, p = 0.3) {
 #' @description
 #' Simulate synthetic non-Gaussian data from a generalized matrix factorization (GMF) model.
 #'
-#' @param n number of observations
+#' @param description n number of observations
 #' @param m number of variables
 #' @param ncomp rank of the latent matrix factorization
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
