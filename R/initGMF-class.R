@@ -50,6 +50,7 @@ setClass("initgmf",
 #' @description Compute deviance, AIC and BIC of an initialized GMF object
 #'
 #' @param object an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param normalize if \code{TRUE}, normalize the result using the null-deviance
 #' @param k the penalty parameter to be used for AIC; the default is \code{k = 2}
 #'
@@ -71,7 +72,7 @@ setClass("initgmf",
 #'
 #' @method deviance initgmf
 #' @export
-deviance.initgmf = function (object, normalize = FALSE) {
+deviance.initgmf = function (object, ..., normalize = FALSE) {
   if (!object$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
@@ -92,7 +93,7 @@ deviance.initgmf = function (object, normalize = FALSE) {
 #' @rdname deviance.initgmf
 #' @method AIC initgmf
 #' @export
-AIC.initgmf = function (object, k = 2) {
+AIC.initgmf = function (object, ..., k = 2) {
   if (!object$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
@@ -105,7 +106,7 @@ AIC.initgmf = function (object, k = 2) {
 #' @rdname deviance.initgmf
 #' @method BIC initgmf
 #' @export
-BIC.initgmf = function (object) {
+BIC.initgmf = function (object, ...) {
   if (!object$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
@@ -120,7 +121,8 @@ BIC.initgmf = function (object) {
 #'
 #' @description Print some summary information of an initialized GMF model.
 #'
-#' @param object an object of class \code{initgmf}
+#' @param x an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #'
 #' @examples
 #' library(sgdGMF)
@@ -136,7 +138,10 @@ BIC.initgmf = function (object) {
 #'
 #' @method print initgmf
 #' @export
-print.initgmf = function (object) {
+print.initgmf = function (x, ...) {
+
+  object = x
+
   # Percentage of explained deviance
   dev = 100 * (1 - deviance(object, normalize = TRUE))
 
@@ -170,6 +175,7 @@ print.initgmf = function (object) {
 #' regression effects, the latent scores and loadings.
 #'
 #' @param object an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of coefficients which should be returned
 #'
 #' @seealso \code{\link{coefficients.sgdgmf}} and \code{\link{coef.sgdgmf}}.
@@ -184,14 +190,15 @@ print.initgmf = function (object) {
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the estimated coefficients of a GMF model
-#' coefficients(init) # returns all the coefficients
-#' coefficients(init, type = "scores") # returns only the scores, say U
-#' coefficients(init, type = "loadings") # returns only the loadings, say V
+#' str(coefficients(init)) # returns all the coefficients
+#' str(coefficients(init, type = "scores")) # returns only the scores, say U
+#' str(coefficients(init, type = "loadings")) # returns only the loadings, say V
 #'
 #' @method coefficients initgmf
 #' @export
 coefficients.initgmf = function (
-    object, type = c("all", "colreg", "rowreg", "scores", "loadings")
+    object, ...,
+    type = c("all", "colreg", "rowreg", "scores", "loadings")
 ) {
   type = match.arg(type)
   switch(type,
@@ -207,7 +214,8 @@ coefficients.initgmf = function (
 #' @method coef initgmf
 #' @export
 coef.initgmf = function (
-    object, type = c("all", "colreg", "rowreg", "scores", "loadings")
+    object, ...,
+    type = c("all", "colreg", "rowreg", "scores", "loadings")
 ) {
   # Call the coefficients method for initgmf objects
   coefficients.initgmf(object, type = type)
@@ -222,6 +230,7 @@ coef.initgmf = function (
 #' excluding the matrix decomposition from the linear predictor.
 #'
 #' @param object an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of residuals which should be returned
 #' @param partial if \code{TRUE}, computes the residuals excluding the matrix factorization from the linear predictor
 #' @param normalize if \code{TRUE}, standardize the residuals column-by-column
@@ -241,14 +250,15 @@ coef.initgmf = function (
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the deviance residuals of a GMF model
-#' residuals(init) # returns the overall deviance residuals
-#' residuals(init, partial = TRUE) # returns the partial residuals
-#' residuals(init, spectrum = TRUE) # returns the eigenvalues of the residual var-cov matrix
+#' str(residuals(init)) # returns the overall deviance residuals
+#' str(residuals(init, partial = TRUE)) # returns the partial residuals
+#' str(residuals(init, spectrum = TRUE)) # returns the eigenvalues of the residual var-cov matrix
 #'
 #' @method residuals initgmf
 #' @export
 residuals.initgmf = function (
-    object, type = c("deviance", "pearson", "working", "response", "link"),
+    object, ...,
+    type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
   # Set the residual type
@@ -327,7 +337,8 @@ residuals.initgmf = function (
 #' @method resid initgmf
 #' @export
 resid.initgmf = function (
-    object, type = c("deviance", "pearson", "working", "response", "link"),
+    object, ...,
+    type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
   # Call the residuals method for initgmf objects
@@ -340,6 +351,7 @@ resid.initgmf = function (
 #' @description Computes the fitted values of an initialized GMF model.
 #'
 #' @param object an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of fitted values which should be returned
 #' @param partial if \code{TRUE}, returns the partial fitted values
 #'
@@ -355,14 +367,15 @@ resid.initgmf = function (
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the fitted values of a GMF model
-#' fitted(init) # returns the overall fitted values in link scale
-#' fitted(init, type = "response") # returns the overall fitted values in response scale
-#' fitted(init, partial = TRUE) # returns the partial fitted values in link scale
+#' str(fitted(init)) # returns the overall fitted values in link scale
+#' str(fitted(init, type = "response")) # returns the overall fitted values in response scale
+#' str(fitted(init, partial = TRUE)) # returns the partial fitted values in link scale
 #'
 #' @method fitted initgmf
 #' @export
 fitted.initgmf = function (
-    object, type = c("link", "response", "terms"), partial = FALSE
+    object, ...,
+    type = c("link", "response", "terms"), partial = FALSE
 ) {
   # Set the fitted value type
   type = match.arg(type)
@@ -398,7 +411,8 @@ fitted.initgmf = function (
 #' absolute square-root residuals against fitted values, histogram of the residuals,
 #' residual QQ-plot, residual ECDF-plot.
 #'
-#' @param object an object of class \code{initgmf}
+#' @param x an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of plot which should be returned
 #' @param resid the type of residuals which should be used
 #' @param subsample if \code{TRUE}, computes the residuals over o small fraction of the data
@@ -427,19 +441,19 @@ fitted.initgmf = function (
 #' @method plot initgmf
 #' @export
 plot.initgmf = function (
-    object,
+    x, ...,
     type = c("res-idx", "res-fit", "std-fit", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
     normalize = FALSE, fillna = FALSE
 ) {
   # Check if the data are available
-  if (!object$savedata) {
+  if (!x$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
   # Call the plot method for sgdgmf objects
-  plot.sgdgmf(object = object, type = type, resid = resid,
+  plot.sgdgmf(x, type = type, resid = resid,
               subsample = subsample, sample.size = sample.size,
               partial = partial, normalize = normalize, fillna = fillna)
 }
@@ -450,7 +464,8 @@ plot.initgmf = function (
 #' Plots the variances of the principal components of the residuals against the
 #' number of principal component.
 #'
-#' @param object an object of class \code{sgdgmf}
+#' @param x an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param ncomp number of components to be plotted
 #' @param type the type of residuals which should be used
 #' @param partial if \code{TRUE}, plots the eigenvalues of the partial residuals
@@ -478,19 +493,20 @@ plot.initgmf = function (
 #' @method screeplot initgmf
 #' @export
 screeplot.initgmf = function (
-    object, ncomp = 20,
+    x, ...,
+    ncomp = 20,
     type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE,
     cumulative = FALSE, proportion = FALSE
 ) {
 
   # Check if the data are available
-  if (!object$savedata) {
+  if (!x$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
   # Call the screeplot method for sgdgmf objects
-  screeplot.sgdgmf(object = object, ncomp = ncomp, type = type,
+  screeplot.sgdgmf(x, ncomp = ncomp, type = type,
                    partial = partial, normalize = normalize,
                    cumulative = cumulative, proportion = proportion)
 }
@@ -502,7 +518,8 @@ screeplot.initgmf = function (
 #' Plot the observations on a two-dimensional projection determined by the
 #' estimated score matrix
 #'
-#' @param object an object of class \code{initgmf}
+#' @param x an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param choices a length 2 vector specifying the components to plot
 #' @param arrange if \code{TRUE}, return a single plot with two panels
 #' @param byrow if \code{TRUE}, the panels are arranged row-wise (if \code{arrange=TRUE})
@@ -528,11 +545,12 @@ screeplot.initgmf = function (
 #' @method biplot initgmf
 #' @export
 biplot.initgmf = function (
-    object, choices = 1:2, arrange = TRUE, byrow = FALSE,
+    x, ...,
+    choices = 1:2, arrange = TRUE, byrow = FALSE,
     normalize = FALSE, labels = NULL, palette = NULL
 ) {
   # Call the biplot method for sgdgmf objects
-  biplot.sgdgmf(object = object, choices = choices, arrange = arrange,
+  biplot.sgdgmf(x, choices = choices, arrange = arrange,
                 byrow = byrow, normalize = normalize, labels = labels,
                 palette = palette)
 }
@@ -544,7 +562,8 @@ biplot.initgmf = function (
 #' of a GMF model allowing for different types of transformations and normalizations.
 #' Moreover, it also permits to plot the latent score and loading matrices.
 #'
-#' @param object an object of class \code{initgmf}
+#' @param x an object of class \code{initgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of data/predictions/residuals which should be returned
 #' @param resid if \code{TRUE}, plots the residual values
 #' @param symmetric if \code{TRUE}, symmetrizes the color limits
@@ -571,23 +590,23 @@ biplot.initgmf = function (
 #' @method image initgmf
 #' @export
 image.initgmf = function (
-    object,
+    x, ...,
     type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson", "working"),
     resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
 ) {
   type = match.arg(type)
 
   # Check if the data are available
-  if (!object$savedata) {
+  if (!x$savedata) {
     stop("'object' does not contain the data matrices Y, X and Z.", call. = FALSE)
   }
 
   # Store the predictions in the object
-  object$eta = fitted.initgmf(object, type = "link")
-  object$mu = object$family$linkinv(object$eta)
+  x$eta = fitted.initgmf(x, type = "link")
+  x$mu = x$family$linkinv(x$eta)
 
   # Call the image method for the sgdgmf object
-  image.sgdgmf(object, type = type, resid = resid, symmetric = symmetric,
+  image.sgdgmf(x, type = type, resid = resid, symmetric = symmetric,
                transpose = transpose, limits = limits, palette = palette)
 }
 

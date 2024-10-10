@@ -74,6 +74,7 @@ setClass("sgdgmf",
 #' @description Refine the estimated latent scores of a GMF model via IRWLS
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to uncorrelated Gaussian \code{U} and upper triangular \code{V} with positive diagonal
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param parallel if \code{TRUE}, use parallel computing using the \code{foreach} package
@@ -89,7 +90,7 @@ setClass("sgdgmf",
 #' gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
 #'
 #' # Refine the score matrix estimate
-#' gmf_new = refit(gmf)
+#' gmf_new = refit(gmf_old)
 #'
 #' # Get the fitted values in the link and response scales
 #' mu_hat_old = fitted(gmf_old, type = "response")
@@ -105,7 +106,7 @@ setClass("sgdgmf",
 #' @method refit sgdgmf
 #' @export
 refit.sgdgmf = function (
-    object,
+    object, ...,
     normalize = TRUE,
     verbose = FALSE,
     parallel = FALSE,
@@ -168,6 +169,7 @@ refit.sgdgmf = function (
 #' @description Compute deviance, AIC and BIC of a GMF object
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param normalize if \code{TRUE}, normalize the result using the null-deviance
 #' @param k the penalty parameter to be used for AIC; the default is \code{k = 2}
 #'
@@ -187,7 +189,7 @@ refit.sgdgmf = function (
 #'
 #' @method deviance sgdgmf
 #' @export
-deviance.sgdgmf = function (object, normalize = FALSE) {
+deviance.sgdgmf = function (object, ..., normalize = FALSE) {
   dev = sum(object$family$dev.resids(object$Y, object$mu, 1), na.rm = TRUE)
   if (normalize) {
     n = nrow(object$Y)
@@ -202,7 +204,7 @@ deviance.sgdgmf = function (object, normalize = FALSE) {
 #' @rdname deviance.sgdgmf
 #' @method AIC sgdgmf
 #' @export
-AIC.sgdgmf = function (object, k = 2) {
+AIC.sgdgmf = function (object, ..., k = 2) {
   dev = deviance(object, normalize = FALSE)
   df = object$npar
   aic = dev + k * df
@@ -212,7 +214,7 @@ AIC.sgdgmf = function (object, k = 2) {
 #' @rdname deviance.sgdgmf
 #' @method BIC sgdgmf
 #' @export
-BIC.sgdgmf = function (object) {
+BIC.sgdgmf = function (object, ...) {
   dev = deviance(object, normalize = FALSE)
   df = object$npar
   nm = prod(dim(object$Y)) - sum(is.na(object$Y))
@@ -224,7 +226,8 @@ BIC.sgdgmf = function (object) {
 #'
 #' @description Print some summary information of a GMF model.
 #'
-#' @param object an object of class \code{sgdgmf}
+#' @param x an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #'
 #' @examples
 #' library(sgdGMF)
@@ -240,7 +243,9 @@ BIC.sgdgmf = function (object) {
 #'
 #' @method print sgdgmf
 #' @export
-print.sgdgmf = function (object) {
+print.sgdgmf = function (x, ...) {
+  object = x
+
   # Percentage of explained deviance
   dev = 100 * (1 - deviance(object, normalize = TRUE))
 
@@ -274,6 +279,7 @@ print.sgdgmf = function (object) {
 #' regression effects, the latent scores and loadings.
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of coefficients which should be returned
 #'
 #' @examples
@@ -286,14 +292,15 @@ print.sgdgmf = function (object) {
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the estimated coefficients of a GMF model
-#' coefficients(gmf) # returns all the coefficients
-#' coefficients(gmf, type = "scores") # returns only the scores, say U
-#' coefficients(gmf, type = "loadings") # returns only the loadings, say V
+#' str(coefficients(gmf)) # returns all the coefficients
+#' str(coefficients(gmf, type = "scores")) # returns only the scores, say U
+#' str(coefficients(gmf, type = "loadings")) # returns only the loadings, say V
 #'
 #' @method coefficients sgdgmf
 #' @export
 coefficients.sgdgmf = function (
-    object, type = c("all", "colreg", "rowreg", "scores", "loadings")
+    object, ...,
+    type = c("all", "colreg", "rowreg", "scores", "loadings")
 ) {
   type = match.arg(type)
   switch(type,
@@ -309,7 +316,8 @@ coefficients.sgdgmf = function (
 #' @method coef sgdgmf
 #' @export
 coef.sgdgmf = function (
-    object, type = c("all", "colreg", "rowreg", "scores", "loadings")
+    object, ...,
+    type = c("all", "colreg", "rowreg", "scores", "loadings")
 ) {
   coefficients.sgdgmf(object, type = type)
 }
@@ -323,6 +331,7 @@ coef.sgdgmf = function (
 #' excluding the matrix decomposition from the linear predictor.
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of residuals which should be returned
 #' @param partial if \code{TRUE}, computes the residuals excluding the matrix factorization from the linear predictor
 #' @param normalize if \code{TRUE}, standardize the residuals column-by-column
@@ -365,14 +374,15 @@ coef.sgdgmf = function (
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the deviance residuals of a GMF model
-#' residuals(gmf) # returns the overall deviance residuals
-#' residuals(gmf, partial = TRUE) # returns the partial residuals
-#' residuals(gmf, spectrum = TRUE) # returns the eigenvalues of the residual var-cov matrix
+#' str(residuals(gmf)) # returns the overall deviance residuals
+#' str(residuals(gmf, partial = TRUE)) # returns the partial residuals
+#' str(residuals(gmf, spectrum = TRUE)) # returns the eigenvalues of the residual var-cov matrix
 #'
 #' @method residuals sgdgmf
 #' @export
 residuals.sgdgmf = function (
-    object, type = c("deviance", "pearson", "working", "response", "link"),
+    object, ...,
+    type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
   # Set the residual type
@@ -453,7 +463,8 @@ residuals.sgdgmf = function (
 #' @method resid sgdgmf
 #' @export
 resid.sgdgmf = function (
-    object, type = c("deviance", "pearson", "working", "response", "link"),
+    object, ...,
+    type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE, fillna = FALSE, spectrum = FALSE, ncomp = 50
 ) {
   residuals.sgdgmf(object, type = type, partial = partial, normalize = normalize,
@@ -466,6 +477,7 @@ resid.sgdgmf = function (
 #' @description Computes the fitted values of a GMF model.
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of fitted values which should be returned
 #' @param partial if \code{TRUE}, returns the partial fitted values
 #'
@@ -479,14 +491,14 @@ resid.sgdgmf = function (
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the fitted values of a GMF model
-#' fitted(gmf) # returns the overall fitted values in link scale
-#' fitted(gmf, type = "response") # returns the overall fitted values in response scale
-#' fitted(gmf, partial = TRUE) # returns the partial fitted values in link scale
+#' str(fitted(gmf)) # returns the overall fitted values in link scale
+#' str(fitted(gmf, type = "response")) # returns the overall fitted values in response scale
 #'
 #' @method fitted sgdgmf
 #' @export
 fitted.sgdgmf = function (
-    object, type = c("link", "response", "terms"), partial = FALSE
+    object, ...,
+    type = c("link", "response", "terms"), partial = FALSE
 ) {
   # Set the fitted value type
   type = match.arg(type)
@@ -519,6 +531,7 @@ fitted.sgdgmf = function (
 #' to \code{A} and \code{U}.
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param newY optionally, a matrix of new response variable
 #' @param newX optionally, a matrix of new covariate values
 #' @param type the type of prediction which should be returned
@@ -547,15 +560,16 @@ fitted.sgdgmf = function (
 #' gmf = sgdgmf.fit(Y, ncomp = 3, family = poisson())
 #'
 #' # Get the fitted values of a GMF model
-#' predict(gmf) # returns the overall fitted values in link scale
-#' predict(gmf, type = "response") # returns the overall fitted values in response scale
-#' predict(gmf, partial = TRUE) # returns the partial fitted values in link scale
-#' predict(gmf, newY = newY) # returns the predictions for the new set of responses
+#' str(predict(gmf)) # returns the overall fitted values in link scale
+#' str(predict(gmf, type = "response")) # returns the overall fitted values in response scale
+#' str(predict(gmf, type = "terms")) # returns the partial fitted values in link scale
+#' str(predict(gmf, newY = newY)) # returns the predictions for the new set of responses
 #'
 #' @method predict sgdgmf
 #' @export
 predict.sgdgmf = function (
-    object, newY = NULL, newX = NULL,
+    object, ...,
+    newY = NULL, newX = NULL,
     type = c("link", "response", "terms", "coef"),
     parallel = FALSE, nthreads = 1
 ) {
@@ -613,6 +627,7 @@ predict.sgdgmf = function (
     if (!is.numeric(nthreads)) stop("'nthreads' mus be a positive integer value", call. = FALSE)
     if (floor(nthreads) < 1) stop("'nthreads' mus be a positive integer value", call. = FALSE)
 
+    i = NULL
     idA = 1:q
     idU = (q+1):(q+d)
     if (parallel) {
@@ -686,6 +701,7 @@ predict.sgdgmf = function (
 #' Simulate new data from a fitted generalized matrix factorization models
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param newY optionally, a matrix of new responses \code{Y}
 #' @param newX optionally, a matrix of new covariates \code{X}
 #' @param type the type of prediction which should be returned
@@ -709,12 +725,13 @@ predict.sgdgmf = function (
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Simulate new data from a GMF model
-#' simulate(gmf)
+#' str(simulate(gmf))
 #'
 #' @method simulate sgdgmf
 #' @export
 simulate.sgdgmf = function (
-    object, newY = NULL, newX = NULL,
+    object, ...,
+    newY = NULL, newX = NULL,
     type = c("data", "link", "response", "terms", "coef"),
     parallel = FALSE, nthreads = 1
 ) {
@@ -734,6 +751,7 @@ simulate.sgdgmf = function (
 #' Compute the latent spectrum of a GMF model evaluated on the GLM residual scale.
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param ncomp number of eigenvalues to compute
 #' @param type the type of residual which should be returned
 #' @param normalize if \code{TRUE}, standardize the residuals column-by-column
@@ -763,14 +781,15 @@ simulate.sgdgmf = function (
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the partial residual spectrum of a GMF model
-#' eigenval(gmf) # returns the eigenvalues of the var-cov matrix of the deviance residuals
-#' eigenval(gmf, type = "pearson") # returns the eigenvalues obtained using the Pearson residuals
-#' eigenval(gmf, normalize = TRUE) # returns the eigenvalues obrained using the correlation matrix
+#' str(eigenval(gmf)) # returns the eigenvalues of the var-cov matrix of the deviance residuals
+#' str(eigenval(gmf, type = "pearson")) # returns the eigenvalues obtained using the Pearson residuals
+#' str(eigenval(gmf, normalize = TRUE)) # returns the eigenvalues obrained using the correlation matrix
 #'
 #' @method eigenval sgdgmf
 #' @export
 eigenval.sgdgmf = function (
-    object, ncomp = object$ncomp,
+    object, ...,
+    ncomp = object$ncomp,
     type = c("deviance", "pearson", "working", "link"),
     normalize = FALSE
 ) {
@@ -827,7 +846,8 @@ eigenval.sgdgmf = function (
 #' absolute square-root residuals against fitted values, histogram of the residuals,
 #' residual QQ-plot, residual ECDF-plot.
 #'
-#' @param object an object of class \code{sgdgmf}
+#' @param x an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of plot which should be returned
 #' @param resid the type of residuals which should be used
 #' @param subsample if \code{TRUE}, computes the residuals over o small fraction of the data
@@ -854,7 +874,7 @@ eigenval.sgdgmf = function (
 #' @method plot sgdgmf
 #' @export
 plot.sgdgmf = function (
-    object,
+    x, ...,
     type = c("res-idx", "res-fit", "std-fit", "hist", "qq", "ecdf"),
     resid = c("deviance", "pearson", "working", "response", "link"),
     subsample = FALSE, sample.size = 500, partial = FALSE,
@@ -862,6 +882,7 @@ plot.sgdgmf = function (
 ) {
   type = match.arg(type)
   resid = match.arg(resid)
+  object = x
 
   # Get the fitted values
   fit = switch(resid,
@@ -922,6 +943,7 @@ plot.sgdgmf = function (
         labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
     },
     "ecdf" = {
+      x = y = NULL
       zn = scale(c(res))
       zz = seq(from = min(zn), to = max(zn), length = 100)
       df1 = data.frame(x = zn, y = stats::ecdf(zn)(zn))
@@ -942,7 +964,8 @@ plot.sgdgmf = function (
 #' Plots the variances of the principal components of the residuals against the
 #' number of principal component.
 #'
-#' @param object an object of class \code{sgdgmf}
+#' @param x an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param ncomp number of components to be plotted
 #' @param type the type of residuals which should be used
 #' @param partial if \code{TRUE}, plots the eigenvalues of the partial residuals
@@ -968,11 +991,13 @@ plot.sgdgmf = function (
 #' @method screeplot sgdgmf
 #' @export
 screeplot.sgdgmf = function (
-    object, ncomp = 20,
+    x, ...,
+    ncomp = 20,
     type = c("deviance", "pearson", "working", "response", "link"),
     partial = FALSE, normalize = FALSE,
     cumulative = FALSE, proportion = FALSE
 ) {
+  object = x
 
   # Compute the spctrum of the residuals
   ncomp = max(1, min(ncomp, nrow(object$U), nrow(object$V)))
@@ -1000,7 +1025,8 @@ screeplot.sgdgmf = function (
 #' Plot the observations on a two-dimensional projection determined by the
 #' estimated score matrix
 #'
-#' @param object an object of class \code{sgdgmf}
+#' @param x an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param choices a length 2 vector specifying the components to plot
 #' @param arrange if \code{TRUE}, return a single plot with two panels
 #' @param byrow if \code{TRUE}, the panels are arranged row-wise (if \code{arrange=TRUE})
@@ -1025,10 +1051,13 @@ screeplot.sgdgmf = function (
 #' @method biplot sgdgmf
 #' @export
 biplot.sgdgmf = function (
-    object, choices = 1:2, arrange = TRUE, byrow = FALSE,
+    x, ...,
+    choices = 1:2, arrange = TRUE, byrow = FALSE,
     normalize = FALSE, labels = NULL, palette = NULL,
     titles = c(NULL, NULL)
 ) {
+  object = x
+
   # Get the data dimensions
   n = nrow(object$U)
   m = nrow(object$V)
@@ -1057,6 +1086,9 @@ biplot.sgdgmf = function (
   # Create the score and loading data-frames
   scores = data.frame(idx = labels$scores, pc1 = c(u[,1]), pc2 = c(u[,2]))
   loadings = data.frame(idx = labels$loadings, pc1 = c(v[,1]), pc2 = c(v[,2]))
+
+  colnames(scores) = c("idx", "pc1", "pc2")
+  colnames(loadings) = c("idx", "pc1", "pc2")
 
   # Set the color palettes
   if (is.null(palette) | !is.list(palette)) {
@@ -1108,7 +1140,8 @@ biplot.sgdgmf = function (
 #' of a GMF model allowing for different types of transformations and normalizations.
 #' Moreover, it also permits to plot the latent score and loading matrices.
 #'
-#' @param object an object of class \code{sgdgmf}
+#' @param x an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param type the type of data/predictions/residuals which should be returned
 #' @param resid if \code{TRUE}, plots the residual values
 #' @param symmetric if \code{TRUE}, symmetrizes the color limits
@@ -1135,11 +1168,12 @@ biplot.sgdgmf = function (
 #' @method image sgdgmf
 #' @export
 image.sgdgmf = function (
-    object,
+    x, ...,
     type = c("data", "response", "link", "scores", "loadings", "deviance", "pearson", "working"),
     resid = FALSE, symmetric = FALSE, transpose = FALSE, limits = NULL, palette = NULL
 ) {
   type = match.arg(type)
+  object = x
 
   # Safety checks
   if (resid) {
