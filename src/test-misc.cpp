@@ -14,12 +14,14 @@ void cpp_print_link_family (const std::unique_ptr<Family> & family) {
     Rcpp::Rcout << "Eta: " << family->linkfun(arma::vec{0.25, 0.5, 0.75}) << "\n";
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.make.link.family")]]
 void cpp_make_link_family (const std::string & familyname, const std::string & linkname) {
     std::unique_ptr<Family> family = make_family(familyname, linkname);
     cpp_print_link_family(family);
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.get.data.bounds")]]
 Rcpp::List cpp_get_data_bounds (
     const double & eps, const double & ymin, const double & ymax, 
@@ -40,6 +42,7 @@ Rcpp::List cpp_get_data_bounds (
     return out;
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.get.uv.penalty")]]
 Rcpp::List cpp_get_uv_penalty (
     const arma::vec & pen, 
@@ -55,6 +58,7 @@ Rcpp::List cpp_get_uv_penalty (
     return out;
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.get.uv.indices")]]
 Rcpp::List cpp_get_uv_indices (
     const int & p, const int & q, const int & d
@@ -69,6 +73,7 @@ Rcpp::List cpp_get_uv_indices (
     return out;
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.sample.minibatch")]]
 std::list<arma::uvec> cpp_sample_minibatch (
     const int & n, const int & size, const bool & randomize
@@ -76,6 +81,7 @@ std::list<arma::uvec> cpp_sample_minibatch (
     return sample_chunks(n, size, randomize);
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.select.minibatch")]]
 int cpp_select_minibatch (const int & iter, const int & nchunks) {
     return select_chunk(iter, nchunks);

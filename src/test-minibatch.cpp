@@ -5,6 +5,7 @@
 
 #include "minibatch.h"
 
+//' @keywords internal
 // [[Rcpp::export("cpp.get.chunk")]]
 arma::uvec cpp_get_chunk (
     const int & iter, const int & n, 
@@ -15,6 +16,7 @@ arma::uvec cpp_get_chunk (
     return chunks.get_chunk(iter);
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.get.chunks")]]
 std::list<arma::uvec> cpp_get_chunks (
     const arma::uvec & iters, const int & n, 
@@ -25,6 +27,7 @@ std::list<arma::uvec> cpp_get_chunks (
     return chunks.get_chunks(iters);
 }
 
+//' @keywords internal
 // [[Rcpp::export("cpp.get.next")]]
 Rcpp::List cpp_get_next (
     const int & iter, const int & n, const bool & rnd
