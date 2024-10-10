@@ -271,7 +271,7 @@ partition = function (y, p = 0.3) {
 #' image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
 #' image(data_gam$U, axes = FALSE, main = expression(U[Gam]))
 #'
-#' @export
+#' @export sim.gmf.data
 sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1) {
 
   # Set the time range, phases, frequences and amplitudes of the underlying signals
