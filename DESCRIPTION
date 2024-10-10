@@ -29,23 +29,22 @@ Imports:
     parallel, 
     doParallel, 
     foreach,
-    methods
+    MASS,
+    methods,
+    reshape2,
+    ggpubr,
+    viridisLite
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
 Depends: 
     R (>= 4.0.0),
-    MASS,
     generics,
-    ggplot2,
-    reshape2,
-    viridisLite
+    ggplot2
 Suggests: 
     testthat (>= 3.0.0),
     Rtsne,
     dplyr,
-    ggpubr,
-    viridis,
     knitr,
     rmarkdown
 Config/testthat/edition: 3
