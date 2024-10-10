@@ -1,4 +1,7 @@
 
+
+
+
 #' @title Procrustes rotation of two configurations
 #' @description Rotates a configuration to maximum similarity with another configuration
 #' @param X target matrix
@@ -246,6 +249,8 @@ partition = function (y, p = 0.3) {
 #' uniform distributions.
 #'
 #' @examples
+#' library(sgdGMF)
+#'
 #' # Set the data dimensions
 #' n = 100; m = 20; d = 5
 #'
@@ -269,17 +274,15 @@ partition = function (y, p = 0.3) {
 #' @export
 sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1) {
 
-  d = ncomp
-
   # Set the time range, phases, frequences and amplitudes of the underlying signals
   time = seq(from = 0, to = 1, length = n)
-  phase = sort(stats::runif(d), decreasing = FALSE) * 2
-  freq = sort(stats::runif(d), decreasing = FALSE) * 2
-  amp = sort(stats::runif(d), decreasing = TRUE)
+  phase = sort(stats::runif(ncomp), decreasing = FALSE) * 2
+  freq = sort(stats::runif(ncomp), decreasing = FALSE) * 2
+  amp = sort(stats::runif(ncomp), decreasing = TRUE)
 
   # Combine the latent signals using independent Gaussian coefficients
-  V = matrix(stats::rnorm(m*d), nrow = m, ncol = d)
-  U = do.call("cbind", lapply(1:d, function(h){
+  V = matrix(stats::rnorm(m * ncomp), nrow = m, ncol = ncomp)
+  U = do.call("cbind", lapply(1:ncomp, function(h){
     amp[h] * sin(2 * pi * freq[h] * (time + phase[h]))
   }))
 
@@ -292,15 +295,16 @@ sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), disper
   # Simulate the data using an dispersion exponential family distribution
   Y = matrix(
     switch(family$family,
-      "gaussian" = stats::rnorm(n*m, mean = mu, sd = sqrt(phi)),
-      "binomial" = stats::rbinom(n*m, size = 1, prob = mu),
-      "poisson" = stats::rpois(n*m, lambda = mu),
-      "Gamma" = stats::rgamma(n*m, shape = 1 / phi, scale = phi * mu),
-      "negbinom" = MASS::rnegbin(n*m, mu = mu, theta = phi)),
+      "gaussian" = stats::rnorm(n * m, mean = mu, sd = sqrt(phi)),
+      "binomial" = stats::rbinom(n * m, size = 1, prob = mu),
+      "poisson" = stats::rpois(n * m, lambda = mu),
+      "Gamma" = stats::rgamma(n * m, shape = 1 / phi, scale = phi * mu),
+      "negbinom" = MASS::rnegbin(n * m, mu = mu, theta = phi)),
     nrow = n, ncol = m)
 
   # Return the simulated signals
-  list(Y = Y, U = U, V = V, eta = eta, mu = mu, phi = phi,
-       n = n, m = m, ncomp = ncomp, family = family,
-       param = list(time = time, phase = phase, freq = freq, amp = amp))
+  list(Y = Y, U = U, V = V,
+       eta = eta, mu = mu, phi = phi,
+       ncomp = ncomp, family = family)
 }
+

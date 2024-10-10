@@ -41,6 +41,8 @@ phases, frequencies and amplitudes. These parameters are randomly sampled from i
 uniform distributions.
 }
 \examples{
+library(sgdGMF)
+
 # Set the data dimensions
 n = 100; m = 20; d = 5
 
