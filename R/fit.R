@@ -259,7 +259,7 @@ sgdgmf.fit = function (
   }
   if (method == "sgd" & sampling == "block") {
     # Block-wise adaptive SGD algorithm
-    fit = cpp.fit.bsgd(
+    fit = cpp.fit.block.sgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
@@ -271,7 +271,7 @@ sgdgmf.fit = function (
   }
   if (method == "sgd" & sampling == "coord") {
     # Coordinate-wise adaptive SGD algorithm
-    fit = cpp.fit.csgd(
+    fit = cpp.fit.coord.sgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,

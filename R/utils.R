@@ -1,37 +1,4 @@
 
-#' @keywords internal
-qrrange = function (X, q = c(0.05, 0.95)) {
-  range = stats::quantile(c(X),q)
-  X[X > range[2]] = range[2]
-  X[X < range[1]] = range[1]
-  X
-}
-
-#' @keywords internal
-normx = function (x, p = 2) {
-  n = 0
-  if (p >= 0) {
-    if (p == 0) n = max(x)
-    if (p == 1) n = sum(abs(x))
-    if (p == 2) n = sqrt(sum(x^2))
-    if (!(p %in% c(0, 1, 2))) n = sum(x^p)^(1/p)
-  } else {
-    stop("p must be non-negative.")
-  }
-  return (n)
-}
-
-#' @keywords internal
-max.zero = function (x) {
-  0.5 * (abs(x) + x)
-}
-
-#' @keywords internal
-soft.threshold = function (x, a) {
-  y = abs(x) - a
-  0.5 * sign(x) * (abs(y) + y)
-}
-
 #' @title Procrustes rotation of two configurations
 #' @description Rotates a configuration to maximum similarity with another configuration
 #' @param X target matrix
@@ -251,24 +218,11 @@ partition = function (y, p = 0.3) {
 #' @description
 #' Simulate synthetic non-Gaussian data from a generalized matrix factorization (GMF) model.
 #'
-#' by first generating the score and loading
-#' matrices, forming the linear predictor and, then,
-#'
-#' Create score and loading matrices that can be used as the base for synthetic data
-#' simulation following a generalized matrix factorization model as data generating
-#' mechanism.
-#'
 #' @param n number of observations
 #' @param m number of variables
 #' @param ncomp rank of the latent matrix factorization
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
 #' @param dispersion a positive dispersion parameter
-#'
-#' @details
-#' The loadings, \code{V}, are independently sampled from a standard normal distribution.
-#' The scores, \code{U}, are simulated according to sinusoidal signals evaluated at different
-#' phases, frequencies and amplitudes. These parameters are randomly sampled from independent
-#' uniform distributions.
 #'
 #' @return
 #' A list containing the following objects:
@@ -284,6 +238,11 @@ partition = function (y, p = 0.3) {
 #'   \item \code{param}: a list containing time, phase, frequency and amplitude vectors used to generate \code{U}
 #' }
 #'
+#' @details
+#' The loadings, \code{V}, are independently sampled from a standard normal distribution.
+#' The scores, \code{U}, are simulated according to sinusoidal signals evaluated at different
+#' phases, frequencies and amplitudes. These parameters are randomly sampled from independent
+#' uniform distributions.
 #'
 #' @examples
 #' # Set the data dimensions
@@ -306,7 +265,7 @@ partition = function (y, p = 0.3) {
 #' image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
 #' image(data_gam$U, axes = FALSE, main = expression(U[Gam]))
 #'
-#' @export sim.gmf.data
+#' @export
 sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1) {
 
   d = ncomp

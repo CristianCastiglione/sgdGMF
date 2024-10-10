@@ -913,44 +913,43 @@ plot.sgdgmf = function (
   plt = switch(type,
     "res-idx" = {
       df = data.frame(residuals = c(res), index = c(1:prod(dim(res))))
-      ggplot(data = df, mapping = aes(x = index, y = residuals)) +
+      ggplot(data = df, mapping = aes_string(x = "index", y = "residuals")) +
       geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
         labs(x = "Index", y = "Residuals", title = "Residuals vs Indicies")
     },
     "res-fit" = {
       df = data.frame(residuals = c(res), fitted = c(fit))
-      ggplot(data = df, mapping = aes(x = fitted, y = residuals)) +
+      ggplot(data = df, mapping = aes_string(x = "fitted", y = "residuals")) +
         geom_point(alpha = 0.5) + geom_hline(yintercept = 0, col = 2, lty = 2) +
         labs(x = "Fitted values", y = "Residuals", title = "Residuals vs Fitted values")
     },
     "std-fit" = {
       res = sqrt(abs(res))
       df = data.frame(residuals = c(res), fitted = c(fit))
-      ggplot(data = df, mapping = aes(x = fitted, y = residuals)) +
+      ggplot(data = df, mapping = aes_string(x = "fitted", y = "residuals")) +
         geom_point(alpha = 0.5) + geom_hline(yintercept = mean(res), col = 2, lty = 2) +
         labs(x = "Fitted values", y = "|Residuals|", title = "Residuals vs Fitted values")
     },
     "hist" = {
       df = data.frame(residuals = c(res))
-      ggplot(data = df, mapping = aes(x = residuals, y = after_stat(density))) +
+      ggplot(data = df, mapping = aes_string(x = "residuals", y = "after_stat(density)")) +
         geom_histogram(bins = 30) + geom_vline(xintercept = 0, col = 2, lty = 2) +
         labs(x = "Residuals", y = "Frequency", title = "Histogram of the residuals")
     },
     "qq" = {
       df = list2DF(stats::qqnorm(scale(c(res)), plot.it = FALSE))
-      ggplot(data = df, mapping = aes(x = x, y = y)) +
+      ggplot(data = df, mapping = aes_string(x = "x", y = "y")) +
         geom_abline(intercept = 0, slope = 1, color = 2, lty = 2) + geom_point(alpha = 0.5) +
         labs(x = "Theoretical quantiles", y = "Empirical quantiles", title = "Residual QQ-plot")
     },
     "ecdf" = {
-      x = y = NULL
       zn = scale(c(res))
       zz = seq(from = min(zn), to = max(zn), length = 100)
       df1 = data.frame(x = zn, y = stats::ecdf(zn)(zn))
       df2 = data.frame(x = zz, y = stats::pnorm(zz))
       ggplot() +
-        geom_line(data = df2, mapping = aes(x = x, y = y), color = 2) +
-        geom_point(data = df1, mapping = aes(x = x, y = y), alpha = 0.5) +
+        geom_line(data = df2, mapping = aes_string(x = "x", y = "y"), color = 2) +
+        geom_point(data = df1, mapping = aes_string(x = "x", y = "y"), alpha = 0.5) +
         labs(x = "Standardized residuals", y = "Empirical CDF", title = "Residual ECDF plot")
     })
 
@@ -1012,8 +1011,8 @@ screeplot.sgdgmf = function (
 
   # Draw the screeplot
   df = data.frame(components = 1:ncomp, lambdas = lambdas)
-  plt = ggplot(data = df, mapping = aes(x = components, y = lambdas)) + geom_col() +
-    labs(x = "Components", y = "Eigenvalues", title = "Residual screeplot")
+  plt = ggplot(data = df, mapping = aes_string(x = "components", y = "lambdas")) +
+    geom_col() + labs(x = "Components", y = "Eigenvalues", title = "Residual screeplot")
 
   # Return the ggplot object
   return (plt)
@@ -1104,7 +1103,7 @@ biplot.sgdgmf = function (
   # Create the score biplot
   title.scores = ifelse(!is.null(titles[1]), titles[1], "Scores")
   plt.scores =
-    ggplot(data = scores, mapping = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    ggplot(data = scores, mapping = aes_string(x = "pc1", y = "pc2", color = "idx", label = "idx")) +
     geom_hline(yintercept = 0, lty = 2, color = "grey40") +
     geom_vline(xintercept = 0, lty = 2, color = "grey40") +
     geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
@@ -1114,7 +1113,7 @@ biplot.sgdgmf = function (
   # Create the loading biplot
   title.loadings = ifelse(!is.null(titles[1]), titles[1], "Loadings")
   plt.loadings =
-    ggplot(data = loadings, mapping = aes(x = pc1, y = pc2, color = idx, label = idx)) +
+    ggplot(data = loadings, mapping = aes_string(x = "pc1", y = "pc2", color = "idx", label = "idx")) +
     geom_hline(yintercept = 0, lty = 2, color = "grey40") +
     geom_vline(xintercept = 0, lty = 2, color = "grey40") +
     geom_point() + geom_text(color = 1, size = 2.5, nudge_x = -0.1, nudge_y = +0.1) +
@@ -1210,7 +1209,7 @@ image.sgdgmf = function (
     if (symmetric) palette = grDevices::hcl.colors(100, palette = "RdBu")
   }
 
-  plt = ggplot(data = df, mapping = aes(x = variable, y = sample, fill = value)) +
+  plt = ggplot(data = df, mapping = aes_string(x = "variable", y = "sample", fill = "value")) +
     geom_raster() + scale_fill_gradientn(colours = palette, limits = limits) +
     theme(axis.text = element_blank(), axis.ticks = element_blank()) +
     theme(legend.position = "bottom", panel.grid = element_blank()) +
