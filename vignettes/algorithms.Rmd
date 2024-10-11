@@ -78,7 +78,7 @@ stochastic gradient descent algorithms.
 ```{r fit}
 gmf.airwls = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "airwls")
 gmf.newton = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "newton")
-gmf.sgd    = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "bsgd")
+gmf.sgd    = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "sgd")
 ```
 
 ## Model validation

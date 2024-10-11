@@ -136,20 +136,20 @@ ggpubr::ggarrange(
 ```{r scores, fig.width = 7, fig.height = 7}
 ggpubr::ggarrange(
   ggpubr::ggarrange(
-    biplot(init_glm_dev)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Deviance"),
-    biplot(init_glm_prs)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Pearson"),
-    biplot(init_glm_lnk)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Link"),
-    biplot(init_ols_dev)$scores + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Deviance"),
-    biplot(init_ols_prs)$scores + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Pearson"),
-    biplot(init_ols_lnk)$scores + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Link"),
+    biplot(init_glm_dev, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Deviance"),
+    biplot(init_glm_prs, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Pearson"),
+    biplot(init_glm_lnk, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Link"),
+    biplot(init_ols_dev, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Deviance"),
+    biplot(init_ols_prs, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Pearson"),
+    biplot(init_ols_lnk, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Link"),
     nrow = 3, ncol = 2, common.legend = TRUE, legend = "bottom", align = "hv"),
   ggpubr::ggarrange(
-    biplot(init_glm_dev)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Deviance"),
-    biplot(init_glm_prs)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Pearson"),
-    biplot(init_glm_lnk)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Link"),
-    biplot(init_ols_dev)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Deviance"),
-    biplot(init_ols_prs)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Pearson"),
-    biplot(init_ols_lnk)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Link"),
+    biplot(init_glm_dev, arrange = FALSE)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Deviance"),
+    biplot(init_glm_prs, arrange = FALSE)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Pearson"),
+    biplot(init_glm_lnk, arrange = FALSE)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Link"),
+    biplot(init_ols_dev, arrange = FALSE)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Deviance"),
+    biplot(init_ols_prs, arrange = FALSE)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Pearson"),
+    biplot(init_ols_lnk, arrange = FALSE)$loadings + theme(axis.title = element_blank()) + labs(subtitle = "OLS - Link"),
     nrow = 3, ncol = 2, common.legend = TRUE, legend = "bottom", align = "hv"),
   nrow = 1, ncol = 2
 )
