@@ -31,6 +31,7 @@ Imports:
     foreach,
     MASS,
     methods,
+    generics,
     reshape2,
     ggpubr,
     viridisLite
@@ -39,7 +40,6 @@ LinkingTo:
     RcppArmadillo
 Depends: 
     R (>= 4.0.0),
-    generics,
     ggplot2
 Suggests: 
     testthat (>= 3.0.0),
