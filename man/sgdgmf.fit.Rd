@@ -32,7 +32,7 @@ sgdgmf.fit(
 
 \item{weights}{an optional matrix of weights (\eqn{n \times m})}
 
-\item{offset}{an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.}
+\item{offset}{an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor}
 
 \item{method}{estimation method to minimize the negative penalized log-likelihood}
 

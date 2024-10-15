@@ -16,9 +16,9 @@ set.control.init(
 )
 }
 \arguments{
-\item{method}{initialization method}
+\item{method}{initialization method (see \code{\link{sgdgmf.init}} for more details upon the initialization methods used)}
 
-\item{type}{residual type to be decomposed}
+\item{type}{residual type to be decomposed (see \code{\link{sgdgmf.init}} for more details upon the residuals used)}
 
 \item{values}{list of custom initialization parameters fixed by the user}
 
@@ -35,7 +35,7 @@ set.control.init(
 \description{
 Check if the input initialization parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined options which specify how
-to initialize a GMF model.
+to initialize a GMF model. See \code{\link{sgdgmf.init}} for more details upon the methods used for initialisation.
 }
 \examples{
 library(sgdGMF)
