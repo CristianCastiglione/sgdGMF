@@ -40,7 +40,7 @@ theme_set(theme_bw())
 
 ## Ant traits data
 
-Load the ant traits data in the workspace and define the response and covariate matrices.
+Load the ant traits data in the workspace and define the response matrix `Y` and covariate matrices `X` and `Z`.
 
 ```{r data}
 data(antTraits, package = "mvabund")

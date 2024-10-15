@@ -24,7 +24,7 @@
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
 #' @param ncomp rank of the latent matrix factorization (default 2)
 #' @param weights an optional matrix of weights (\eqn{n \times m})
-#' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.
+#' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor
 #' @param method estimation method to minimize the negative penalized log-likelihood
 #' @param sampling sub-sampling strategy to use if \code{method = "sgd"}
 #' @param penalty list of penalty parameters (see \code{\link{set.penalty}} for more details)

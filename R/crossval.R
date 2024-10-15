@@ -8,7 +8,7 @@
 #' @param X matrix of row fixed effects (\eqn{n \times p})
 #' @param Z matrix of column fixed effects (\eqn{q \times m})
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
-#' @param ncomps rank of the latent matrix factorization (default 2)
+#' @param ncomps ranks of the latent matrix factorization used in cross-validation (default 1 to 10)
 #' @param weights an optional matrix of weights (\eqn{n \times m})
 #' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.
 #' @param method estimation method to minimize the negative penalized log-likelihood
@@ -19,12 +19,12 @@
 #' @param control.cv list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)
 #'
 #' @return
-#' If \code{refit = FALSE}, the function returns a list containing \code{control.init},
+#' If \code{refit = FALSE} (see \code{\link{set.control.cv}}), the function returns a list containing \code{control.init},
 #' \code{control.alg}, \code{control.cv} and \code{summary.cv}. The latter is a matrix
 #' collecting the cross-validation results for each combination of fold and latent
 #' dimension.
 #'
-#' If \code{refit = TRUE}, the function returns an object of class \code{sgdgmf},
+#' If \code{refit = TRUE} (see \code{\link{set.control.cv}}), the function returns an object of class \code{sgdgmf},
 #' obtained by refitting the model on the whole data matrix using the latent dimension
 #' selected via cross-validation. The returned object also contains the \code{summary.cv}
 #' information along with the other standard output of the \code{\link{sgdgmf.fit}} function.

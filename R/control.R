@@ -127,10 +127,10 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #' @description
 #' Check if the input initialization parameters are allowed and set them to default
 #' values if they are not. Returns a list of well-defined options which specify how
-#' to initialize a GMF model.
+#' to initialize a GMF model. See \code{\link{sgdgmf.init}} for more details upon the methods used for initialisation.
 #'
-#' @param method initialization method
-#' @param type residual type to be decomposed
+#' @param method initialization method (see \code{\link{sgdgmf.init}} for more details upon the initialization methods used)
+#' @param type residual type to be decomposed (see \code{\link{sgdgmf.init}} for more details upon the residuals used)
 #' @param values list of custom initialization parameters fixed by the user
 #' @param niter number if refinement iterations in the \code{"svd"} method
 #' @param normalize if \code{TRUE}, normalize \code{U} and \code{V} to orthogonal \code{U} and lower triangular \code{V}

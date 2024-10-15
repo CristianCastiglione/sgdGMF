@@ -36,6 +36,7 @@ library(ggpubr)
 library(reshape2)
 library(viridis)
 
+set.seed(100)
 theme_set(theme_bw())
 ```
 
@@ -44,7 +45,7 @@ theme_set(theme_bw())
 To showcase the basic functionalities of the `sgdGMF` package, we use an ecological dataset which is freely available as part of the `mvabund` package. 
 This dataset consists of a count matrix recording how many times a certain specie of ant have been observed on a particular environment.
 In total, the considered dataset contain 30 ant species and 41 spots.
-Then, we load the ant traits data in the workspace and we define the response and covariate matrices.
+Then, we load the ant traits data in the workspace and we define the response matrix `Y` and covariate matrices `X` and `Z`.
 
 ```{r data}
 data(antTraits, package = "mvabund")
@@ -106,17 +107,25 @@ cat("Selected rank: ", ncomp)
 
 The `sgdGMF.rank` function first estimates a vector generalized linear model, corresponding to the case $u_i^\top v_j = 0$, then extracts the covariance matrix of the deviance residuals of the model and, finally, finds the elbow of the covariance screeplot using the specified thresholding method.
 
+Alternatively, we can use cross-validation to estimate the optimal rank with `sgdgmf.cv`. This returns the AIC, BIC, out-of-sample deviance, out-of-sample mean average errors and out-of-sample mean squared errors for every matrix rank and fold of the cross-validation. Based on this information, which can be found in the `summary.cv` slot, one can choose the rank.
+
+```{r}
+crossval = sgdgmf.cv(Y = Y, X = X, Z = Z, family = family, ncomps = seq(1,5,1),
+                     method = "sgd", sampling = "block", 
+                     control.cv = list(refit = FALSE))
+```
+
 
 ## Model estimation
 
 Now, we are ready to estimate the Poisson GMF model using the `sgdgmf.fit` function.
 
 ```{r fit}
-gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "sgd")
+gmf = sgdgmf.fit(Y, X, Z, ncomp = ncomp, family = family, method = "sgd", sampling = "block")
 ```
 
 The default optimizer in `sgdgmf.fit` is `method = "airwls"`, which uses alternated iterative re-weighted least squares (AIRWLS).
-Instead, we here set `method = "sgd"`, which employs the stochastic gradient descent method with block-subsampling strategy proposed in Castiglione, et al. (2024, arXiv).
+Instead, we here set `method = "sgd"` and `sampling = "block"`, which employs the stochastic gradient descent method with block-subsampling strategy proposed in Castiglione, et al. (2024, arXiv).
 
 ## Model validation
 
