@@ -109,7 +109,7 @@ The `sgdGMF.rank` function first estimates a vector generalized linear model, co
 
 Alternatively, we can use cross-validation to estimate the optimal rank with `sgdgmf.cv`. This returns the AIC, BIC, out-of-sample deviance, out-of-sample mean average errors and out-of-sample mean squared errors for every matrix rank and fold of the cross-validation. Based on this information, which can be found in the `summary.cv` slot, one can choose the rank.
 
-```{r}
+```{r crossval}
 crossval = sgdgmf.cv(Y = Y, X = X, Z = Z, family = family, ncomps = seq(1,5,1),
                      method = "sgd", sampling = "block", 
                      control.cv = list(refit = FALSE))
