@@ -155,13 +155,13 @@ Rcpp::List BSGD::fit (
     const int & ncomp, const arma::vec & lambda
 ) {
     /*
-    In this implementation we divide the dataset in chunks subsampling both the 
-    rows and the columns, obtainig a rectangular tassellization of the original 
-    data matrix. At each iteration of the algorthm, we pick a particular chunk
+    In this implementation, we divide the dataset into chunks, subsampling both the 
+    rows and the columns. By doing this, we obtain a rectangular tassellization of the  
+    original data matrix. At each iteration of the algorthm, we pick a particular chunk
     and we update only the rows of u (score matrix) and the columns of v (loading matrix) 
-    corresponding to that chunk
+    corresponding to that chunk.
     This may require many iterations of the algorithm to complete one epoch, where
-    one epoch correspond to a complete scan of the data matrix.
+    one epoch corresponds to a complete scan of the data matrix.
     */
 
 
