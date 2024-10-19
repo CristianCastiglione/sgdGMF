@@ -13,7 +13,7 @@ arma::mat Identity::linkinv (const arma::mat & eta) {return eta;}
 arma::mat Identity::mueta (const arma::mat & eta) {return arma::ones(arma::size(eta));}
 
 // Logit link
-arma::mat Logit::linkfun (const arma::mat & mu) {return arma::log(mu) - arma::log(1 - mu);}
+arma::mat Logit::linkfun (const arma::mat & mu) {return arma::log(mu) - arma::log1p(-mu);}
 arma::mat Logit::linkinv (const arma::mat & eta) {return arma::exp(eta - arma::log1p(arma::exp(eta)));}
 arma::mat Logit::mueta (const arma::mat & eta) {return arma::exp(eta - 2 * arma::log1p(arma::exp(eta)));}
 
@@ -33,7 +33,7 @@ arma::mat Cauchy::linkinv (const arma::mat & eta) {return 0.5 + arma::atan(eta) 
 arma::mat Cauchy::mueta (const arma::mat & eta) {return invpi / (eta % eta + 1);}
 
 // cLogLog link
-arma::mat cLogLog::linkfun (const arma::mat & mu) {return arma::log(- arma::log(1 - mu));}
+arma::mat cLogLog::linkfun (const arma::mat & mu) {return arma::log(- arma::log1p(-mu));}
 arma::mat cLogLog::linkinv (const arma::mat & eta) {return 1 - arma::exp(- arma::exp(eta));}
 arma::mat cLogLog::mueta (const arma::mat & eta) {return arma::exp(- eta - arma::exp(-eta));}
 

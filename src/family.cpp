@@ -17,7 +17,7 @@ bool Gaussian::valideta (const arma::mat & eta) const {return true;}
 // Binomial family
 arma::mat Binomial::variance (const arma::mat & mu) const {return mu % (1 - mu);}
 arma::mat Binomial::initialize (const arma::mat & y) const {return 2 * y - 1;}
-arma::mat Binomial::devresid (const arma::mat & y, const arma::mat & mu) const {return - 2 * (y % arma::log(mu) + (1 - y) % arma::log(1 - mu));}
+arma::mat Binomial::devresid (const arma::mat & y, const arma::mat & mu) const {return - 2 * (y % arma::log(mu) + (1 - y) % arma::log1p(-mu));}
 bool Binomial::validmu (const arma::mat & mu) const {return arma::all(arma::all(mu > 0)) && arma::all(arma::all(mu < 1));}
 bool Binomial::valideta (const arma::mat & eta) const {return true;}
 
@@ -48,7 +48,7 @@ bool NegativeBinomial::valideta (const arma::mat & eta) const {return true;}
 // Quasi-Binomial family
 arma::mat QuasiBinomial::variance (const arma::mat & mu) const {return mu % (1 - mu);}
 arma::mat QuasiBinomial::initialize (const arma::mat & y) const {return 2 * y - 1;}
-arma::mat QuasiBinomial::devresid (const arma::mat & y, const arma::mat & mu) const {return - 2 * (y % arma::log(mu) + (1 - y) % arma::log(1 - mu));}
+arma::mat QuasiBinomial::devresid (const arma::mat & y, const arma::mat & mu) const {return - 2 * (y % arma::log(mu) + (1 - y) % arma::log1p(-mu));}
 bool QuasiBinomial::validmu (const arma::mat & mu) const {return arma::all(arma::all(mu > 0)) && arma::all(arma::all(mu < 1));}
 bool QuasiBinomial::valideta (const arma::mat & eta) const {return true;}
 
