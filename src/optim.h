@@ -14,7 +14,14 @@
 #include <memory>   // for dynamic pointers management with std::unique_ptr and std::make_unique 
 #include <time.h>   // for checking the CPU clocks and the execution time
 #include <thread>   // for checking the number of cores with std::thread::hardware_concurrency()
-#include <omp.h>    // for parrallelizing the code via openMP
+
+#ifdef _OPENMP      // for parrallelizing the code via openMP
+    #include <omp.h>    
+#else               // optionally define a dummy macro or handle non-parallel versions
+    #define omp_get_num_threads() 1
+    #define omp_get_thread_num() 0
+    #define omp_set_num_threads(x)
+#endif
 
 #include "link.h"
 #include "family.h"
@@ -151,7 +158,14 @@ class AIRWLS {
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 25;}
             if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->verbose = verbose;
-            this->parallel = parallel;
+            
+            // If OpenMP is not available, switch off parallel by default
+            #ifdef _OPENMP
+                this->parallel = parallel;
+            #else
+                this->parallel = false;
+                this->nthreads = 1;
+            #endif
         }
 };
 
@@ -327,7 +341,14 @@ class Newton {
             if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 50;}
             if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
             this->verbose = verbose;
-            this->parallel = parallel;
+
+            // If OpenMP is not available, switch off parallel by default
+            #ifdef _OPENMP
+                this->parallel = parallel;
+            #else
+                this->parallel = false;
+                this->nthreads = 1;
+            #endif
         }
 };
 

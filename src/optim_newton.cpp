@@ -72,24 +72,27 @@ void Newton::update_dstat (
         const unsigned int n = dstat.eta.n_rows;
         const unsigned int m = dstat.eta.n_cols;
         if (n > m) {
+            
+            #ifdef _OPENMP
             #pragma omp parallel for
+            #endif
             for (unsigned int i = 0; i < n; i++) {
                 dstat.eta.row(i) = get_eta(u.row(i), v, lo, up);
                 dstat.mu.row(i) = family->linkinv(dstat.eta.row(i));
                 dstat.var.row(i) = family->variance(dstat.mu.row(i));
                 dstat.mueta.row(i) = family->mueta(dstat.eta.row(i));
                 dstat.dev.row(i) = family->devresid(Y.row(i), dstat.mu.row(i));
-                // dstat.dev.row(i) = deviance(Y.row(i), dstat.mu.row(i), family);
             }
         } else {
+            #ifdef _OPENMP
             #pragma omp parallel for
+            #endif
             for (unsigned int j = 0; j < m; j++) {
                 dstat.eta.col(j) = get_eta(u, v.col(j), lo, up);
                 dstat.mu.col(j) = family->linkinv(dstat.eta.col(j));
                 dstat.var.col(j) = family->variance(dstat.mu.col(j));
                 dstat.mueta.col(j) = family->mueta(dstat.eta.col(j));
                 dstat.dev.col(j) = family->devresid(Y.col(j), dstat.mu.col(j));
-                // dstat.dev.col(j) = deviance(Y.col(j), dstat.mu.col(j), family);
             }
         }
     } else {
@@ -111,13 +114,17 @@ void Newton::update_deta (
         const unsigned int n = deta.deta.n_rows;
         const unsigned int m = deta.deta.n_cols;
         if (n > m) {
+            #ifdef _OPENMP
             #pragma omp parallel for
+            #endif
             for (unsigned int i = 0; i < n; i++) {
                 deta.deta.row(i) = (Y.row(i) - dstat.mu.row(i)) % dstat.mueta.row(i) / dstat.var.row(i);
                 deta.ddeta.row(i) = arma::square(dstat.mueta.row(i)) / dstat.var.row(i);
             }
         } else {
+            #ifdef _OPENMP
             #pragma omp parallel for
+            #endif
             for (unsigned int j = 0; j < m; j++) {
                 deta.deta.col(j) = (Y.col(j) - dstat.mu.col(j)) % dstat.mueta.col(j) / dstat.var.col(j);
                 deta.ddeta.col(j) = arma::square(dstat.mueta.col(j)) / dstat.var.col(j);
@@ -154,7 +161,9 @@ void Newton::parallel_update (
     // A convenient parallelization strategy is taken depending on the row and column dimensions
     if (n >= m) {
         // If n >= m, we perform the computations row-wise
+        #ifdef _OPENMP
         #pragma omp parallel for
+        #endif
         for (unsigned int i = 0; i < n; i++) {
             arma::uvec ii = {i};
             arma::rowvec dui = - deta.row(i) * v.cols(idx) + u(ii,idx) % pen(idx).t();
@@ -163,7 +172,9 @@ void Newton::parallel_update (
         }
     } else {
         // If n < m, we perform the computations column-wise
+        #ifdef _OPENMP
         #pragma omp parallel for
+        #endif
         for (const unsigned int & j : idx) {
             arma::vec duj = - deta * v.col(j) + u.col(j) * pen(j);
             arma::vec dduj = ddeta * arma::square(v.col(j)) + pen(j) + this->damping;
