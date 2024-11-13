@@ -12,6 +12,7 @@ cpp.airwls.update(
   linkname,
   idx,
   offset,
+  weights,
   penalty,
   transp = FALSE,
   nsteps = 100L,
@@ -35,6 +36,8 @@ cpp.airwls.update(
 \item{idx}{index identifying the parameters to be updated in \code{beta}}
 
 \item{offset}{vector of constants to be added to the linear predictor}
+
+\item{weights}{vector of constants non-negative weights}
 
 \item{penalty}{penalty parameter of a ridge-type penalty}
 

@@ -62,6 +62,8 @@ In particular, the returned object collects the following information:
   \item \code{A}: the estimated row-specific coefficient matrix
   \item \code{U}: the estimated factor matrix
   \item \code{V}: the estimated loading matrix
+  \item \code{weights}: weighting matrix
+  \item \code{offset}: offset matrix
   \item \code{eta}: the estimated linear predictor
   \item \code{mu}: the estimated mean matrix
   \item \code{var}: the estimated variance matrix
@@ -157,6 +159,19 @@ Then, for \eqn{\phi \rightarrow \infty}, the Negative Binomial likelihood conver
 to a Poisson likelihood, having linear variance function, say \eqn{\nu(\mu) = \mu}.
 Notice that the over-dispersion parameter, that here is denoted as \eqn{\phi},
 in the \code{MASS} package is referred to as \eqn{\theta}.
+
+\strong{Parallelization}
+
+Parallel execution is implemented in \code{C++} using \code{OpenMP}. When installing
+and compiling the \code{sgdGMF} package, the compiler check whether \code{OpenMP}
+is installed in the system. If it is not, the package is compiled excluding all
+the \code{OpenMP} functionalities and no parallel execution is allowed at \code{C++}
+level.
+
+Notice that \code{OpenMP} is not compatible with \code{R} parallel computing packages,
+such as \code{parallel} and \code{foreach}. Therefore, when \code{parallel=TRUE},
+it is not possible to run the \code{sgdgmf.fit} function within \code{R} level
+parallel functions, e.g., \code{foreach} loop.
 }
 \examples{
 library(sgdGMF)

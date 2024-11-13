@@ -8,6 +8,7 @@ vglm.fit.coef(
   Y,
   X,
   family = gaussian(),
+  weights = NULL,
   offset = NULL,
   parallel = FALSE,
   nthreads = 1,
@@ -20,6 +21,8 @@ vglm.fit.coef(
 \item{X}{\eqn{n \times p} matrix of covariates}
 
 \item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
+
+\item{weights}{\eqn{n \times m} matrix of weighting values}
 
 \item{offset}{\eqn{n \times m} matrix of offset values}
 

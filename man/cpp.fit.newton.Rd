@@ -12,6 +12,8 @@ cpp.fit.newton(
   Z,
   U,
   V,
+  O,
+  W,
   familyname,
   linkname,
   ncomp,
@@ -42,6 +44,10 @@ cpp.fit.newton(
 \item{U}{initial factor matrix (\eqn{n \times d})}
 
 \item{V}{initial loading matrix (\eqn{m \times d})}
+
+\item{O}{matrix of constant offset (\eqn{n \times m})}
+
+\item{W}{matrix of constant weights (\eqn{n \times m})}
 
 \item{familyname}{a \code{glm} model family name}
 

@@ -14,6 +14,8 @@ sgdgmf.init(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
+  weights = NULL,
+  offset = NULL,
   method = c("ols", "glm", "random", "values"),
   type = c("deviance", "pearson", "working", "link"),
   niter = 0,
@@ -30,6 +32,8 @@ sgdgmf.init.ols(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
+  weights = NULL,
+  offset = NULL,
   type = c("deviance", "pearson", "working", "link"),
   verbose = FALSE
 )
@@ -40,6 +44,8 @@ sgdgmf.init.glm(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
+  weights = NULL,
+  offset = NULL,
   type = c("deviance", "pearson", "working", "link"),
   verbose = FALSE,
   parallel = FALSE,
@@ -52,6 +58,8 @@ sgdgmf.init.random(
   Z = NULL,
   ncomp = 2,
   family = gaussian(),
+  weights = NULL,
+  offset = NULL,
   sigma = 1
 )
 
@@ -75,6 +83,10 @@ sgdgmf.init.custom(
 \item{ncomp}{rank of the latent matrix factorization}
 
 \item{family}{a model family, as in the \code{\link{glm}} interface}
+
+\item{weights}{matrix of constant weights (\eqn{n \times m})}
+
+\item{offset}{matrix of constant offset (\eqn{n \times m})}
 
 \item{method}{optimization method to be used for the initial fit}
 

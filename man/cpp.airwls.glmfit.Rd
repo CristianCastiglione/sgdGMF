@@ -11,6 +11,7 @@ cpp.airwls.glmfit(
   familyname,
   linkname,
   offset,
+  weights,
   penalty,
   nsteps = 100L,
   stepsize = 0.1,
@@ -29,6 +30,8 @@ cpp.airwls.glmfit(
 \item{linkname}{link function name}
 
 \item{offset}{vector of constants to be added to the linear predictor}
+
+\item{weights}{vector of constants non-negative weights}
 
 \item{penalty}{penalty parameter of a ridge-type penalty}
 
