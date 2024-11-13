@@ -13,6 +13,8 @@
 #' @param Z matrix of column-specific fixed effects (\eqn{q \times m})
 #' @param ncomp rank of the latent matrix factorization
 #' @param family a model family, as in the \code{\link{glm}} interface
+#' @param weights matrix of constant weights (\eqn{n \times m})
+#' @param offset matrix of constant offset (\eqn{n \times m})
 #' @param method optimization method to be used for the initial fit
 #' @param type type of residuals to be used for initializing \code{U} via incomplete SVD decomposition
 #' @param niter number of iterations to refine the initial estimate (only if \code{method="ols"} or \code{"svd"})
@@ -110,6 +112,8 @@ sgdgmf.init = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
+    weights = NULL,
+    offset = NULL,
     method = c("ols", "glm", "random", "values"),
     type = c("deviance", "pearson", "working", "link"),
     niter = 0,
@@ -126,8 +130,8 @@ sgdgmf.init = function (
 
   # Initialize the parameters using the selected method
   init = switch(method,
-    "ols" = sgdgmf.init.ols(Y, X, Z, ncomp, family, type, verbose),
-    "glm" = sgdgmf.init.glm(Y, X, Z, ncomp, family, type, verbose, parallel, nthreads),
+    "ols" = sgdgmf.init.ols(Y, X, Z, ncomp, family, weights, offset, type, verbose),
+    "glm" = sgdgmf.init.glm(Y, X, Z, ncomp, family, weights, offset, type, verbose, parallel, nthreads),
     "random" = sgdgmf.init.random(Y, X, Z, ncomp),
     "values" = sgdgmf.init.custom(Y, X, Z, ncomp, family, values, verbose))
 
@@ -152,10 +156,14 @@ sgdgmf.init = function (
     init$Y = matrix(NA, nrow = n, ncol = m)
     init$X = matrix(NA, nrow = n, ncol = p)
     init$Z = matrix(NA, nrow = m, ncol = q)
+    init$weights = matrix(NA, nrow = n, ncol = m)
+    init$offset = matrix(NA, nrow = n, ncol = m)
 
     init$Y[] = Y
     init$X[] = if (!is.null(X)) X else matrix(1, nrow = n, ncol = p)
     init$Z[] = if (!is.null(Z)) Z else matrix(1, nrow = m, ncol = q)
+    init$weights[] = if (!is.null(weights)) weights else matrix(1, nrow = n, ncol = m)
+    init$offset[] = if (!is.null(offset)) offset else matrix(0, nrow = n, ncol = m)
   }
 
   # Set the initialization class
@@ -173,6 +181,8 @@ sgdgmf.init.ols = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
+    weights = NULL,
+    offset = NULL,
     type = c("deviance", "pearson", "working", "link"),
     verbose = FALSE
 ) {
@@ -182,6 +192,8 @@ sgdgmf.init.ols = function (
   # Set the covariate matrices
   if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
   if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+  if (is.null(weights)) weights = matrix(1, nrow = nrow(Y), ncol = ncol(Y))
+  if (is.null(offset)) offset = matrix(0, nrow = nrow(Y), ncol = ncol(Y))
 
   # Set the minimum and maximum of the data
   minY = min(Y)
@@ -214,11 +226,16 @@ sgdgmf.init.ols = function (
   A = matrix(NA, nrow = n, ncol = q)
   U = matrix(NA, nrow = n, ncol = d)
   V = matrix(NA, nrow = m, ncol = d)
+  eta = matrix(NA, nrow = n, ncol = m)
+
+
+  # Fill the initial linear predictor
+  eta[] = offset
 
   # Compute the initial column-specific regression parameters
   if (verbose) cat(" Initialization: column-specific covariates \n")
-  B[] = ols.fit.coef(gY, X, offset = NULL)
-  eta = tcrossprod(X, B)
+  B[] = ols.fit.coef(gY, X, offset = eta)
+  eta = eta + tcrossprod(X, B)
 
   # Compute the initial row-specific regression parameter
   if (verbose) cat(" Initialization: row-specific covariates \n")
@@ -265,6 +282,8 @@ sgdgmf.init.glm = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
+    weights = NULL,
+    offset = NULL,
     type = c("deviance", "pearson", "working", "link"),
     verbose = FALSE,
     parallel = FALSE,
@@ -294,8 +313,10 @@ sgdgmf.init.glm = function (
   }
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = m, ncol = 1)
+  if (is.null(weights)) weights = matrix(1, nrow = n, ncol = m)
+  if (is.null(offset)) offset = matrix(0, nrow = n, ncol = m)
 
   # Set the minimum and maximum of the data
   minY = min(Y)
@@ -316,17 +337,20 @@ sgdgmf.init.glm = function (
     doParallel::registerDoParallel(clust)
   }
 
+  # Fill the initial linear predictor
+  eta[] = offset
+
   # Column-specific covariate vector initialization
   if (verbose) cat(" Initialization: column-specific covariates \n")
-  B = vglm.fit.coef(Y, X, family = family, offset = NULL,
+  B = vglm.fit.coef(Y, X, family = family, weights = weights, offset = eta,
                     parallel = parallel, nthreads = nthreads, clust = clust)
 
   # Update the linear predictor
-  eta[] = tcrossprod(X, B)
+  eta[] = eta + tcrossprod(X, B)
 
   # Row-specific covariate vector initialization
   if (verbose) cat(" Initialization: row-specific covariates \n")
-  A = vglm.fit.coef(t(Y), Z, family = family, offset = t(eta),
+  A = vglm.fit.coef(t(Y), Z, family = family, weights = t(weights), offset = t(eta),
                     parallel = parallel, nthreads = nthreads, clust = clust)
 
   # Update the linear predictor and the conditional mean matrix
@@ -351,7 +375,7 @@ sgdgmf.init.glm = function (
 
   # Initialize the loading matrix via GLM regression
   if (verbose) cat(" Initialization: latent loadings \n")
-  V = vglm.fit.coef(Y, U, family = family, offset = eta,
+  V = vglm.fit.coef(Y, U, family = family, weights = weights, offset = eta,
                     parallel = parallel, nthreads = nthreads, clust = clust)
 
   # Close the connection to the clusters
@@ -376,6 +400,8 @@ sgdgmf.init.random = function (
     Z = NULL,
     ncomp = 2,
     family = gaussian(),
+    weights = NULL,
+    offset = NULL,
     sigma = 1
 ) {
 

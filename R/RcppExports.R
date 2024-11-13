@@ -14,11 +14,12 @@
 #' @param familyname model family name
 #' @param linkname link function name
 #' @param offset vector of constants to be added to the linear predictor
+#' @param weights vector of constants non-negative weights
 #' @param penalty penalty parameter of a ridge-type penalty
 #' 
 #' @keywords internal
-cpp.airwls.glmstep <- function(beta, y, X, familyname, linkname, offset, penalty) {
-    .Call(`_sgdGMF_cpp_airwls_glmstep`, beta, y, X, familyname, linkname, offset, penalty)
+cpp.airwls.glmstep <- function(beta, y, X, familyname, linkname, offset, weights, penalty) {
+    .Call(`_sgdGMF_cpp_airwls_glmstep`, beta, y, X, familyname, linkname, offset, weights, penalty)
 }
 
 #' @title Fisher scoring algorithm for GLMs
@@ -34,14 +35,15 @@ cpp.airwls.glmstep <- function(beta, y, X, familyname, linkname, offset, penalty
 #' @param familyname model family name
 #' @param linkname link function name
 #' @param offset vector of constants to be added to the linear predictor
+#' @param weights vector of constants non-negative weights
 #' @param penalty penalty parameter of a ridge-type penalty
 #' @param nsteps number of iterations
 #' @param stepsize stepsize parameter of the Fisher scoring algorithm
 #' @param print if \code{TRUE}, print the algorithm history
 #' 
 #' @keywords internal
-cpp.airwls.glmfit <- function(beta, y, X, familyname, linkname, offset, penalty, nsteps = 100L, stepsize = 0.1, print = FALSE) {
-    .Call(`_sgdGMF_cpp_airwls_glmfit`, beta, y, X, familyname, linkname, offset, penalty, nsteps, stepsize, print)
+cpp.airwls.glmfit <- function(beta, y, X, familyname, linkname, offset, weights, penalty, nsteps = 100L, stepsize = 0.1, print = FALSE) {
+    .Call(`_sgdGMF_cpp_airwls_glmfit`, beta, y, X, familyname, linkname, offset, weights, penalty, nsteps, stepsize, print)
 }
 
 #' @title AIRWLS update for GMF models
@@ -57,6 +59,7 @@ cpp.airwls.glmfit <- function(beta, y, X, familyname, linkname, offset, penalty,
 #' @param linkname link function name
 #' @param idx index identifying the parameters to be updated in \code{beta}
 #' @param offset vector of constants to be added to the linear predictor
+#' @param weights vector of constants non-negative weights
 #' @param penalty penalty parameter of a ridge-type penalty
 #' @param transp if \code{TRUE}, transpose the data
 #' @param nsteps number of iterations
@@ -66,8 +69,8 @@ cpp.airwls.glmfit <- function(beta, y, X, familyname, linkname, offset, penalty,
 #' @param nthreads number of threads to be run in parallel (only if \code{parallel=TRUE})
 #' 
 #' @keywords internal
-cpp.airwls.update <- function(beta, Y, X, familyname, linkname, idx, offset, penalty, transp = FALSE, nsteps = 100L, stepsize = 0.1, print = FALSE, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_cpp_airwls_update`, beta, Y, X, familyname, linkname, idx, offset, penalty, transp, nsteps, stepsize, print, parallel, nthreads)
+cpp.airwls.update <- function(beta, Y, X, familyname, linkname, idx, offset, weights, penalty, transp = FALSE, nsteps = 100L, stepsize = 0.1, print = FALSE, parallel = FALSE, nthreads = 1L) {
+    .Call(`_sgdGMF_cpp_airwls_update`, beta, Y, X, familyname, linkname, idx, offset, weights, penalty, transp, nsteps, stepsize, print, parallel, nthreads)
 }
 
 #' @title Fit a GMF model using the AIRWLS algorithm
@@ -81,6 +84,8 @@ cpp.airwls.update <- function(beta, Y, X, familyname, linkname, idx, offset, pen
 #' @param Z matrix of column fixed effects (\eqn{m \times q})
 #' @param U initial factor matrix (\eqn{n \times d})
 #' @param V initial loading matrix (\eqn{m \times d})
+#' @param O matrix of constant offset (\eqn{n \times m})
+#' @param W matrix of constant weights (\eqn{n \times m})
 #' @param familyname a \code{glm} model family name
 #' @param linkname a \code{glm} link function name
 #' @param ncomp rank of the latent matrix factorization
@@ -98,8 +103,8 @@ cpp.airwls.update <- function(beta, Y, X, familyname, linkname, idx, offset, pen
 #' @param nthreads number of cores to be used in parallel
 #'
 #' @keywords internal
-cpp.fit.airwls <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, nsteps = 1L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_cpp_fit_airwls`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
+cpp.fit.airwls <- function(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter = 500L, nsteps = 1L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
+    .Call(`_sgdGMF_cpp_fit_airwls`, Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
 }
 
 #' @title Fit a GMF model using the diagonal quasi-Newton algorithm
@@ -113,6 +118,8 @@ cpp.fit.airwls <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lam
 #' @param Z matrix of column fixed effects (\eqn{m \times q})
 #' @param U initial factor matrix (\eqn{n \times d})
 #' @param V initial loading matrix (\eqn{m \times d})
+#' @param O matrix of constant offset (\eqn{n \times m})
+#' @param W matrix of constant weights (\eqn{n \times m})
 #' @param familyname a \code{glm} model family name
 #' @param linkname a \code{glm} link function name
 #' @param ncomp rank of the latent matrix factorization
@@ -129,8 +136,8 @@ cpp.fit.airwls <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lam
 #' @param nthreads number of cores to be used in parallel
 #'
 #' @keywords internal
-cpp.fit.newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
-    .Call(`_sgdGMF_cpp_fit_newton`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
+cpp.fit.newton <- function(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter = 500L, stepsize = 0.1, eps = 1e-08, nafill = 1L, tol = 1e-05, damping = 1e-03, verbose = TRUE, frequency = 10L, parallel = FALSE, nthreads = 1L) {
+    .Call(`_sgdGMF_cpp_fit_newton`, Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads)
 }
 
 #' @title Fit a GMF model using the adaptive SGD with coordinate-wise minibatch subsampling algorithm
@@ -144,6 +151,8 @@ cpp.fit.newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lam
 #' @param Z matrix of column fixed effects (\eqn{m \times q})
 #' @param U initial factor matrix (\eqn{n \times d})
 #' @param V initial loading matrix (\eqn{m \times d})
+#' @param O matrix of constant offset (\eqn{n \times m})
+#' @param W matrix of constant weights (\eqn{n \times m})
 #' @param familyname a \code{glm} model family name
 #' @param linkname a \code{glm} link function name
 #' @param ncomp rank of the latent matrix factorization
@@ -167,8 +176,8 @@ cpp.fit.newton <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lam
 #' @param progress if \code{TRUE}, print an progress bar
 #' 
 #' @keywords internal
-cpp.fit.coord.sgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_cpp_fit_coord_sgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.fit.coord.sgd <- function(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_cpp_fit_coord_sgd`, Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 
 #' @title Fit a GMF model using the adaptive SGD with block-wise minibatch subsampling
@@ -182,6 +191,8 @@ cpp.fit.coord.sgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, 
 #' @param Z matrix of column fixed effects (\eqn{m \times q})
 #' @param U initial factor matrix (\eqn{n \times d})
 #' @param V initial loading matrix (\eqn{m \times d})
+#' @param O matrix of constant offset (\eqn{n \times m})
+#' @param W matrix of constant weights (\eqn{n \times m})
 #' @param familyname a \code{glm} model family name
 #' @param linkname a \code{glm} link function name
 #' @param ncomp rank of the latent matrix factorization
@@ -205,7 +216,7 @@ cpp.fit.coord.sgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, 
 #' @param progress if \code{TRUE}, print an progress bar
 #' 
 #' @keywords internal
-cpp.fit.block.sgd <- function(Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
-    .Call(`_sgdGMF_cpp_fit_block_sgd`, Y, X, B, A, Z, U, V, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+cpp.fit.block.sgd <- function(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_cpp_fit_block_sgd`, Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 

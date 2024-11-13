@@ -33,13 +33,14 @@ void BSGD::update_rate (double & rate, const int & iter) {
 
 void BSGD::update_deta (
     dEta & deta, const arma::uvec & idx, const arma::uvec & idy, 
-    const arma::mat & Y,  const arma::mat & eta, const arma::mat & mu, 
+    const arma::mat & Y, const arma::mat & weights, 
+    const arma::mat & eta, const arma::mat & mu, 
     const std::unique_ptr<Family> & family
 ) {
     arma::mat var = family->variance(mu);
     arma::mat mueta = family->mueta(eta);
-    deta.deta(idx, idy) = (Y - mu) % mueta / var;
-    deta.ddeta(idx, idy) = (mueta % mueta) / var;
+    deta.deta(idx, idy) = weights % (Y - mu) % mueta / var;
+    deta.ddeta(idx, idy) = weights % (mueta % mueta) / var;
 }
 
 void BSGD::update_dpar (
@@ -94,20 +95,22 @@ void BSGD::smooth_par (
 
 // Initialize the dispersion parameter estimate
 void BSGD::init_phi (
-    double & phi, const int & df, 
-    const arma::mat & Y, const arma::mat & mu, 
+    double & phi, const int & df, const arma::mat & Y, 
+    const arma::mat & weights, const arma::mat & mu, 
     const std::unique_ptr<Family> & family
 ) {
-    double ssq;
+    double ssq, sm, ssm;
     arma::mat var;
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
-            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            ssq = arma::accu(weights % arma::square(Y - mu));
+            sm = arma::accu(weights % mu);
+            ssm = arma::accu(weights % mu % mu);
+            phi = std::max(1e-08, (ssq - sm) / ssm);
             family->setdisp(1 / phi);
         } else {
             var = family->variance(mu);
-            ssq = arma::accu(arma::square(Y - mu) / var);
+            ssq = arma::accu(weights % arma::square(Y - mu) / var);
             phi = std::max(1e-08, ssq / df);
             family->setdisp(phi);
         }
@@ -117,28 +120,30 @@ void BSGD::init_phi (
 // Update and smooth the dispersion parameter estimate
 void BSGD::update_phi (
     double & phi, const double & rate, 
-    const int & nm, const int & df, 
-    const arma::mat & Y, const arma::mat & mu, 
+    const int & nm, const int & df, const arma::mat & Y, 
+    const arma::mat & weights, const arma::mat & mu, 
     const arma::uvec & idx, const arma::uvec & idy, 
     const std::unique_ptr<Family> & family
 ) {
     const int ni = idx.n_elem;
     const int mi = idy.n_elem;
     const int nmi = ni * mi;
-    double ssq, phit;
+    double ssq, sm, ssm, phit;
     arma::mat yi = Y(idx, idy);
+    arma::mat wi = weights(idx, idy);
     arma::mat mui = mu(idx, idy);
     arma::mat vari(ni, mi);
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(yi - mui) - mui);
-            phit = ssq / arma::accu(mui % mui);
-            phit = std::max(1e-08, phit);
+            ssq = arma::accu(wi % arma::square(yi - mui));
+            sm = arma::accu(wi % mui);
+            ssm = arma::accu(wi % mui % mui);
+            phit = std::max(1e-08, (ssq - sm) / ssm);
             phi = (1 - rate) * phi + rate * phit;
             family->setdisp(1 / phi);
         } else {
             vari = family->variance(mui);
-            ssq = arma::accu(arma::square(yi - mui) / vari) / nmi;
+            ssq = arma::accu(wi % arma::square(yi - mui) / vari) / nmi;
             phit = std::max(1e-08, ssq * (nm / df));
             phi = (1 - rate) * phi + rate * phit;
             family->setdisp(phi);
@@ -151,6 +156,7 @@ Rcpp::List BSGD::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
+    const arma::mat & O, const arma::mat & W,
     const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
@@ -229,7 +235,7 @@ Rcpp::List BSGD::fit (
 
     // Get the linear predictor, the mean and the variance matrices
     arma::mat eta(n, m), mu(n, m), var(n, m);
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
     
     // Fill the missing values with the initial predictions
@@ -237,7 +243,7 @@ Rcpp::List BSGD::fit (
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
@@ -283,16 +289,18 @@ Rcpp::List BSGD::fit (
         scalec = m / mc;
 
         // Update the linear predictor and the mean matrix
-        // arma::mat etat = ut.rows(idr) * vt.rows(idc).t();
-        arma::mat etat = get_eta(ut.rows(idr), vt.rows(idc), etalo, etaup);
-        arma::mat mut = family->linkinv(etat);
         arma::mat Yt = Y(idr, idc);
+        arma::mat Wt = W(idr, idc);
+        arma::mat Ot = O(idr, idc);
+
+        arma::mat etat = get_eta(Ot, ut.rows(idr), vt.rows(idc), etalo, etaup);
+        arma::mat mut = family->linkinv(etat);
 
         eta(idr, idc) = etat;
         mu(idr, idc) = mut;
 
         // Update the log-likelihood differentials
-        this->update_deta(deta, idr, idc, Yt, etat, mut, family);
+        this->update_deta(deta, idr, idc, Yt, Wt, etat, mut, family);
         this->update_dpar(du, deta, idr, idc, ut.cols(idu), vt.cols(idu), penu(idu), scalec, false);
         this->update_dpar(dv, deta, idr, idc, vt.cols(idv), ut.cols(idv), penv(idv), scaler, true);
         
@@ -306,7 +314,7 @@ Rcpp::List BSGD::fit (
         
         if (iter % frequency == 0) {
             // Update the deviance, penalty and objective functions
-            dev = arma::accu(deviance(Y, mu, family));
+            dev = arma::accu(W % deviance(Y, mu, family));
             pen = penalty(u, penu) + penalty(v, penv);
             objt = obj; obj = dev + 0.5 * pen;
             change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
@@ -329,12 +337,12 @@ Rcpp::List BSGD::fit (
     }
 
     // Get the estimated predictions
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
 
     // The the estimated variances, deviance and penalty 
     var = family->variance(mu);
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen;
     
@@ -375,11 +383,11 @@ Rcpp::List BSGD::fit2 (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
+    const arma::mat & O, const arma::mat & W,
     const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
     /*
-
     In this implementation we divide the dataset in chunks subsampling both the 
     rows and the columns, obtainig a rectangular tassellization of the original 
     data matrix. At each iteration of the algorthm, we cycle over all the column
@@ -448,7 +456,7 @@ Rcpp::List BSGD::fit2 (
 
     // Get the linear predictor, the mean and the variance matrices
     arma::mat eta(n, m), mu(n, m), var(n, m);
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
 
     // Fill the missing values with the initial predictions
@@ -456,13 +464,14 @@ Rcpp::List BSGD::fit2 (
 
     // Get the initial dispersion parameter
     double phi = 1;
-    this->init_phi(phi, df, Y, mu, family);
+    this->init_phi(phi, df, Y, W, mu, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj;
     double devt, objt;
     double change, scanned;
-    dev = arma::accu(deviance(Y, mu, family));
+
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen;
     devt = dev;
@@ -512,15 +521,18 @@ Rcpp::List BSGD::fit2 (
             scalec = m / mc;
 
             // Update the linear predictor and the mean matrix
-            arma::mat etat = get_eta(ut.rows(idr), vt.rows(idc), etalo, etaup);
-            arma::mat mut = family->linkinv(etat);
             arma::mat Yt = Y(idr, idc);
+            arma::mat Wt = W(idr, idc);
+            arma::mat Ot = O(idr, idc);
+
+            arma::mat etat = get_eta(Ot, ut.rows(idr), vt.rows(idc), etalo, etaup);
+            arma::mat mut = family->linkinv(etat);
 
             eta(idr, idc) = etat;
             mu(idr, idc) = mut;
 
             // Update the log-likelihood differentials
-            this->update_deta(deta, idr, idc, Yt, etat, mut, family);
+            this->update_deta(deta, idr, idc, Yt, Wt, etat, mut, family);
             this->update_dpar(du, deta, idr, idc, ut.cols(idu), vt.cols(idu), penu(idu), scalec, false);
             this->update_dpar(dv, deta, idr, idc, vt.cols(idv), ut.cols(idv), penv(idv), scaler, true);
             
@@ -533,14 +545,13 @@ Rcpp::List BSGD::fit2 (
             this->smooth_par(v, vt, iter, idc, idv);
 
             // Update the dispersion estimate
-            this->update_phi(phi, rate, nm, df, Y, mu, idr, idc, family);
+            this->update_phi(phi, rate, nm, df, Y, W, mu, idr, idc, family);
         }
 
         if (iter % frequency == 0) {
             // Update the deviance, penalty and objective function
-            dev = arma::accu(deviance(Y, mu, family));
+            dev = arma::accu(W % deviance(Y, mu, family));
             pen = penalty(ut, penu) + penalty(vt, penv);
-            // objt = obj; 
             obj = dev + 0.5 * pen;
             change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
             scanned = (iter * this->size1) / n;
@@ -571,12 +582,12 @@ Rcpp::List BSGD::fit2 (
     objt = obj;
 
     // Get the estimated predictions and variances
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
     var = family->variance(mu);
 
     // The the deviance, penalty and objective function
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen;
     

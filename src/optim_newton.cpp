@@ -22,18 +22,22 @@ void Newton::summary () {
 }
 
 void Newton::init_phi (
-    double & phi, const int & df, const arma::mat & Y, 
+    double & phi, const int & df, 
+    const arma::mat & Y, const arma::mat & weights, 
     const arma::mat & mu, const arma::mat & var, 
     const std::unique_ptr<Family> & family
 ) {
-    double ssq;
+    double ssq, sm, ssm;
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
-            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            // ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
+            ssq = arma::accu(weights % arma::square(Y - mu));
+            sm = arma::accu(weights % mu);
+            ssm = arma::accu(weights % mu % mu);
+            phi = std::max(1e-08, (ssq - sm) / ssm);
             family->setdisp(1 / phi);
         } else {
-            ssq = arma::accu(arma::square(Y - mu) / var);
+            ssq = arma::accu(arma::square(Y - mu) % weights / var);
             phi = std::max(1e-08, ssq / df);
             family->setdisp(phi);
         }
@@ -41,20 +45,23 @@ void Newton::init_phi (
 }
 
 void Newton::update_phi (
-    double & phi, const int & df, const arma::mat & Y, 
+    double & phi, const int & df, 
+    const arma::mat & Y, const arma::mat & weights,
     const arma::mat & mu, const arma::mat & var, 
     const std::unique_ptr<Family> & family
 ) {
-    double ssq, phit, lambda = 0.5;
+    double ssq, sm, ssm, phit, lambda = 0.5;
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(Y - mu));
-            phit = (ssq - arma::accu(mu)) / arma::accu(mu % mu);
+            ssq = arma::accu(weights % arma::square(Y - mu));
+            sm = arma::accu(weights % mu);
+            ssm = arma::accu(weights % mu % mu);
+            phit = (ssq - sm) / ssm;
             phit = std::max(1e-08, phit);
             phi = (1 - lambda) * phi + lambda * phit;
             family->setdisp(1 / phi);
         } else {
-            ssq = arma::accu(arma::square(Y - mu) / var);
+            ssq = arma::accu(arma::square(Y - mu) % weights / var);
             phit = std::max(1e-08, ssq / df);
             phi = (1 - lambda) * phi + lambda * phit;
             family->setdisp(phi);
@@ -63,7 +70,8 @@ void Newton::update_phi (
 }
 
 void Newton::update_dstat (
-    dStat & dstat, const arma::mat & Y,
+    dStat & dstat, 
+    const arma::mat & Y, const arma::mat & offset, 
     const arma::mat & u, const arma::mat & v, 
     const double & lo, const double & up,
     const std::unique_ptr<Family> & family
@@ -72,12 +80,11 @@ void Newton::update_dstat (
         const unsigned int n = dstat.eta.n_rows;
         const unsigned int m = dstat.eta.n_cols;
         if (n > m) {
-            
             #ifdef _OPENMP
             #pragma omp parallel for
             #endif
             for (unsigned int i = 0; i < n; i++) {
-                dstat.eta.row(i) = get_eta(u.row(i), v, lo, up);
+                dstat.eta.row(i) = get_eta(offset.row(i), u.row(i), v, lo, up);
                 dstat.mu.row(i) = family->linkinv(dstat.eta.row(i));
                 dstat.var.row(i) = family->variance(dstat.mu.row(i));
                 dstat.mueta.row(i) = family->mueta(dstat.eta.row(i));
@@ -88,7 +95,7 @@ void Newton::update_dstat (
             #pragma omp parallel for
             #endif
             for (unsigned int j = 0; j < m; j++) {
-                dstat.eta.col(j) = get_eta(u, v.col(j), lo, up);
+                dstat.eta.col(j) = get_eta(offset.col(j), u, v.row(j), lo, up);
                 dstat.mu.col(j) = family->linkinv(dstat.eta.col(j));
                 dstat.var.col(j) = family->variance(dstat.mu.col(j));
                 dstat.mueta.col(j) = family->mueta(dstat.eta.col(j));
@@ -96,18 +103,17 @@ void Newton::update_dstat (
             }
         }
     } else {
-        dstat.eta = get_eta(u, v, lo, up);
+        dstat.eta = get_eta(offset, u, v, lo, up);
         dstat.mu = family->linkinv(dstat.eta);
         dstat.var = family->variance(dstat.mu);
         dstat.mueta = family->mueta(dstat.eta);
-        dstat.dev = family->devresid(Y, dstat.mu); 
-        // dstat.dev = deviance(Y, dstat.mu, family);
+        dstat.dev = family->devresid(Y, dstat.mu);
     }
 }
 
 void Newton::update_deta (
-    dEta & deta, 
-    const dStat & dstat, const arma::mat & Y,
+    dEta & deta, const dStat & dstat, 
+    const arma::mat & Y, const arma::mat & weights,
     const std::unique_ptr<Family> & family
 ) {
     if (this->parallel) {
@@ -118,21 +124,21 @@ void Newton::update_deta (
             #pragma omp parallel for
             #endif
             for (unsigned int i = 0; i < n; i++) {
-                deta.deta.row(i) = (Y.row(i) - dstat.mu.row(i)) % dstat.mueta.row(i) / dstat.var.row(i);
-                deta.ddeta.row(i) = arma::square(dstat.mueta.row(i)) / dstat.var.row(i);
+                deta.deta.row(i) = weights.row(i) % (Y.row(i) - dstat.mu.row(i)) % dstat.mueta.row(i) / dstat.var.row(i);
+                deta.ddeta.row(i) = weights.row(i) % arma::square(dstat.mueta.row(i)) / dstat.var.row(i);
             }
         } else {
             #ifdef _OPENMP
             #pragma omp parallel for
             #endif
             for (unsigned int j = 0; j < m; j++) {
-                deta.deta.col(j) = (Y.col(j) - dstat.mu.col(j)) % dstat.mueta.col(j) / dstat.var.col(j);
-                deta.ddeta.col(j) = arma::square(dstat.mueta.col(j)) / dstat.var.col(j);
+                deta.deta.col(j) = weights.col(j) % (Y.col(j) - dstat.mu.col(j)) % dstat.mueta.col(j) / dstat.var.col(j);
+                deta.ddeta.col(j) = weights.col(j) % arma::square(dstat.mueta.col(j)) / dstat.var.col(j);
             }
         }
     } else {
-        deta.deta = (Y - dstat.mu) % dstat.mueta / dstat.var;
-        deta.ddeta = (dstat.mueta % dstat.mueta) / dstat.var;
+        deta.deta = weights % (Y - dstat.mu) % dstat.mueta / dstat.var;
+        deta.ddeta = weights % (dstat.mueta % dstat.mueta) / dstat.var;
     }
 }
 
@@ -155,15 +161,14 @@ void Newton::parallel_update (
     const arma::vec & pen, const arma::uvec & idx,
     const arma::mat & deta, const arma::mat & ddeta
 ) {
+    #ifdef _OPENMP
     // Block update via parallel operations over matrix slices
     const unsigned int n = u.n_rows;
     const unsigned int m = idx.n_rows;
     // A convenient parallelization strategy is taken depending on the row and column dimensions
     if (n >= m) {
         // If n >= m, we perform the computations row-wise
-        #ifdef _OPENMP
         #pragma omp parallel for
-        #endif
         for (unsigned int i = 0; i < n; i++) {
             arma::uvec ii = {i};
             arma::rowvec dui = - deta.row(i) * v.cols(idx) + u(ii,idx) % pen(idx).t();
@@ -172,15 +177,16 @@ void Newton::parallel_update (
         }
     } else {
         // If n < m, we perform the computations column-wise
-        #ifdef _OPENMP
         #pragma omp parallel for
-        #endif
         for (const unsigned int & j : idx) {
             arma::vec duj = - deta * v.col(j) + u.col(j) * pen(j);
             arma::vec dduj = ddeta * arma::square(v.col(j)) + pen(j) + this->damping;
             u.col(j) = u.col(j) - this->stepsize * (duj / dduj);
         }
     }
+    #else 
+    this->blocked_update(u, v, pen, idx, deta, ddeta)
+    #endif
 }
 
 void Newton::update_par (
@@ -202,6 +208,7 @@ Rcpp::List Newton::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
+    const arma::mat & O, const arma::mat & W,
     const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
@@ -256,18 +263,18 @@ Rcpp::List Newton::fit (
     dStat dstat(n, m);
     dEta deta(n, m);
     
-    this->update_dstat(dstat, Y, u, v, etalo, etaup, family);
+    this->update_dstat(dstat, Y, O, u, v, etalo, etaup, family);
 
     // Fill the missing values with the initial predictions
     Y.elem(isna) = dstat.mu.elem(isna);
 
     // Get the initial dispersion parameter
     double phi = 1;
-    this->init_phi(phi, df, Y, dstat.mu, dstat.var, family);
+    this->init_phi(phi, df, Y, W, dstat.mu, dstat.var, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
-    dev = arma::accu(family->devresid(Y, dstat.mu));
+    dev = arma::accu(W % family->devresid(Y, dstat.mu));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
@@ -297,7 +304,7 @@ Rcpp::List Newton::fit (
         }
 
         // Set up helper matrices for computing differentials
-        this->update_deta(deta, dstat, Y, family);
+        this->update_deta(deta, dstat, Y, W, family);
 
         // Update U and V elementwise via quasi-Newton
         this->update_par(ut, v, penu, idu, deta.deta, deta.ddeta);
@@ -306,15 +313,15 @@ Rcpp::List Newton::fit (
         v = vt;
 
         // Update the predictions, the variances and the mu-differentials
-        this->update_dstat(dstat, Y, u, v, etalo, etaup, family);
+        this->update_dstat(dstat, Y, O, u, v, etalo, etaup, family);
 
         // Update the dispersion parameter
         if (iter % 10 == 0){
-            this->update_phi(phi, df, Y, dstat.mu, dstat.var, family);
+            this->update_phi(phi, df, Y, W, dstat.mu, dstat.var, family);
         }
         
         // Update the initial deviance, penalty and objective function
-        dev = arma::accu(dstat.dev);
+        dev = arma::accu(W % dstat.dev);
         pen = penalty(u, penu) + penalty(v, penv);
         objt = obj; obj = dev + 0.5 * pen;
         change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
@@ -336,7 +343,7 @@ Rcpp::List Newton::fit (
     }
 
     // Update the dispersion parameter
-    this->update_phi(phi, df, Y, dstat.mu, dstat.var, family);
+    this->update_phi(phi, df, Y, W, dstat.mu, dstat.var, family);
 
     // Get the final execution time
     end = clock();

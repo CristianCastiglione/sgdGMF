@@ -115,6 +115,8 @@ sgdgmf.rank = function (
   # Set the covariate matrices
   if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
   if (is.null(Z)) Z = matrix(1, nrow = m, ncol = 1)
+  if (is.null(weights)) weights = matrix(1, nrow = n, ncol = m)
+  if (is.null(offset)) offset = matrix(0, nrow = n, ncol = m)
 
   # Register and open the connection to the clusters
   clust = NULL
@@ -131,16 +133,19 @@ sgdgmf.rank = function (
   res = matrix(NA, nrow = n, ncol = m)
 
   # Initialize the regression coefficients
+  eta[] = offset
   B = switch(type.reg,
-    "ols" = ols.fit.coef(gY, X, offset = NULL),
-    "glm" = vglm.fit.coef(Y, X, family = family, offset = NULL,
-                          parallel = parallel, nthreads = nthreads, clust = clust))
-  #
-  eta[] = tcrossprod(X, B)
+    "ols" = ols.fit.coef(gY, X, offset = eta),
+    "glm" = vglm.fit.coef(Y, X, family = family, weights = weights,
+                          offset = eta, parallel = parallel,
+                          nthreads = nthreads, clust = clust))
+
+  eta[] = eta + tcrossprod(X, B)
   A = switch(type.reg,
     "ols" = ols.fit.coef(t(gY), Z, offset = t(eta)),
-    "glm" = vglm.fit.coef(t(Y), Z, family = family, offset = t(eta),
-                          parallel = parallel, nthreads = nthreads, clust = clust))
+    "glm" = vglm.fit.coef(t(Y), Z, family = family, weights = t(weights),
+                          offset = t(eta), parallel = parallel,
+                          nthreads = nthreads, clust = clust))
 
   # Close the connection to the clusters
   if (parallel) parallel::stopCluster(clust)

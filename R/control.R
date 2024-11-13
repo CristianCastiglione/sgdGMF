@@ -20,18 +20,83 @@ set.mat.Y = function (Y) {
 #' matrix without attributes such as row and column names.
 #'
 #' @keywords internal
-set.mat.X = function (X, n, mat = "X") {
+set.mat.X = function (X, n, m) {
   if (!is.null(X)) {
-    if (!is.numeric(X)) stop(paste(mat, "is not numeric."))
-    if (!is.matrix(X)) stop(paste(mat, "is not a matrix."))
-    if (nrow(X) != n) stop(paste("The dimensions of", mat, "are not compatible with Y."))
-    if (anyNA(X)) stop(paste(mat, "contains some NA."))
-    if (sum(apply(X, 2, stats::sd) == 0) > 1) stop(paste(mat, "has too many constant columns."))
+    if (!is.numeric(X)) stop("X is not numeric.")
+    if (!is.matrix(X)) stop("X is not a matrix.")
+    if (nrow(X) != n) stop("The dimensions of X are not compatible with Y.")
+    if (anyNA(X)) stop("X contains some NA.")
+    if (sum(apply(X, 2, stats::sd) == 0) > 1) stop("X has too many constant columns.")
     X = matrix(c(X), nrow = nrow(X), ncol = ncol(X))
   } else {
     X = matrix(1, nrow = n, ncol = 1)
   }
   return (X)
+}
+
+#' @title Check and set the covariate matrix X
+#'
+#' @description
+#' Check if the input covariate matrix X is well-defined and return the same
+#' matrix without attributes such as row and column names.
+#'
+#' @keywords internal
+set.mat.Z = function (Z, n, m) {
+  if (!is.null(Z)) {
+    if (!is.numeric(Z)) stop("Z is not numeric.")
+    if (!is.matrix(Z)) stop("Z is not a matrix.")
+    if (nrow(Z) != m) stop("The dimensions of Z are not compatible with Y.")
+    if (anyNA(Z)) stop("Z contains some NA.")
+    if (sum(apply(Z, 2, stats::sd) == 0) > 1) stop("Z has too many constant columns.")
+    Z = matrix(c(Z), nrow = nrow(Z), ncol = ncol(Z))
+  } else {
+    Z = matrix(1, nrow = m, ncol = 1)
+  }
+  return (Z)
+}
+
+#' @title Check and set the weighting matrix
+#'
+#' @description
+#' Check if the input weighting matrix is well-defined and return the same
+#' matrix without attributes such as row and column names.
+#'
+#' @keywords internal
+set.mat.weights = function (W, n, m) {
+  if (!is.null(W)) {
+    if (!is.numeric(W)) stop("weights is not numeric.")
+    if (!is.matrix(W)) stop("weights is not a matrix.")
+    if (nrow(W) != n) stop("The dimensions of weights are not compatible with Y.")
+    if (ncol(W) != m) stop("The dimensions of weights are not compatible with Y.")
+    if (anyNA(W)) stop("weights contains some NA.")
+    if (any(W < 0)) stop("weights contains negative values.")
+    if (all(W == 0)) stop("weights contains only 0 values.")
+    W = matrix(c(W), nrow = nrow(W), ncol = ncol(W))
+  } else {
+    W = matrix(1, nrow = n, ncol = m)
+  }
+  return (W)
+}
+
+#' @title Check and set the offset matrix
+#'
+#' @description
+#' Check if the input offset matrix is well-defined and return the same
+#' matrix without attributes such as row and column names.
+#'
+#' @keywords internal
+set.mat.offset = function (O, n, m) {
+  if (!is.null(O)) {
+    if (!is.numeric(O)) stop("weights is not numeric.")
+    if (!is.matrix(O)) stop("weights is not a matrix.")
+    if (nrow(O) != n) stop("The dimensions of weights are not compatible with Y.")
+    if (ncol(O) != m) stop("The dimensions of weights are not compatible with Y.")
+    if (anyNA(O)) stop("weights contains some NA.")
+    O = matrix(c(O), nrow = nrow(O), ncol = ncol(O))
+  } else {
+    O = matrix(0, nrow = n, ncol = m)
+  }
+  return (O)
 }
 
 #' @title Check and set the model family

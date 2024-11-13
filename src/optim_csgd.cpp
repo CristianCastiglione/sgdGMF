@@ -33,17 +33,18 @@ void CSGD::update_rate (double & rate, const int & iter) {
 
 void CSGD::update_deta (
     dEta & deta, const arma::uvec & idx, 
-    const arma::mat & Y,  const arma::mat & eta, const arma::mat & mu, 
+    const arma::mat & Y, const arma::mat & weights, 
+    const arma::mat & eta, const arma::mat & mu, 
     const std::unique_ptr<Family> & family, const bool & transp
 ) {
     arma::mat var = family->variance(mu);
     arma::mat mueta = family->mueta(eta);
     if (transp) {
-        deta.deta.cols(idx) = (Y - mu) % mueta / var;
-        deta.ddeta.cols(idx) = (mueta % mueta) / var;
+        deta.deta.cols(idx) = weights % (Y - mu) % mueta / var;
+        deta.ddeta.cols(idx) = weights % (mueta % mueta) / var;
     } else {
-        deta.deta.rows(idx) = (Y - mu) % mueta / var;
-        deta.ddeta.rows(idx) = (mueta % mueta) / var;
+        deta.deta.rows(idx) = weights % (Y - mu) % mueta / var;
+        deta.ddeta.rows(idx) = weights % (mueta % mueta) / var;
     }
 }
 
@@ -93,20 +94,22 @@ void CSGD::smooth_par (
 
 // Initialize the dispersion parameter estimate
 void CSGD::init_phi (
-    double & phi, const int & df, 
-    const arma::mat & Y, const arma::mat & mu, 
+    double & phi, const int & df, const arma::mat & Y, 
+    const arma::mat & weights, const arma::mat & mu, 
     const std::unique_ptr<Family> & family
 ) {
-    double ssq;
+    double ssq, sm, ssm;
     arma::mat var;
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
-            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            ssq = arma::accu(weights % arma::square(Y - mu));
+            sm = arma::accu(weights % mu);
+            ssm = arma::accu(weights % mu % mu);
+            phi = std::max(1e-08, (ssq - sm) / (ssm));
             family->setdisp(1 / phi);
         } else {
             var = family->variance(mu);
-            ssq = arma::accu(arma::square(Y - mu) / var);
+            ssq = arma::accu(weights % arma::square(Y - mu) / var);
             phi = std::max(1e-08, ssq / df);
             family->setdisp(phi);
         }
@@ -116,28 +119,31 @@ void CSGD::init_phi (
 // Update and smooth the dispersion parameter estimate
 void CSGD::update_phi (
     double & phi, const double & rate, 
-    const int & nm, const int & df, 
-    const arma::mat & Y, const arma::mat & mu, 
+    const int & nm, const int & df, const arma::mat & Y, 
+    const arma::mat & weights, const arma::mat & mu, 
     const arma::uvec & idx, const arma::uvec & idy, 
     const std::unique_ptr<Family> & family
 ) {
     const int ni = idx.n_elem;
     const int mi = idy.n_elem;
     const int nmi = ni * mi;
-    double ssq, phit;
+    double ssq, sm, ssm, phit;
     arma::mat yi = Y(idx, idy);
+    arma::mat wi = weights(idx, idy);
     arma::mat mui = mu(idx, idy);
     arma::mat vari(ni, mi);
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(yi - mui) - mui);
-            phit = ssq / arma::accu(mui % mui);
+            ssq = arma::accu(wi % arma::square(yi - mui));
+            sm = arma::accu(wi % mui);
+            ssm = arma::accu(wi % mui % mui);
+            phit = (ssq - sm) / ssm;
             phit = std::max(1e-08, phit);
             phi = (1 - rate) * phi + rate * phit;
             family->setdisp(1 / phi);
         } else {
             vari = family->variance(mui);
-            ssq = arma::accu(arma::square(yi - mui) / vari) / nmi;
+            ssq = arma::accu(wi % arma::square(yi - mui) / vari) / nmi;
             phit = std::max(1e-08, ssq * (nm / df));
             phi = (1 - rate) * phi + rate * phit;
             family->setdisp(phi);
@@ -151,6 +157,7 @@ Rcpp::List CSGD::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
+    const arma::mat & O, const arma::mat & W,
     const std::unique_ptr<Family> & family,
     const int & ncomp, const arma::vec & lambda
 ) {
@@ -219,7 +226,7 @@ Rcpp::List CSGD::fit (
 
     // Get the linear predictor, the mean and the variance matrices
     arma::mat eta(n, m), mu(n, m), var(n, m);
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
 
     // Fill the missing values with the initial predictions
@@ -227,13 +234,13 @@ Rcpp::List CSGD::fit (
 
     // Get the initial dispersion parameter
     double phi = 1;
-    this->init_phi(phi, df, Y, mu, family);
+    this->init_phi(phi, df, Y, W, mu, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj;
     double devt, objt;
     double change, scanned;
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen;
     devt = dev;
@@ -283,12 +290,17 @@ Rcpp::List CSGD::fit (
         scanned += (nc * m + mc * n - nc * mc) / nm; 
 
         // Update the linear predictor and the mean matrix
-        arma::mat etar = get_eta(ut.rows(idr), vt, etalo, etaup);
-        arma::mat etac = get_eta(ut, vt.rows(idc), etalo, etaup);        
-        arma::mat mur = family->linkinv(etar);
-        arma::mat muc = family->linkinv(etac);
         arma::mat Yr = Y.rows(idr);
         arma::mat Yc = Y.cols(idc);
+        arma::mat Wr = W.rows(idr);
+        arma::mat Wc = W.cols(idc);
+        arma::mat Or = O.rows(idr);
+        arma::mat Oc = O.cols(idc);
+        
+        arma::mat etar = get_eta(Or, ut.rows(idr), vt, etalo, etaup);
+        arma::mat etac = get_eta(Oc, ut, vt.rows(idc), etalo, etaup);        
+        arma::mat mur = family->linkinv(etar);
+        arma::mat muc = family->linkinv(etac);
 
         eta.rows(idr) = etar;
         eta.cols(idc) = etac;
@@ -296,8 +308,8 @@ Rcpp::List CSGD::fit (
         mu.cols(idc) = muc;
 
         // Update the log-likelihood differentials
-        this->update_deta(deta, idr, Yr, etar, mur, family, false);
-        this->update_deta(deta, idc, Yc, etac, muc, family, true);
+        this->update_deta(deta, idr, Yr, Wr, etar, mur, family, false);
+        this->update_deta(deta, idc, Yc, Wc, etac, muc, family, true);
         
         this->update_dpar(du, deta, idc, ut.cols(idu), vt.cols(idu), penu(idu), scalec, false);
         this->update_dpar(dv, deta, idr, vt.cols(idv), ut.cols(idv), penv(idv), scaler, true);
@@ -311,11 +323,11 @@ Rcpp::List CSGD::fit (
         this->smooth_par(v, vt, iter, idv);
 
         // Update the dispersion estimate
-        this->update_phi(phi, rate, nm, df, Y, mu, idr, idc, family);
+        this->update_phi(phi, rate, nm, df, Y, W, mu, idr, idc, family);
         
         if (iter % frequency == 0) {
             // Update the deviance, penalty and objective functions
-            dev = arma::accu(deviance(Y, mu, family));
+            dev = arma::accu(W % deviance(Y, mu, family));
             pen = penalty(ut, penu) + penalty(vt, penv);
             // objt = obj; 
             obj = dev + 0.5 * pen;
@@ -347,12 +359,12 @@ Rcpp::List CSGD::fit (
     objt = obj;
 
     // Get the estimated predictions
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
     var = family->variance(mu);
 
     // The the deviance, penalty and objective function 
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen;
     

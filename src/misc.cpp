@@ -66,19 +66,21 @@ void set_data_bounds (
 }
 
 void set_eta (
-    arma::mat & eta, const arma::mat & u, const arma::mat & v, 
+    arma::mat & eta, const arma::mat & offset, 
+    const arma::mat & u, const arma::mat & v, 
     const double & etamin, const double & etamax
 ) {
-    eta = u * v.t();
+    eta = offset + u * v.t();
     utils::trim(eta, etamin, etamax);
 }
 
 arma::mat get_eta (
+    const arma::mat & offset,
     const arma::mat & u, const arma::mat & v, 
     const double & etamin, const double & etamax
 ) {
     arma::mat eta(u.n_rows, v.n_rows);
-    set_eta(eta, u, v, etamin, etamax);
+    set_eta(eta, offset, u, v, etamin, etamax);
     return eta;
 }
 

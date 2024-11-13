@@ -25,7 +25,8 @@ void AIRWLS::summary () {
 void AIRWLS::glmstep (
     arma::vec & beta, const arma::vec & y, const arma::mat & X,
     const std::unique_ptr<Family> & family, 
-    const arma::vec & offset, const arma::vec & penalty
+    const arma::vec & offset, const arma::vec & weights, 
+    const arma::vec & penalty
 ) {
     // Set the tollerance threshold and the parameter dimension
     const double thr = 1e+06;
@@ -35,7 +36,7 @@ void AIRWLS::glmstep (
     arma::vec mu = family->linkinv(eta);
     arma::vec mueta = family->mueta(eta);
     arma::vec varmu = family->variance(mu);
-    arma::vec w = (mueta % mueta) / varmu;
+    arma::vec w = weights % (mueta % mueta) / varmu;
     arma::vec z = (eta - offset) + (y - mu) / mueta;
 
     // Truncate extremely low and high weight values
@@ -60,7 +61,8 @@ void AIRWLS::glmstep (
 void AIRWLS::glmfit (
     arma::vec & beta, const arma::vec & y, const arma::mat & X,
     const std::unique_ptr<Family> & family, 
-    const arma::vec & offset, const arma::vec & penalty
+    const arma::vec & offset, const arma::vec & weights, 
+    const arma::vec & penalty
 ) {
     // Set the convergence tolerance 
     const double tol = 1e-05;
@@ -70,15 +72,15 @@ void AIRWLS::glmfit (
     arma::vec betaold(p);
     for (int iter = 0; iter < this->nsteps; iter++) {
         betaold = beta;
-        this->glmstep(beta, y, X, family, offset, penalty);
+        this->glmstep(beta, y, X, family, offset, weights, penalty);
         if (utils::absmax(beta, betaold) < tol) {break;}
     }
 }
 
 void AIRWLS::sequential_update (
     arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-    const std::unique_ptr<Family> & family,
-    const arma::uvec & idx, const arma::mat & offset, 
+    const std::unique_ptr<Family> & family, const arma::uvec & idx, 
+    const arma::mat & offset, const arma::mat & weights,
     const arma::vec & penalty, const bool & transp
 ) {
     // Set the number of slices and the number of coefficients
@@ -91,18 +93,28 @@ void AIRWLS::sequential_update (
     // Check whether we need to optimize by row or by column
     if (transp) {
         // We need to transpose all the matrices to update U
+        arma::vec ys(Y.n_cols), os(Y.n_cols), ws(Y.n_cols);
         for (unsigned int slice = 0; slice < nslices; slice++) {
             ids = {slice};
             coef = beta(ids, idx).t();
-            this->glmfit(coef, Y.row(slice).t(), X.cols(idx), family, offset.row(slice).t(), penalty(idx));
+            ys = Y.row(slice).t();
+            os = offset.row(slice).t();
+            ws = weights.row(slice).t();
+            this->glmfit(coef, ys, X.cols(idx), family, os, ws, penalty(idx));
+            // this->glmfit(coef, Y.row(slice).t(), X.cols(idx), family, offset.row(slice).t(), weights.row(slice).t(), penalty(idx));
             beta(ids, idx) = coef.t();
         }
     } else {
         // We don't need to transpose anything to update V
+        arma::vec ys(Y.n_rows), os(Y.n_rows), ws(Y.n_rows);
         for (unsigned int slice = 0; slice < nslices; slice++) {
             ids = {slice};
             coef = beta(ids, idx).t();
-            this->glmfit(coef, Y.col(slice), X.cols(idx), family, offset.col(slice), penalty(idx));
+            ys = Y.col(slice);
+            os = offset.col(slice);
+            ws = weights.col(slice);
+            this->glmfit(coef, ys, X.cols(idx), family, os, ws, penalty(idx));
+            // this->glmfit(coef, Y.col(slice), X.cols(idx), family, offset.col(slice), weights.col(slice), penalty(idx));
             beta(ids, idx) = coef.t();
         }
     }
@@ -110,94 +122,109 @@ void AIRWLS::sequential_update (
 
 void AIRWLS::parallel_update (
     arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-    const std::unique_ptr<Family> & family,
-    const arma::uvec & idx, const arma::mat & offset, 
+    const std::unique_ptr<Family> & family, const arma::uvec & idx, 
+    const arma::mat & offset, const arma::mat & weights,
     const arma::vec & penalty, const bool & transp
 ) {
     // I first check if OpenMP is available: if TRUE, I define the parallel 
     // execution function, otherwise I call the sequential one
     #ifdef _OPENMP
-        // Set the number of slices and the number of coefficients
-        unsigned int nslices = transp ? Y.n_rows : Y.n_cols;
-        unsigned int ncoefs = idx.n_elem;
+    // Set the number of slices and the number of coefficients
+    unsigned int nslices = transp ? Y.n_rows : Y.n_cols;
+    unsigned int ncoefs = idx.n_elem;
 
-        // Get the number of cores and threads
-        const unsigned int mcores = this->nthreads;
-        unsigned int ncores = std::thread::hardware_concurrency();
-        unsigned int threads = this->parallel ? std::min(mcores, ncores-1) : 1;
+    // Get the number of cores and threads
+    const unsigned int mcores = this->nthreads;
+    unsigned int ncores = std::thread::hardware_concurrency();
+    unsigned int threads = this->parallel ? std::min(mcores, ncores-1) : 1;
 
-        // Set the number of threads for openMP
-        omp_set_num_threads(threads);
+    // Set the number of threads for openMP
+    omp_set_num_threads(threads);
         
-        // Check whether we need to optimize by row or by column
-        if (transp) {
-            // We need to transpose all the matrices to update U
-            #pragma omp parallel 
-            {
-                // We need to instantiate ids and coefs here in order to make 
-                // openMP aware that they are private thread-specific variables
-                arma::uvec ids(1);
-                arma::vec coef(ncoefs);
-                // This loop can be parallelized with openMP since any iteration 
-                // is independent of each other
-                #pragma omp for
-                for (unsigned int slice = 0; slice < nslices; slice++) {
-                    ids = {slice};
-                    coef = beta(ids, idx).t();
-                    this->glmfit(coef, Y.row(slice).t(), X.cols(idx), family, offset.row(slice).t(), penalty(idx));
-                    beta(ids, idx) = coef.t();
-                }
+    // Check whether we need to optimize by row or by column
+    if (transp) {
+        // We need to transpose all the matrices to update U
+        #pragma omp parallel 
+        {
+            // We need to instantiate ids and coefs here in order to make 
+            // openMP aware that they are private thread-specific variables
+            arma::uvec ids(1);
+            arma::vec coef(ncoefs);
+            arma::vec ys, os, ws;
+            arma::mat Xi = X.cols(idx);
+            // This loop can be parallelized with openMP since any iteration 
+            // is independent of each other
+            #pragma omp for
+            for (unsigned int slice = 0; slice < nslices; slice++) {
+                ids = {slice};
+                coef = beta(ids, idx).t();
+                ys = Y.row(slice).t();
+                os = offset.row(slice).t();
+                ws = weights.row(slice).t();
+                this->glmfit(coef, ys, Xi, family, os, ws, penalty(idx));
+                // this->glmfit(coef, Y.row(slice).t(), X.cols(idx), family, offset.row(slice).t(), weights.row(slice).t(), penalty(idx));
+                beta(ids, idx) = coef.t();
             }
-        } else {
-            // We don't need to transpose anything to update V
-            #pragma omp parallel 
-            {
-                // We need to instantiate ids and coefs here in order to make 
-                // openMP aware that they are private thread-specific variables
-                arma::uvec ids(1);
-                arma::vec coef(ncoefs);
-                // This loop can be parallelized with openMP since any iteration 
-                // is independent of each other
-                #pragma omp for
-                for (unsigned int slice = 0; slice < nslices; slice++) {
-                    ids = {slice};
-                    coef = beta(ids, idx).t();
-                    this->glmfit(coef, Y.col(slice), X.cols(idx), family, offset.col(slice), penalty(idx));
-                    beta(ids, idx) = coef.t();
-                }
-            } 
         }
+    } else {
+        // We don't need to transpose anything to update V
+        #pragma omp parallel 
+        {
+            // We need to instantiate ids and coefs here in order to make 
+            // openMP aware that they are private thread-specific variables
+            arma::uvec ids(1);
+            arma::vec coef(ncoefs);
+            arma::vec ys, os, ws;
+            arma::mat Xi = X.cols(idx);
+            // This loop can be parallelized with openMP since any iteration 
+            // is independent of each other
+            #pragma omp for
+            for (unsigned int slice = 0; slice < nslices; slice++) {
+                ids = {slice};
+                coef = beta(ids, idx).t();
+                ys = Y.col(slice);
+                os = offset.col(slice);
+                ws = weights.col(slice);
+                this->glmfit(coef, ys, Xi, family, os, ws, penalty(idx));
+                // this->glmfit(coef, Y.col(slice), X.cols(idx), family, offset.col(slice), weights.col(slice), penalty(idx));
+                beta(ids, idx) = coef.t();
+            }
+        } 
+    }
     #else
-        sequential_update(beta, Y, X, family, idx, offset, penalty, transp);
+    this->sequential_update(beta, Y, X, family, idx, offset, weights, penalty, transp);
     #endif
 }
 
 void AIRWLS::update (
     arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-    const std::unique_ptr<Family> & family,
-    const arma::uvec & idx, const arma::mat & offset, 
+    const std::unique_ptr<Family> & family, const arma::uvec & idx,
+    const arma::mat & offset, const arma::mat & weights, 
     const arma::vec & penalty, const bool & transp
 ) {
     if (this->parallel) {
-        parallel_update(beta, Y, X, family, idx, offset, penalty, transp);
+        this->parallel_update(beta, Y, X, family, idx, offset, weights, penalty, transp);
     } else {
-        sequential_update(beta, Y, X, family, idx, offset, penalty, transp);
+        this->sequential_update(beta, Y, X, family, idx, offset, weights, penalty, transp);
     }
 }
 
 void AIRWLS::init_phi (
-    double & phi, const int & df, const arma::mat & Y, 
+    double & phi, const int & df, 
+    const arma::mat & Y, const arma::mat & weights, 
     const arma::mat & mu, const arma::mat & var, 
     const std::unique_ptr<Family> & family
 ) {
-    double ssq;
+    double ssq, sm, ssm;
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(Y - mu) - arma::accu(mu));
-            phi = std::max(1e-08, ssq / arma::accu(mu % mu));
+            ssq = arma::accu(weights % arma::square(Y - mu));
+            sm = arma::accu(weights % mu);
+            ssm = arma::accu(weights % mu % mu);
+            phi = std::max(1e-08, (ssq - sm) / ssm);
             family->setdisp(1 / phi);
         } else {
-            ssq = arma::accu(arma::square(Y - mu) / var);
+            ssq = arma::accu(weights % arma::square(Y - mu) / var);
             phi = std::max(1e-08, ssq / df);
             family->setdisp(phi);
         }
@@ -205,20 +232,22 @@ void AIRWLS::init_phi (
 }
 
 void AIRWLS::update_phi (
-    double & phi, const int & df, const arma::mat & Y, 
+    double & phi, const int & df, 
+    const arma::mat & Y, const arma::mat & weights,
     const arma::mat & mu, const arma::mat & var, 
     const std::unique_ptr<Family> & family
 ) {
-    double ssq, phit, lambda = 0.5;
+    double ssq, sm, ssm, phit, lambda = 0.5;
     if (family->estdisp()) {
         if (family->getfamily() == "NegativeBinomial") {
-            ssq = arma::accu(arma::square(Y - mu));
-            phit = (ssq - arma::accu(mu)) / arma::accu(mu % mu);
-            phit = std::max(1e-08, phit);
+            ssq = arma::accu(weights % arma::square(Y - mu));
+            sm = arma::accu(weights % mu);
+            ssm = arma::accu(weights % mu % mu);
+            phit = std::max(1e-08, (ssq - sm) / ssm);
             phi = (1 - lambda) * phi + lambda * phit;
             family->setdisp(1 / phi);
         } else {
-            ssq = arma::accu(arma::square(Y - mu) / var);
+            ssq = arma::accu(weights % arma::square(Y - mu) / var);
             phit = std::max(1e-08, ssq / df);
             phi = (1 - lambda) * phi + lambda * phit;
             family->setdisp(phi);
@@ -232,6 +261,7 @@ Rcpp::List AIRWLS::fit (
     const arma::mat & X, const arma::mat & B, 
     const arma::mat & A, const arma::mat & Z,
     const arma::mat & U, const arma::mat & V,
+    const arma::mat & O, const arma::mat & W,
     const std::unique_ptr<Family> & family, 
     const int & ncomp, const arma::vec & lambda
 ) {
@@ -274,7 +304,7 @@ Rcpp::List AIRWLS::fit (
 
     // Get the linear predictor and the mean matrices
     arma::mat eta(n,m), mu(n,m), var(n,m), offset(n,m);
-    eta = get_eta(u, v, etalo, etaup);
+    eta = get_eta(O, u, v, etalo, etaup);
     mu = family->linkinv(eta);
     var = family->variance(mu);
 
@@ -283,11 +313,11 @@ Rcpp::List AIRWLS::fit (
 
     // Get the initial dispersion parameter
     double phi = 1;
-    this->init_phi(phi, df, Y, mu, var, family);
+    this->init_phi(phi, df, Y, W, mu, var, family);
 
     // Get the initial deviance, penalty and objective function
     double dev, pen, obj, objt, change;
-    dev = arma::accu(deviance(Y, mu, family));
+    dev = arma::accu(W % deviance(Y, mu, family));
     pen = penalty(u, penu) + penalty(v, penv);
     obj = dev + 0.5 * pen; objt = obj;
     change = INFINITY;
@@ -317,25 +347,25 @@ Rcpp::List AIRWLS::fit (
         }
 
         // Update V slicewise via PIRLS
-        offset = u.cols(p, p+q-1) * v.cols(p, p+q-1).t(); // = A*Zt
-        this->update(v, Y, u, family, idv, offset, penv, false);
+        offset = O + u.cols(p, p+q-1) * v.cols(p, p+q-1).t(); // = O + A*Zt
+        this->update(v, Y, u, family, idv, offset, W, penv, false);
 
         // Update U slicewise via PIRLS
-        offset = u.cols(0, p-1) * v.cols(0, p-1).t(); // = X*Bt
-        this->update(u, Y, v, family, idu, offset, penu, true);
+        offset = O + u.cols(0, p-1) * v.cols(0, p-1).t(); // = O + X*Bt
+        this->update(u, Y, v, family, idu, offset, W, penu, true);
 
         // Update the linear predictor and the mean matrix
-        eta = get_eta(u, v, etalo, etaup);
+        eta = get_eta(O, u, v, etalo, etaup);
         mu = family->linkinv(eta);
 
         // Update the dispersion parameter
         if (iter % 10 == 0){
             var = family->variance(mu);
-            this->update_phi(phi, df, Y, mu, var, family);
+            this->update_phi(phi, df, Y, W, mu, var, family);
         }
 
         // Update the initial deviance, penalty and objective function
-        dev = arma::accu(deviance(Y, mu, family));
+        dev = arma::accu(W % deviance(Y, mu, family));
         pen = penalty(u, penu) + penalty(v, penv);
         objt = obj; obj = dev + 0.5 * pen;
         change = std::abs(obj - objt) / (std::abs(objt) + 1e-04);
@@ -358,7 +388,7 @@ Rcpp::List AIRWLS::fit (
 
     // Update the dispersion parameter
     var = family->variance(mu);
-    this->update_phi(phi, df, Y, mu, var, family);
+    this->update_phi(phi, df, Y, W, mu, var, family);
 
     // Get the final execution time
     end = clock();

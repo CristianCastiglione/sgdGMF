@@ -28,11 +28,13 @@ void set_data_bounds (
 
 // Set the linear predictor trimming the extreme values
 void set_eta (
-    arma::mat & eta, const arma::mat & u, const arma::mat & v, 
+    arma::mat & eta, const arma::mat & offset,
+    const arma::mat & u, const arma::mat & v, 
     const double & etamin, const double & etamax);
 
 // Get the linear predictor trimming the extreme values
 arma::mat get_eta (
+    const arma::mat & offset,
     const arma::mat & u, const arma::mat & v, 
     const double & etamin, const double & etamax);
 

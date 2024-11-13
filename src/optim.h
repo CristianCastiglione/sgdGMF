@@ -87,13 +87,15 @@ class AIRWLS {
 
         // Dispersion parameter initialization
         void init_phi (
-            double & phi, const int & df, const arma::mat & Y, 
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & weights,
             const arma::mat & mu, const arma::mat & var, 
             const std::unique_ptr<Family> & family);
 
         // Dispersion parameter update
         void update_phi (
-            double & phi, const int & df, const arma::mat & Y, 
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & weights,
             const arma::mat & mu, const arma::mat & var, 
             const std::unique_ptr<Family> & family);
 
@@ -101,33 +103,35 @@ class AIRWLS {
         void glmstep (
             arma::vec & beta, const arma::vec & y, const arma::mat & X,
             const std::unique_ptr<Family> & family, 
-            const arma::vec & offset, const arma::vec & penalty);
+            const arma::vec & offset, const arma::vec & weights, 
+            const arma::vec & penalty);
 
         // PIRLS algorithm for GLM fitting
         void glmfit (
             arma::vec & beta, const arma::vec & y, const arma::mat & X,
             const std::unique_ptr<Family> & family, 
-            const arma::vec & offset, const arma::vec & penalty);
+            const arma::vec & offset, const arma::vec & weights, 
+            const arma::vec & penalty);
 
         // Sliced updates for penalized V-GLM (sequential implementation)
         void sequential_update (
             arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-            const std::unique_ptr<Family> & family,
-            const arma::uvec & idx, const arma::mat & offset, 
+            const std::unique_ptr<Family> & family, const arma::uvec & idx, 
+            const arma::mat & offset, const arma::mat & weights, 
             const arma::vec & penalty, const bool & transp);
 
         // Sliced updates for penalized V-GLM (parallel implementation)
         void parallel_update (
             arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-            const std::unique_ptr<Family> & family,
-            const arma::uvec & idx, const arma::mat & offset, 
+            const std::unique_ptr<Family> & family, const arma::uvec & idx, 
+            const arma::mat & offset, const arma::mat & weights, 
             const arma::vec & penalty, const bool & transp);
 
         // Sliced updates for penalized V-GLM  
         void update (
             arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-            const std::unique_ptr<Family> & family,
-            const arma::uvec & idx, const arma::mat & offset, 
+            const std::unique_ptr<Family> & family, const arma::uvec & idx, 
+            const arma::mat & offset, const arma::mat & weights, 
             const arma::vec & penalty, const bool & transp);
 
         // Model fitting via AIRWLS
@@ -136,6 +140,7 @@ class AIRWLS {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
+            const arma::mat & O, const arma::mat & W,
             const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
         
@@ -169,94 +174,6 @@ class AIRWLS {
         }
 };
 
-// Fisher (i.e. column-wise Fisher scoring) optimizer
-class Fisher {
-    public:
-        int maxiter;
-        double stepsize;
-        double eps;
-        int nafill;
-        double tol;
-        double damping;
-        bool verbose;
-        int frequency;
-        bool parallel;
-        int nthreads;
-
-        // Print the class attributes
-        void summary ();
-
-        // Dispersion parameter initialization
-        void init_phi (
-            double & phi, const int & df, const arma::mat & Y, 
-            const arma::mat & mu, const arma::mat & var, 
-            const std::unique_ptr<Family> & family);
-
-        // Dispersion parameter update
-        void update_phi (
-            double & phi, const int & df, const arma::mat & Y, 
-            const arma::mat & mu, const arma::mat & var, 
-            const std::unique_ptr<Family> & family);
-
-        void update_dstat (
-            dStat & dstat, const arma::mat & Y,
-            const arma::mat & u, const arma::mat & v, 
-            const double & lo, const double & up, 
-            const std::unique_ptr<Family> & family);
-        
-        void update_deta (
-            dEta & deta, 
-            const dStat & dstat, const arma::mat & Y,
-            const std::unique_ptr<Family> & family);
-
-        // Quasi-Newton block update of the parameters (block implementation)
-        void blocked_update (
-            arma::mat & u, const arma::mat & v, 
-            const arma::vec & pen, const arma::uvec & idx,
-            const arma::mat & deta, const arma::mat & ddeta);
-
-        // Quasi-Newton block update of the parameters (parallel implementation)
-        void parallel_update (
-            arma::mat & u, const arma::mat & v, 
-            const arma::vec & pen, const arma::uvec & idx,
-            const arma::mat & deta, const arma::mat & ddeta);
-
-        // Quasi-Newton block update of the parameters
-        void update_par (
-            arma::mat & u, const arma::mat & v, 
-            const arma::vec & pen, const arma::uvec & idx,
-            const arma::mat & deta, const arma::mat & ddeta);
-
-        // Model fitting via quasi-Newton
-        Rcpp::List fit (
-            arma::mat & Y, // to fill NA values we need Y to be non-const
-            const arma::mat & X, const arma::mat & B, 
-            const arma::mat & A, const arma::mat & Z,
-            const arma::mat & U, const arma::mat & V,
-            const std::unique_ptr<Family> & family, 
-            const int & ncomp, const arma::vec & lambda);
-        
-        // Class constructor
-        Fisher (
-            const int & maxiter, const double & stepsize, 
-            const double & eps, const int & nafill, 
-            const double & tol, const double & damping,
-            const bool & verbose, const int & frequency,
-            const bool & parallel, const int & nthreads
-        ) {
-            if (maxiter > 0) {this->maxiter = maxiter;} else {this->maxiter = 500;}
-            if (stepsize > 0) {this->stepsize = stepsize;} else {this->stepsize = 0.01;}
-            if (eps >= 0 && eps < 0.5) {this->eps = eps;} else {this->eps = 1e-08;}
-            if (nafill > 0) {this->nafill = nafill;} else {this->nafill = 1;}
-            if (tol > 0) {this->tol = tol;} else {this->tol = 1e-05;}
-            if (damping >= 0) {this->damping = damping;} else {this->damping = 1e-03;}
-            if (frequency > 0) {this->frequency = frequency;} else {this->frequency = 50;}
-            if (nthreads > 0) {this->nthreads = nthreads;} else {this->nthreads = 1;}
-            this->verbose = verbose;
-            this->parallel = parallel;
-        }
-};
-
 // Quasi-Newton optimizer
 class Newton {
     public:
@@ -276,25 +193,28 @@ class Newton {
 
         // Dispersion parameter initialization
         void init_phi (
-            double & phi, const int & df, const arma::mat & Y, 
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & weights,
             const arma::mat & mu, const arma::mat & var, 
             const std::unique_ptr<Family> & family);
 
         // Dispersion parameter update
         void update_phi (
-            double & phi, const int & df, const arma::mat & Y, 
+            double & phi, const int & df, 
+            const arma::mat & Y, const arma::mat & weights,
             const arma::mat & mu, const arma::mat & var, 
             const std::unique_ptr<Family> & family);
 
         void update_dstat (
-            dStat & dstat, const arma::mat & Y,
+            dStat & dstat, 
+            const arma::mat & Y, const arma::mat & offset,
             const arma::mat & u, const arma::mat & v, 
             const double & lo, const double & up, 
             const std::unique_ptr<Family> & family);
         
         void update_deta (
-            dEta & deta, 
-            const dStat & dstat, const arma::mat & Y,
+            dEta & deta, const dStat & dstat, 
+            const arma::mat & Y, const arma::mat & weights,
             const std::unique_ptr<Family> & family);
 
         // Quasi-Newton block update of the parameters (block implementation)
@@ -321,6 +241,7 @@ class Newton {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
+            const arma::mat & O, const arma::mat & W,
             const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
         
@@ -382,7 +303,8 @@ class BSGD {
         // Update the log-likelihood differentials wrt eta
         void update_deta (
             dEta & deta, const arma::uvec & idx, const arma::uvec & idy, 
-            const arma::mat & Y, const arma::mat & eta, const arma::mat & mu, 
+            const arma::mat & Y, const arma::mat & weights, 
+            const arma::mat & eta, const arma::mat & mu, 
             const std::unique_ptr<Family> & family);
 
         // Update the deviance differentials wrt the parameters
@@ -404,15 +326,15 @@ class BSGD {
         
         // Initialize the dispersion parameter estimate
         void init_phi (
-            double & phi, const int & df, 
-            const arma::mat & Y, const arma::mat & mu, 
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & weights, const arma::mat & mu, 
             const std::unique_ptr<Family> & family);
 
         // Update and smooth the dispersion parameter estimate
         void update_phi (
             double & phi, const double & rate, 
-            const int & nm, const int & df, 
-            const arma::mat & Y, const arma::mat & mu, 
+            const int & nm, const int & df, const arma::mat & Y, 
+            const arma::mat & weights, const arma::mat & mu, 
             const arma::uvec & idx, const arma::uvec & idy, 
             const std::unique_ptr<Family> & family);
 
@@ -422,6 +344,7 @@ class BSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
+            const arma::mat & O, const arma::mat & W,
             const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
@@ -431,6 +354,7 @@ class BSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
+            const arma::mat & O, const arma::mat & W,
             const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 
@@ -493,7 +417,8 @@ class CSGD {
         // Update the log-likelihood differentials wrt eta
         void update_deta (
             dEta & deta, const arma::uvec & idx, 
-            const arma::mat & Y, const arma::mat & eta, const arma::mat & mu, 
+            const arma::mat & Y, const arma::mat & weights, 
+            const arma::mat & eta, const arma::mat & mu, 
             const std::unique_ptr<Family> & family, const bool & transp);
 
         // Update the deviance differentials wrt the parameters
@@ -514,15 +439,15 @@ class CSGD {
         
         // Initialize the dispersion parameter estimate
         void init_phi (
-            double & phi, const int & df, 
-            const arma::mat & Y, const arma::mat & mu, 
+            double & phi, const int & df, const arma::mat & Y, 
+            const arma::mat & weights, const arma::mat & mu, 
             const std::unique_ptr<Family> & family);
 
         // Update and smooth the dispersion parameter estimate
         void update_phi (
             double & phi, const double & rate, 
-            const int & nm, const int & df, 
-            const arma::mat & Y, const arma::mat & mu, 
+            const int & nm, const int & df, const arma::mat & Y, 
+            const arma::mat & weights, const arma::mat & mu, 
             const arma::uvec & idx, const arma::uvec & idy, 
             const std::unique_ptr<Family> & family);
 
@@ -532,6 +457,7 @@ class CSGD {
             const arma::mat & X, const arma::mat & B, 
             const arma::mat & A, const arma::mat & Z,
             const arma::mat & U, const arma::mat & V,
+            const arma::mat & O, const arma::mat & W,
             const std::unique_ptr<Family> & family, 
             const int & ncomp, const arma::vec & lambda);
 

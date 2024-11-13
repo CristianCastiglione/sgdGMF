@@ -49,6 +49,8 @@
 #'   \item \code{A}: the estimated row-specific coefficient matrix
 #'   \item \code{U}: the estimated factor matrix
 #'   \item \code{V}: the estimated loading matrix
+#'   \item \code{weights}: weighting matrix
+#'   \item \code{offset}: offset matrix
 #'   \item \code{eta}: the estimated linear predictor
 #'   \item \code{mu}: the estimated mean matrix
 #'   \item \code{var}: the estimated variance matrix
@@ -128,6 +130,19 @@
 #' Notice that the over-dispersion parameter, that here is denoted as \eqn{\phi},
 #' in the \code{MASS} package is referred to as \eqn{\theta}.
 #'
+#' \strong{Parallelization}
+#'
+#' Parallel execution is implemented in \code{C++} using \code{OpenMP}. When installing
+#' and compiling the \code{sgdGMF} package, the compiler check whether \code{OpenMP}
+#' is installed in the system. If it is not, the package is compiled excluding all
+#' the \code{OpenMP} functionalities and no parallel execution is allowed at \code{C++}
+#' level.
+#'
+#' Notice that \code{OpenMP} is not compatible with \code{R} parallel computing packages,
+#' such as \code{parallel} and \code{foreach}. Therefore, when \code{parallel=TRUE},
+#' it is not possible to run the \code{sgdgmf.fit} function within \code{R} level
+#' parallel functions, e.g., \code{foreach} loop.
+#'
 #' @references
 #' Kidzinnski, L., Hui, F.K.C., Warton, D.I. and Hastie, J.H. (2022).
 #' \emph{Generalized Matrix Factorization: efficient algorithms for fitting generalized linear latent variable models to large data arrays.}
@@ -193,8 +208,12 @@ sgdgmf.fit = function (
 
   # Check and set the model matrices
   Y = set.mat.Y(Y)
-  X = set.mat.X(X, nrow(Y), "X")
-  Z = set.mat.X(Z, ncol(Y), "Z")
+  X = set.mat.X(X, nrow(Y), ncol(Y))
+  Z = set.mat.Z(Z, nrow(Y), ncol(Y))
+
+  # Check and set weights and offset
+  weights = set.mat.weights(weights, nrow(Y), ncol(Y))
+  offset = set.mat.offset(offset, nrow(Y), ncol(Y))
 
   # Set the model dimensions
   n = nrow(Y)
@@ -224,7 +243,8 @@ sgdgmf.fit = function (
   time.init = proc.time()
   init = sgdgmf.init(
     Y = Y, X = X, Z = Z, ncomp = ncomp,
-    family = family, method = control.init$method, type = control.init$type,
+    family = family, weights = weights, offset = offset,
+    method = control.init$method, type = control.init$type,
     niter = control.init$niter, values = control.init$values,
     verbose = control.init$verbose, parallel = control.init$parallel,
     nthreads = control.init$threads, savedata = FALSE)
@@ -237,7 +257,8 @@ sgdgmf.fit = function (
   if (method == "airwls") {
     # AIRWLS algorithm
     fit = cpp.fit.airwls(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z,
+      U = init$U, V = init$V, O = offset, W = weights,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = alg$maxiter, nsteps = alg$nstep, stepsize = alg$stepsize,
       eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
@@ -249,7 +270,8 @@ sgdgmf.fit = function (
   if (method == "newton") {
     # Quasi-Newton algorithm
     fit = cpp.fit.newton(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z,
+      U = init$U, V = init$V, O = offset, W = weights,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = alg$maxiter, stepsize = alg$stepsize, eps = alg$eps,
       nafill = alg$nafill, tol = alg$tol, damping = alg$damping,
@@ -260,7 +282,8 @@ sgdgmf.fit = function (
   if (method == "sgd" & sampling == "block") {
     # Block-wise adaptive SGD algorithm
     fit = cpp.fit.block.sgd(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z,
+      U = init$U, V = init$V, O = offset, W = weights,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
@@ -272,7 +295,8 @@ sgdgmf.fit = function (
   if (method == "sgd" & sampling == "coord") {
     # Coordinate-wise adaptive SGD algorithm
     fit = cpp.fit.coord.sgd(
-      Y = Y, X = X, B = init$B, A = init$A, Z = Z, U = init$U, V = init$V,
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z,
+      U = init$U, V = init$V, O = offset, W = weights,
       familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
       maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
       size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
@@ -323,6 +347,8 @@ sgdgmf.fit = function (
   out$B = fit$V[, idxB, drop = FALSE]
   out$U = fit$U[, idxU, drop = FALSE]
   out$V = fit$V[, idxV, drop = FALSE]
+  out$weights = weights
+  out$offset = offset
   out$eta = fit$eta
   out$mu = fit$mu
   out$var = fit$var

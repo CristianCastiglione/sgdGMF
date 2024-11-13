@@ -20,6 +20,7 @@ using namespace glm;
 //' @param familyname model family name
 //' @param linkname link function name
 //' @param offset vector of constants to be added to the linear predictor
+//' @param weights vector of constants non-negative weights
 //' @param penalty penalty parameter of a ridge-type penalty
 //' 
 //' @keywords internal
@@ -27,7 +28,7 @@ using namespace glm;
 arma::vec cpp_airwls_glmstep (
     const arma::vec & beta, const arma::vec & y, const arma::mat & X,
     const std::string & familyname, const std::string & linkname, 
-    const arma::vec & offset, const arma::vec & penalty
+    const arma::vec & offset, const arma::vec & weights, const arma::vec & penalty
 ) {
     // Instantiate the parametrized family object
     std::unique_ptr<Family> family = make_family(familyname, linkname);
@@ -40,7 +41,7 @@ arma::vec cpp_airwls_glmstep (
 
     // Update the current parameter estimate via WLS
     arma::vec coef = beta;
-    airwls.glmstep(coef, y, X, family, offset, penalty);
+    airwls.glmstep(coef, y, X, family, offset, weights, penalty);
 
     return coef;
 }
@@ -58,6 +59,7 @@ arma::vec cpp_airwls_glmstep (
 //' @param familyname model family name
 //' @param linkname link function name
 //' @param offset vector of constants to be added to the linear predictor
+//' @param weights vector of constants non-negative weights
 //' @param penalty penalty parameter of a ridge-type penalty
 //' @param nsteps number of iterations
 //' @param stepsize stepsize parameter of the Fisher scoring algorithm
@@ -68,9 +70,8 @@ arma::vec cpp_airwls_glmstep (
 arma::vec cpp_airwls_glmfit (
     const arma::vec & beta, const arma::vec & y, const arma::mat & X,
     const std::string & familyname, const std::string & linkname, 
-    const arma::vec & offset, const arma::vec & penalty,
-    const int & nsteps = 100, const double & stepsize = 0.1,
-    const bool & print = false
+    const arma::vec & offset, const arma::vec & weights, const arma::vec & penalty,
+    const int & nsteps = 100, const double & stepsize = 0.1, const bool & print = false
 ) {
     // Instantiate the parametrized family object
     std::unique_ptr<Family> family = make_family(familyname, linkname);
@@ -86,7 +87,7 @@ arma::vec cpp_airwls_glmfit (
     // arma::vec coef = beta;
     const int p = X.n_cols;
     arma::vec coef = arma::solve(X.t() * X + 0.1 * arma::eye(p,p), X.t() * family->initialize(y));
-    airwls.glmfit(coef, y, X, family, offset, penalty);
+    airwls.glmfit(coef, y, X, family, offset, weights, penalty);
 
     return coef;    
 }
@@ -104,6 +105,7 @@ arma::vec cpp_airwls_glmfit (
 //' @param linkname link function name
 //' @param idx index identifying the parameters to be updated in \code{beta}
 //' @param offset vector of constants to be added to the linear predictor
+//' @param weights vector of constants non-negative weights
 //' @param penalty penalty parameter of a ridge-type penalty
 //' @param transp if \code{TRUE}, transpose the data
 //' @param nsteps number of iterations
@@ -117,7 +119,7 @@ arma::vec cpp_airwls_glmfit (
 arma::mat cpp_airwls_update (
     const arma::mat & beta, const arma::mat & Y, const arma::mat & X,
     const std::string & familyname, const std::string & linkname, 
-    const arma::uvec & idx, const arma::mat & offset, 
+    const arma::uvec & idx, const arma::mat & offset, const arma::vec & weights, 
     const arma::vec & penalty, const bool & transp = false, 
     const int & nsteps = 100, const double & stepsize = 0.1, 
     const bool & print = false, const bool & parallel = false,
@@ -133,7 +135,7 @@ arma::mat cpp_airwls_update (
     AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
     if (print) {airwls.summary();}
 
-    // GLM fit via PERLS
+    // GLM fit via PIRLS
     arma::mat xtx; 
     arma::mat xty;
     arma::mat coef;
@@ -146,8 +148,7 @@ arma::mat cpp_airwls_update (
         xty = X.t() * family->initialize(Y);
         coef = arma::solve(xtx, xty).t();
     }
-    // Rcpp::Rcout << "\n" << arma::size(coef);
-    airwls.update(coef, Y, X, family, idx, offset, penalty, transp);
+    airwls.update(coef, Y, X, family, idx, offset, weights, penalty, transp);
 
     return coef;    
 }
@@ -163,6 +164,8 @@ arma::mat cpp_airwls_update (
 //' @param Z matrix of column fixed effects (\eqn{m \times q})
 //' @param U initial factor matrix (\eqn{n \times d})
 //' @param V initial loading matrix (\eqn{m \times d})
+//' @param O matrix of constant offset (\eqn{n \times m})
+//' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
 //' @param ncomp rank of the latent matrix factorization
@@ -189,6 +192,8 @@ Rcpp::List cpp_fit_airwls (
     const arma::mat & Z,
     const arma::mat & U, 
     const arma::mat & V,
+    const arma::mat & O,
+    const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
     const int & ncomp, 
@@ -214,7 +219,7 @@ Rcpp::List cpp_fit_airwls (
     AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
 
     // Perform the optimization via Newton algorithm
-    Rcpp::List output = airwls.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);
+    Rcpp::List output = airwls.fit(y, X, B, A, Z, U, V, O, W, family, ncomp, lambda);
 
     // Return the estimated model
     return output;
@@ -231,6 +236,8 @@ Rcpp::List cpp_fit_airwls (
 //' @param Z matrix of column fixed effects (\eqn{m \times q})
 //' @param U initial factor matrix (\eqn{n \times d})
 //' @param V initial loading matrix (\eqn{m \times d})
+//' @param O matrix of constant offset (\eqn{n \times m})
+//' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
 //' @param ncomp rank of the latent matrix factorization
@@ -256,6 +263,8 @@ Rcpp::List cpp_fit_newton (
     const arma::mat & Z,
     const arma::mat & U, 
     const arma::mat & V,
+    const arma::mat & O,
+    const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
     const int & ncomp, 
@@ -280,7 +289,7 @@ Rcpp::List cpp_fit_newton (
     Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
 
     // Perform the optimization via Newton algorithm
-    Rcpp::List output = newton.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);
+    Rcpp::List output = newton.fit(y, X, B, A, Z, U, V, O, W, family, ncomp, lambda);
 
     // Return the estimated model
     return output;
@@ -297,6 +306,8 @@ Rcpp::List cpp_fit_newton (
 //' @param Z matrix of column fixed effects (\eqn{m \times q})
 //' @param U initial factor matrix (\eqn{n \times d})
 //' @param V initial loading matrix (\eqn{m \times d})
+//' @param O matrix of constant offset (\eqn{n \times m})
+//' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
 //' @param ncomp rank of the latent matrix factorization
@@ -329,6 +340,8 @@ Rcpp::List cpp_fit_coord_sgd (
     const arma::mat & Z,
     const arma::mat & U, 
     const arma::mat & V,
+    const arma::mat & O,
+    const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
     const int & ncomp, 
@@ -362,7 +375,7 @@ Rcpp::List cpp_fit_coord_sgd (
         damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress);
 
     // Perform the optimization via Newton algorithm
-    Rcpp::List output = sgd.fit(y, X, B, A, Z, U, V, family, ncomp, lambda);
+    Rcpp::List output = sgd.fit(y, X, B, A, Z, U, V, O, W, family, ncomp, lambda);
 
     // Return the estimated model
     return output;
@@ -379,6 +392,8 @@ Rcpp::List cpp_fit_coord_sgd (
 //' @param Z matrix of column fixed effects (\eqn{m \times q})
 //' @param U initial factor matrix (\eqn{n \times d})
 //' @param V initial loading matrix (\eqn{m \times d})
+//' @param O matrix of constant offset (\eqn{n \times m})
+//' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
 //' @param ncomp rank of the latent matrix factorization
@@ -411,6 +426,8 @@ Rcpp::List cpp_fit_block_sgd (
     const arma::mat & Z,
     const arma::mat & U, 
     const arma::mat & V,
+    const arma::mat & O,
+    const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
     const int & ncomp, 
@@ -444,7 +461,7 @@ Rcpp::List cpp_fit_block_sgd (
         damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress);
 
     // Perform the optimization via Newton algorithm
-    Rcpp::List output = sgd.fit2(y, X, B, A, Z, U, V, family, ncomp, lambda);
+    Rcpp::List output = sgd.fit2(y, X, B, A, Z, U, V, O, W, family, ncomp, lambda);
 
     // Return the estimated model
     return output;

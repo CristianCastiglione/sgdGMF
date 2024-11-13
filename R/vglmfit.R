@@ -34,6 +34,7 @@ ols.fit.coef = function (
 #' @param Y \eqn{n \times m} matrix of response variables
 #' @param X \eqn{n \times p} matrix of covariates
 #' @param family a \code{glm} family (see \code{\link{family}} for more details)
+#' @param weights \eqn{n \times m} matrix of weighting values
 #' @param offset \eqn{n \times m} matrix of offset values
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{foreach} package
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
@@ -41,7 +42,7 @@ ols.fit.coef = function (
 #'
 #' @keywords internal
 vglm.fit.coef = function (
-    Y, X, family = gaussian(), offset = NULL,
+    Y, X, family = gaussian(), weights = NULL, offset = NULL,
     parallel = FALSE, nthreads = 1, clust = NULL
 ) {
   # Set the model dimensions
@@ -49,8 +50,8 @@ vglm.fit.coef = function (
   m = ncol(Y)
 
   # Set the offset matrix
-  if (is.null(offset))
-    offset = matrix(0, nrow = n, ncol = m)
+  if (is.null(weights)) weights = matrix(1, nrow = n, ncol = m)
+  if (is.null(offset)) offset = matrix(0, nrow = n, ncol = m)
 
   # Register the clusters
   if (parallel) {
@@ -69,7 +70,8 @@ vglm.fit.coef = function (
     coefs = foreach(j = 1:m, .combine = "rbind") %do% {
       yj = as.vector(Y[,j])
       oj = as.vector(offset[,j])
-      fit = stats::glm.fit(x = X, y = yj, family = family, offset = oj)
+      wj = as.vector(weights[,j])
+      fit = stats::glm.fit(x = X, y = yj, family = family, weights = wj, offset = oj)
       t(fit$coefficients)
     }
 
@@ -87,7 +89,8 @@ vglm.fit.coef = function (
     coefs = foreach(j = 1:m, .combine = "rbind") %dopar% {
       yj = as.vector(Y[,j])
       oj = as.vector(offset[,j])
-      fit = stats::glm.fit(x = X, y = yj, family = family, offset = oj)
+      wj = as.vector(weights[,j])
+      fit = stats::glm.fit(x = X, y = yj, family = family, weights = wj, offset = oj)
       t(fit$coefficients)
     }
   }
