@@ -122,7 +122,11 @@ refit.sgdgmf = function (
   if (!is.logical(normalize)) {message("normalize"); normalize = TRUE}
   if (!is.logical(verbose)) {message("verbose"); verbose = FALSE}
   if (!is.logical(parallel)) {message("parallel"); paralle = FALSE}
-  if (!is.numeric(nthreads) | nthreads < 1) {message("nthreads"); nthreads = 1}
+  if (!is.numeric(nthreads)) {message("nthreads"); nthreads = 1}
+
+  # Set the number of threads
+  ncores = parallel::detectCores() - 1
+  nthreads = floor(max(1, min(nthreads, ncores)))
 
   # Get the parameter dimensions
   idxA = seq(from = 1, to = ncol(object$A))
@@ -140,7 +144,7 @@ refit.sgdgmf = function (
     Y = t(Y), X = cbind(object$Z, object$V),
     family = object$family, weights = t(object$weights),
     offset = t(object$offset) + tcrossprod(object$B, object$X),
-    parallel = parallel, nthreads = as.integer(nthreads), clust = NULL)
+    parallel = parallel, nthreads = nthreads, clust = NULL)
 
   # Set the final estimates
   object$A = coefs[, idxA]

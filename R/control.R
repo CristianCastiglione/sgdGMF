@@ -342,6 +342,10 @@ set.control.airwls = function (
   if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
   if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
+  # Set the number of threads
+  ncores = parallel::detectCores() - 1
+  ctr$nthreads = floor(max(1, min(ctr$nthreads, ncores)))
+
   # OpenMP check
   if (ctr$parallel & !omp.check()) {
     ctr$parallel = FALSE
@@ -432,6 +436,10 @@ set.control.newton = function (
   if (ctr$stepsize > 1) {ctr$stepsize = 1; message("stepsize")}
   if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
   if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
+
+  # Set the number of threads
+  ncores = parallel::detectCores() - 1
+  ctr$nthreads = floor(max(1, min(ctr$nthreads, ncores)))
 
   # OpenMP check
   if (ctr$parallel & !omp.check()) {
@@ -761,6 +769,10 @@ set.control.cv = function (
     ctr$parallel = parallel else message("parallel")
   if (is.numeric(nthreads) && nthreads >= 1)
     ctr$nthreads = floor(nthreads) else message("nthreads")
+
+  # Set the number of threads
+  ncores = parallel::detectCores() - 1
+  ctr$nthreads = floor(max(1, min(ctr$nthreads, ncores)))
 
   # Return the checked parameters
   return (ctr)
