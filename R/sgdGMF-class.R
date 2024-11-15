@@ -138,7 +138,8 @@ refit.sgdgmf = function (
   # Refit A and U via IRWLS
   coefs = vglm.fit.coef(
     Y = t(Y), X = cbind(object$Z, object$V),
-    family = object$family, offset = tcrossprod(object$B, object$X),
+    family = object$family, weights = t(object$weights),
+    offset = t(object$offset) + tcrossprod(object$B, object$X),
     parallel = parallel, nthreads = as.integer(nthreads), clust = NULL)
 
   # Set the final estimates
@@ -146,8 +147,9 @@ refit.sgdgmf = function (
   object$U = coefs[, idxU]
 
   # Recompute the linear predictor
-  object$eta = tcrossprod(cbind(object$X, object$A, object$U),
-                          cbind(object$B, object$Z, object$V))
+  object$eta = object$offset +
+    tcrossprod(cbind(object$X, object$A, object$U),
+               cbind(object$B, object$Z, object$V))
 
   # Recompute the conditional mean and variance matrices
   object$mu = object$family$linkinv(object$eta)
