@@ -343,9 +343,9 @@ set.control.airwls = function (
   if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
   # OpenMP check
-  if (control$parallel & !omp.check()) {
-    control$parallel = FALSE
-    control$nthreads = 1
+  if (ctr$parallel & !omp.check()) {
+    ctr$parallel = FALSE
+    ctr$nthreads = 1
     warning("OpenMP not detected. Parallel computing options are unavailable.",
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
@@ -434,9 +434,9 @@ set.control.newton = function (
   if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
   # OpenMP check
-  if (control$parallel & !omp.check()) {
-    control$parallel = FALSE
-    control$nthreads = 1
+  if (ctr$parallel & !omp.check()) {
+    ctr$parallel = FALSE
+    ctr$nthreads = 1
     warning("OpenMP not detected. Parallel computing options are unavailable.",
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
