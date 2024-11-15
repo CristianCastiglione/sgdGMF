@@ -11,6 +11,16 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// omp_check
+bool omp_check();
+RcppExport SEXP _sgdGMF_omp_check() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(omp_check());
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_airwls_glmstep
 arma::vec cpp_airwls_glmstep(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::vec& offset, const arma::vec& weights, const arma::vec& penalty);
 RcppExport SEXP _sgdGMF_cpp_airwls_glmstep(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP) {
@@ -224,6 +234,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_sgdGMF_omp_check", (DL_FUNC) &_sgdGMF_omp_check, 0},
     {"_sgdGMF_cpp_airwls_glmstep", (DL_FUNC) &_sgdGMF_cpp_airwls_glmstep, 8},
     {"_sgdGMF_cpp_airwls_glmfit", (DL_FUNC) &_sgdGMF_cpp_airwls_glmfit, 11},
     {"_sgdGMF_cpp_airwls_update", (DL_FUNC) &_sgdGMF_cpp_airwls_update, 15},

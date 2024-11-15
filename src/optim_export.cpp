@@ -5,6 +5,17 @@
 
 #include "optim.h"
 
+//' @title Check if OpenMP is enabled
+//' 
+//' @description
+//' Internal function to check if OpenMP is enabled
+//' 
+//' @keywords internal
+// [[Rcpp::export("omp.check")]]
+bool omp_check () {
+    return OMP_CHECK;
+}
+
 using namespace glm;
 
 //' @title Compute one Fisher scoring step for GLMs

@@ -342,6 +342,14 @@ set.control.airwls = function (
   if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
   if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
+  # OpenMP check
+  if (control$parallel & !omp.check()) {
+    control$parallel = FALSE
+    control$nthreads = 1
+    warning("OpenMP not detected. Parallel computing options are unavailable.",
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+  }
+
   # Return the checked parameters
   return (ctr)
 }
@@ -425,6 +433,13 @@ set.control.newton = function (
   if (ctr$eps > 1e-01) {ctr$eps = 1e-01; message("eps")}
   if (ctr$frequency > ctr$maxiter) {ctr$frequency = ctr$maxiter; message("maxiter")}
 
+  # OpenMP check
+  if (control$parallel & !omp.check()) {
+    control$parallel = FALSE
+    control$nthreads = 1
+    warning("OpenMP not detected. Parallel computing options are unavailable.",
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+  }
   # Return the checked parameters
   return (ctr)
 }
@@ -676,8 +691,6 @@ set.control.alg = function (
   if (method == "newton") control = do.call("set.control.newton", control)
   if (method == "sgd" & sampling == "block") control = do.call("set.control.block.sgd", control)
   if (method == "sgd" & sampling == "coord") control = do.call("set.control.coord.sgd", control)
-  # if (method == "msgd") control = do.call("set.control.msgd", control)
-  # if (method == "rsgd") control = do.call("set.control.rsgd", control)
 
   # Return the corrected control parameters
   return (control)
@@ -752,4 +765,3 @@ set.control.cv = function (
   # Return the checked parameters
   return (ctr)
 }
-

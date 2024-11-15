@@ -112,9 +112,11 @@ sgdgmf.cv = function (
   parallel = control.cv$parallel
   nthreads = control.cv$nthreads
 
-  if (parallel) stop("Parallelization is still to be implemented.", call. = FALSE)
+  if (parallel) {
+    stop("Parallelization is still to be implemented.", call. = FALSE)
+  }
 
-  # Check whether the algorithm and cross-validation controls are consistent
+  # Check for control conflicts
   if (method %in% c("airwls", "newton")) {
     if (control.cv$parallel && (control.init$parallel || control.alg$parallel)) {
       stop("Nested parallelization is not allowed.")
@@ -129,7 +131,7 @@ sgdgmf.cv = function (
     control.init$verbose = FALSE
     control.alg$verbose = FALSE
     control.cv$verbose = FALSE
-    warning("With 'parallel=TRUE', no output is printed, that is 'verbose=FALSE'.",
+    warning("With 'parallel=TRUE' no output is printed and 'verbose' has been disabled.",
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
 

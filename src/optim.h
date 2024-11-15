@@ -16,11 +16,13 @@
 #include <thread>   // for checking the number of cores with std::thread::hardware_concurrency()
 
 #ifdef _OPENMP      // for parrallelizing the code via openMP
-    #include <omp.h>    
+    #include <omp.h>
+    const bool OMP_CHECK = true;
 #else               // optionally define a dummy macro or handle non-parallel versions
     #define omp_get_num_threads() 1
     #define omp_get_thread_num() 0
     #define omp_set_num_threads(x)
+    const bool OMP_CHECK = false;
 #endif
 
 #include "link.h"
