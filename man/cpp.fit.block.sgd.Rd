@@ -16,6 +16,7 @@ cpp.fit.block.sgd(
   W,
   familyname,
   linkname,
+  varfname,
   ncomp,
   lambda,
   maxiter = 1000L,
@@ -59,6 +60,8 @@ cpp.fit.block.sgd(
 \item{familyname}{a \code{glm} model family name}
 
 \item{linkname}{a \code{glm} link function name}
+
+\item{varfname}{variance function name}
 
 \item{ncomp}{rank of the latent matrix factorization}
 

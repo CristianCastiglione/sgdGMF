@@ -10,6 +10,7 @@ cpp.airwls.glmfit(
   X,
   familyname,
   linkname,
+  varfname,
   offset,
   weights,
   penalty,
@@ -28,6 +29,8 @@ cpp.airwls.glmfit(
 \item{familyname}{model family name}
 
 \item{linkname}{link function name}
+
+\item{varfname}{variance function name}
 
 \item{offset}{vector of constants to be added to the linear predictor}
 

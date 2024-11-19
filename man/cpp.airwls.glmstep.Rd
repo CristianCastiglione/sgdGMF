@@ -4,7 +4,17 @@
 \alias{cpp.airwls.glmstep}
 \title{Compute one Fisher scoring step for GLMs}
 \usage{
-cpp.airwls.glmstep(beta, y, X, familyname, linkname, offset, weights, penalty)
+cpp.airwls.glmstep(
+  beta,
+  y,
+  X,
+  familyname,
+  linkname,
+  varfname,
+  offset,
+  weights,
+  penalty
+)
 }
 \arguments{
 \item{beta}{current value of the regression coefficients to be updated}
@@ -16,6 +26,8 @@ cpp.airwls.glmstep(beta, y, X, familyname, linkname, offset, weights, penalty)
 \item{familyname}{model family name}
 
 \item{linkname}{link function name}
+
+\item{varfname}{variance function name}
 
 \item{offset}{vector of constants to be added to the linear predictor}
 

@@ -10,6 +10,7 @@ cpp.airwls.update(
   X,
   familyname,
   linkname,
+  varfname,
   idx,
   offset,
   weights,
@@ -32,6 +33,8 @@ cpp.airwls.update(
 \item{familyname}{model family name}
 
 \item{linkname}{link function name}
+
+\item{varfname}{variance function name}
 
 \item{idx}{index identifying the parameters to be updated in \code{beta}}
 
