@@ -1,5 +1,4 @@
 
-
 #' @export
 generics::refit
 

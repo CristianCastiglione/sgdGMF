@@ -424,10 +424,10 @@ sgdgmf.init.random = function (
 
   # parameter generation
   sd = 1e-01 * sigma
-  U = array(rnorm(prod(dimU)) / prod(dimU) * sd, dimU)
-  V = array(rnorm(prod(dimV)) / prod(dimV) * sd, dimV)
-  B = array(rnorm(prod(dimB)) / prod(dimB) * sd, dimB)
-  A = array(rnorm(prod(dimA)) / prod(dimA) * sd, dimA)
+  U = array(stats::rnorm(prod(dimU)) / prod(dimU) * sd, dimU)
+  V = array(stats::rnorm(prod(dimV)) / prod(dimV) * sd, dimV)
+  B = array(stats::rnorm(prod(dimB)) / prod(dimB) * sd, dimB)
+  A = array(stats::rnorm(prod(dimA)) / prod(dimA) * sd, dimA)
   phi = rep(1, length = m)
 
   # output
