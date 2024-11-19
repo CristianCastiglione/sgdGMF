@@ -1,7 +1,7 @@
 // link.h
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 01/10/2023
+// last change: 19/10/2024
 
 #ifndef LINK_H
 #define LINK_H
@@ -14,6 +14,7 @@ namespace glm {
 class Link {
     public:
         std::string link = "Link";
+        virtual bool valideta (const arma::mat & eta) = 0;
         virtual arma::mat linkfun (const arma::mat & mu) = 0;
         virtual arma::mat linkinv (const arma::mat & eta) = 0;
         virtual arma::mat mueta (const arma::mat & eta) = 0;
@@ -22,6 +23,7 @@ class Link {
 
 class Identity : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -30,6 +32,7 @@ class Identity : public Link {
 
 class Logit : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -38,6 +41,7 @@ class Logit : public Link {
 
 class Probit : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -46,6 +50,7 @@ class Probit : public Link {
 
 class Cauchy : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -54,6 +59,7 @@ class Cauchy : public Link {
 
 class cLogLog : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -62,6 +68,7 @@ class cLogLog : public Link {
 
 class Log : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -70,6 +77,7 @@ class Log : public Link {
 
 class Inverse : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
@@ -78,6 +86,7 @@ class Inverse : public Link {
 
 class Sqrt : public Link {
     public:
+        bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);

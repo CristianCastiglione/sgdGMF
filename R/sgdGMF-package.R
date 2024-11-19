@@ -3,7 +3,6 @@
 
 #' @useDynLib sgdGMF, .registration=TRUE
 #' @importFrom Rcpp evalCpp
-# @exportPattern "^[[:alpha:]]+"
 #' @import Rcpp
 #' @import RcppArmadillo
 #' @importFrom stats glm.fit

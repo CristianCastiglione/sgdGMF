@@ -1,7 +1,7 @@
 // utils.cpp
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 07/10/2023
+// last change: 19/11/2024
 
 #include "utils.h"
 
@@ -17,6 +17,14 @@ double absmax (const arma::vec & u, const arma::vec & v) {
   double a = arma::max(arma::abs(u - v));
   double b = arma::max(arma::abs(arma::join_cols(u, v))) + 1e-04;
   return a / b;
+}
+
+bool all(const arma::umat & x) {
+  return arma::all(arma::all(x));
+}
+
+bool any(const arma::umat & x) {
+  return arma::any(arma::any(x));
 }
 
 double norm (const arma::mat & x) {

@@ -1,12 +1,13 @@
 // misc.h
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 10/10/2023
+// last change: 16/11/2024
 
 #include <RcppArmadillo.h>
 #include <time.h>
 #include "utils.h"
 #include "link.h"
+#include "variance.h"
 #include "family.h"
 #include <memory>
 
@@ -15,8 +16,11 @@ using namespace glm;
 // Create a dynamic pointer to an appropriate link/family class starting  
 // from a string identifying the correct link/family to chose
 std::unique_ptr<Link> make_link (const std::string & linkname);
+std::unique_ptr<Variance> make_varf (const std::string & varname);
 std::unique_ptr<Family> make_family (
-    const std::string & familyname, const std::string & linkname);
+    const std::string & familyname, 
+    const std::string & linkname, 
+    const std::string & varfname);
 
 // Set the lower and upper bounds for mu and eta based on the observed data range
 // so as to avoid to produce prediction with too extreme values 

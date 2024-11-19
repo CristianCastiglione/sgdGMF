@@ -422,8 +422,8 @@ residuals.sgdgmf = function (
         na = which(is.na(x) | is.nan(x))
         r = length(na)
         m = mean(x, na.rm = TRUE)
-        s = sd(x, na.rm = TRUE)
-        x[na] = rnorm(r, mean = m, sd = s)
+        s = stats::sd(x, na.rm = TRUE)
+        x[na] = stats::rnorm(r, mean = m, sd = s)
       }
       return (x)
     })

@@ -22,8 +22,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_airwls_glmstep
-arma::vec cpp_airwls_glmstep(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::vec& offset, const arma::vec& weights, const arma::vec& penalty);
-RcppExport SEXP _sgdGMF_cpp_airwls_glmstep(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP) {
+arma::vec cpp_airwls_glmstep(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const std::string& varfname, const arma::vec& offset, const arma::vec& weights, const arma::vec& penalty);
+RcppExport SEXP _sgdGMF_cpp_airwls_glmstep(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,16 +32,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type penalty(penaltySEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_airwls_glmstep(beta, y, X, familyname, linkname, offset, weights, penalty));
+    rcpp_result_gen = Rcpp::wrap(cpp_airwls_glmstep(beta, y, X, familyname, linkname, varfname, offset, weights, penalty));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_airwls_glmfit
-arma::vec cpp_airwls_glmfit(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::vec& offset, const arma::vec& weights, const arma::vec& penalty, const int& nsteps, const double& stepsize, const bool& print);
-RcppExport SEXP _sgdGMF_cpp_airwls_glmfit(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP) {
+arma::vec cpp_airwls_glmfit(const arma::vec& beta, const arma::vec& y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const std::string& varfname, const arma::vec& offset, const arma::vec& weights, const arma::vec& penalty, const int& nsteps, const double& stepsize, const bool& print);
+RcppExport SEXP _sgdGMF_cpp_airwls_glmfit(SEXP betaSEXP, SEXP ySEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -50,19 +51,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type penalty(penaltySEXP);
     Rcpp::traits::input_parameter< const int& >::type nsteps(nstepsSEXP);
     Rcpp::traits::input_parameter< const double& >::type stepsize(stepsizeSEXP);
     Rcpp::traits::input_parameter< const bool& >::type print(printSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_airwls_glmfit(beta, y, X, familyname, linkname, offset, weights, penalty, nsteps, stepsize, print));
+    rcpp_result_gen = Rcpp::wrap(cpp_airwls_glmfit(beta, y, X, familyname, linkname, varfname, offset, weights, penalty, nsteps, stepsize, print));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_airwls_update
-arma::mat cpp_airwls_update(const arma::mat& beta, const arma::mat& Y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const arma::uvec& idx, const arma::mat& offset, const arma::vec& weights, const arma::vec& penalty, const bool& transp, const int& nsteps, const double& stepsize, const bool& print, const bool& parallel, const int& nthreads);
-RcppExport SEXP _sgdGMF_cpp_airwls_update(SEXP betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP idxSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP, SEXP transpSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP, SEXP parallelSEXP, SEXP nthreadsSEXP) {
+arma::mat cpp_airwls_update(const arma::mat& beta, const arma::mat& Y, const arma::mat& X, const std::string& familyname, const std::string& linkname, const std::string& varfname, const arma::uvec& idx, const arma::mat& offset, const arma::vec& weights, const arma::vec& penalty, const bool& transp, const int& nsteps, const double& stepsize, const bool& print, const bool& parallel, const int& nthreads);
+RcppExport SEXP _sgdGMF_cpp_airwls_update(SEXP betaSEXP, SEXP YSEXP, SEXP XSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP idxSEXP, SEXP offsetSEXP, SEXP weightsSEXP, SEXP penaltySEXP, SEXP transpSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP printSEXP, SEXP parallelSEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -71,6 +73,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type idx(idxSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type weights(weightsSEXP);
@@ -81,13 +84,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool& >::type print(printSEXP);
     Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< const int& >::type nthreads(nthreadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_airwls_update(beta, Y, X, familyname, linkname, idx, offset, weights, penalty, transp, nsteps, stepsize, print, parallel, nthreads));
+    rcpp_result_gen = Rcpp::wrap(cpp_airwls_update(beta, Y, X, familyname, linkname, varfname, idx, offset, weights, penalty, transp, nsteps, stepsize, print, parallel, nthreads));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_fit_airwls
-Rcpp::List cpp_fit_airwls(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const int& nsteps, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency, const bool& parallel, const int& nthreads);
-RcppExport SEXP _sgdGMF_cpp_fit_airwls(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP parallelSEXP, SEXP nthreadsSEXP) {
+Rcpp::List cpp_fit_airwls(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const std::string& varfname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const int& nsteps, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency, const bool& parallel, const int& nthreads);
+RcppExport SEXP _sgdGMF_cpp_fit_airwls(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP nstepsSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP parallelSEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -102,6 +105,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
@@ -115,13 +119,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
     Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< const int& >::type nthreads(nthreadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_fit_airwls(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads));
+    rcpp_result_gen = Rcpp::wrap(cpp_fit_airwls(Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_fit_newton
-Rcpp::List cpp_fit_newton(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency, const bool& parallel, const int& nthreads);
-RcppExport SEXP _sgdGMF_cpp_fit_newton(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP parallelSEXP, SEXP nthreadsSEXP) {
+Rcpp::List cpp_fit_newton(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const std::string& varfname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& stepsize, const double& eps, const int& nafill, const double& tol, const double& damping, const bool& verbose, const int& frequency, const bool& parallel, const int& nthreads);
+RcppExport SEXP _sgdGMF_cpp_fit_newton(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP stepsizeSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP dampingSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP parallelSEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -136,6 +140,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
@@ -148,13 +153,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
     Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< const int& >::type nthreads(nthreadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_fit_newton(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads));
+    rcpp_result_gen = Rcpp::wrap(cpp_fit_newton(Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_fit_coord_sgd
-Rcpp::List cpp_fit_coord_sgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& eps, const int& nafill, const double& tol, const int& size1, const int& size2, const double& burn, const double& rate0, const double& decay, const double& damping, const double& rate1, const double& rate2, const bool& parallel, const int& nthreads, const bool& verbose, const int& frequency, const bool& progress);
-RcppExport SEXP _sgdGMF_cpp_fit_coord_sgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP nthreadsSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+Rcpp::List cpp_fit_coord_sgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const std::string& varfname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& eps, const int& nafill, const double& tol, const int& size1, const int& size2, const double& burn, const double& rate0, const double& decay, const double& damping, const double& rate1, const double& rate2, const bool& parallel, const int& nthreads, const bool& verbose, const int& frequency, const bool& progress);
+RcppExport SEXP _sgdGMF_cpp_fit_coord_sgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP nthreadsSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -169,6 +174,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
@@ -188,13 +194,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
     Rcpp::traits::input_parameter< const bool& >::type progress(progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_fit_coord_sgd(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress));
+    rcpp_result_gen = Rcpp::wrap(cpp_fit_coord_sgd(Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_fit_block_sgd
-Rcpp::List cpp_fit_block_sgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& eps, const int& nafill, const double& tol, const int& size1, const int& size2, const double& burn, const double& rate0, const double& decay, const double& damping, const double& rate1, const double& rate2, const bool& parallel, const int& nthreads, const bool& verbose, const int& frequency, const bool& progress);
-RcppExport SEXP _sgdGMF_cpp_fit_block_sgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP nthreadsSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+Rcpp::List cpp_fit_block_sgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const std::string& varfname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& eps, const int& nafill, const double& tol, const int& size1, const int& size2, const double& burn, const double& rate0, const double& decay, const double& damping, const double& rate1, const double& rate2, const bool& parallel, const int& nthreads, const bool& verbose, const int& frequency, const bool& progress);
+RcppExport SEXP _sgdGMF_cpp_fit_block_sgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP nthreadsSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -209,6 +215,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
     Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
     Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
@@ -228,20 +235,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
     Rcpp::traits::input_parameter< const bool& >::type progress(progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_fit_block_sgd(Y, X, B, A, Z, U, V, O, W, familyname, linkname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress));
+    rcpp_result_gen = Rcpp::wrap(cpp_fit_block_sgd(Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_omp_check", (DL_FUNC) &_sgdGMF_omp_check, 0},
-    {"_sgdGMF_cpp_airwls_glmstep", (DL_FUNC) &_sgdGMF_cpp_airwls_glmstep, 8},
-    {"_sgdGMF_cpp_airwls_glmfit", (DL_FUNC) &_sgdGMF_cpp_airwls_glmfit, 11},
-    {"_sgdGMF_cpp_airwls_update", (DL_FUNC) &_sgdGMF_cpp_airwls_update, 15},
-    {"_sgdGMF_cpp_fit_airwls", (DL_FUNC) &_sgdGMF_cpp_fit_airwls, 24},
-    {"_sgdGMF_cpp_fit_newton", (DL_FUNC) &_sgdGMF_cpp_fit_newton, 23},
-    {"_sgdGMF_cpp_fit_coord_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_coord_sgd, 30},
-    {"_sgdGMF_cpp_fit_block_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_block_sgd, 30},
+    {"_sgdGMF_cpp_airwls_glmstep", (DL_FUNC) &_sgdGMF_cpp_airwls_glmstep, 9},
+    {"_sgdGMF_cpp_airwls_glmfit", (DL_FUNC) &_sgdGMF_cpp_airwls_glmfit, 12},
+    {"_sgdGMF_cpp_airwls_update", (DL_FUNC) &_sgdGMF_cpp_airwls_update, 16},
+    {"_sgdGMF_cpp_fit_airwls", (DL_FUNC) &_sgdGMF_cpp_fit_airwls, 25},
+    {"_sgdGMF_cpp_fit_newton", (DL_FUNC) &_sgdGMF_cpp_fit_newton, 24},
+    {"_sgdGMF_cpp_fit_coord_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_coord_sgd, 31},
+    {"_sgdGMF_cpp_fit_block_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_block_sgd, 31},
     {NULL, NULL, 0}
 };
 

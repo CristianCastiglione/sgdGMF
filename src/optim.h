@@ -26,6 +26,7 @@
 #endif
 
 #include "link.h"
+#include "variance.h"
 #include "family.h"
 #include "deviance.h"
 #include "utils.h"

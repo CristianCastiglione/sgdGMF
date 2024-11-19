@@ -1,7 +1,7 @@
 // utils.h
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 07/10/2023
+// last change: 19/11/2024
 
 #ifndef UTILS_H
 #define UTILS_H
@@ -15,6 +15,7 @@ const double log2pi = std::log(2.0 * M_PI);
 const double sqrt2 = std::sqrt(2.0);
 const double sqrtpi = std::sqrt(M_PI);
 const double sqrt2pi = std::sqrt(2.0 * M_PI);
+const double infty = arma::datum::inf;
 
 // The following vectors of coefficients serves to approximate the 
 // quantile function of a standard normal distribution.
@@ -36,6 +37,10 @@ double absmax (const arma::vec & u, const arma::vec & v);
 void trim (arma::mat & x, const double & a, const double & b);
 void trim (arma::mat & x, const double & a, const double & b, const arma::uvec & idx);
 void trim (arma::mat & x, const double & a, const double & b, const arma::uvec & idx, const arma::uvec & idy);
+
+// All and any operator for boolean matrices
+bool all(const arma::umat & x);
+bool any(const arma::umat & x);
 
 // Lp norm of a vector/matrix
 double norm (const arma::mat & x);

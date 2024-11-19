@@ -1,7 +1,7 @@
 // misc.cpp
 // author: Cristian Castiglione
 // creation: 30/09/2023
-// last change: 10/10/2023
+// last change: 19/11/2024
 
 #include "misc.h"
 
@@ -24,20 +24,73 @@ std::unique_ptr<Link> make_link (
     return link;
 }
 
+std::unique_ptr<Variance> make_varf (
+    const std::string & varfname
+) {
+    bool flag = true;
+    std::unique_ptr<Variance> varf;
+    if (varfname == "const") { flag = false; varf = std::make_unique<Constant>(); }
+    if (varfname == "mu") { flag = false; varf = std::make_unique<Linear>(); }
+    if (varfname == "mu^2") { flag = false; varf = std::make_unique<Squared>(); }
+    if (varfname == "mu^3") { flag = false; varf = std::make_unique<Cubic>(); }
+    if (varfname == "mu(1-mu)") { flag = false; varf = std::make_unique<cSquared>(); }
+    if (varfname == "mu(1+t*mu)") { flag = false; varf = std::make_unique<NBVariance>(); }
+    if (flag) { throw std::string("Variance function not available"); }
+    return varf;
+}
+
 std::unique_ptr<Family> make_family (
-    const std::string & familyname, const std::string & linkname
+    const std::string & familyname, 
+    const std::string & linkname,
+    const std::string & varfname
 ) {
     bool flag = true;
     std::unique_ptr<Link> link = make_link(linkname);
+    std::unique_ptr<Variance> varf;
     std::unique_ptr<Family> family;
-    if (familyname == "gaussian") { flag = false; family = std::make_unique<Gaussian>(link); }
-    if (familyname == "binomial") { flag = false; family = std::make_unique<Binomial>(link); }
-    if (familyname == "poisson") { flag = false; family = std::make_unique<Poisson>(link); }
-    if (familyname == "gamma") { flag = false; family = std::make_unique<Gamma>(link); }
-    if (familyname == "negbinom") { flag = false; family = std::make_unique<NegativeBinomial>(link); }
-    if (familyname == "quasibinomial") { flag = false; family = std::make_unique<QuasiBinomial>(link); }
-    if (familyname == "quasipoisson") { flag = false; family = std::make_unique<QuasiPoisson>(link); }
-    if (flag) { throw std::string("Family not available"); }
+    if (familyname == "gaussian") { 
+        flag = false; 
+        varf = make_varf("const");
+        family = std::make_unique<Gaussian>(link, varf);
+    }
+    if (familyname == "binomial") { 
+        flag = false; 
+        varf = make_varf("mu(1-mu)");
+        family = std::make_unique<Binomial>(link, varf);
+    }
+    if (familyname == "poisson") { 
+        flag = false; 
+        varf = make_varf("mu");
+        family = std::make_unique<Poisson>(link, varf);
+    }
+    if (familyname == "gamma") { 
+        flag = false; 
+        varf = make_varf("mu^2");
+        family = std::make_unique<Gamma>(link, varf);
+    }
+    if (familyname == "negbinom") { 
+        flag = false; 
+        varf = make_varf("mu(1+t*mu)");
+        family = std::make_unique<NegativeBinomial>(link, varf);
+    }
+    if (familyname == "quasibinomial") { 
+        flag = false; 
+        varf = make_varf("mu(1-mu)");
+        family = std::make_unique<QuasiBinomial>(link, varf);
+    }
+    if (familyname == "quasipoisson") { 
+        flag = false; 
+        varf = make_varf("mu");
+        family = std::make_unique<QuasiPoisson>(link, varf);
+    }
+    if (familyname == "quasi") { 
+        flag = false; 
+        varf = make_varf(varfname);
+        family = std::make_unique<Quasi>(link, varf);
+    }
+    if (flag) { 
+        throw std::string("Family not available"); 
+    }
     return family;
 }
 
@@ -61,8 +114,10 @@ void set_data_bounds (
     etaupt = family->linkfun(muupt);
 
     // Inplace assignment
-    mulo = mulot(0,0); muup = muupt(0,0);
-    etalo = etalot(0,0); etaup = etaupt(0,0);
+    mulo = mulot(0,0); 
+    muup = muupt(0,0);
+    etalo = etalot(0,0); 
+    etaup = etaupt(0,0);
 }
 
 void set_eta (
@@ -71,7 +126,8 @@ void set_eta (
     const double & etamin, const double & etamax
 ) {
     eta = offset + u * v.t();
-    utils::trim(eta, etamin, etamax);
+    eta.clamp(etamin, etamax);
+    // utils::trim(eta, etamin, etamax);
 }
 
 arma::mat get_eta (
@@ -98,8 +154,10 @@ void set_uv_indices (
     arma::uvec & idu, arma::uvec & idv, 
     const int & p, const int & q, const int & d
 ) {
-    idu = join_cols(arma::linspace<arma::uvec>(p, p+q-1, q), arma::linspace<arma::uvec>(p+q, p+q+d-1, d));
-    idv = join_cols(arma::linspace<arma::uvec>(0, p-1, p), arma::linspace<arma::uvec>(p+q, p+q+d-1, d));
+    idu = join_cols(arma::linspace<arma::uvec>(p, p+q-1, q), 
+                    arma::linspace<arma::uvec>(p+q, p+q+d-1, d));
+    idv = join_cols(arma::linspace<arma::uvec>(0, p-1, p), 
+                    arma::linspace<arma::uvec>(p+q, p+q+d-1, d));
 }
 
 void set_uv_penalty (

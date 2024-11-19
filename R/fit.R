@@ -225,6 +225,7 @@ sgdgmf.fit = function (
   family = set.family(family)
   familyname = family$family
   linkname = family$link
+  varfname = family$varfun
 
   # Check the optimization method
   method = match.arg(method)
@@ -259,12 +260,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.airwls(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z,
       U = init$U, V = init$V, O = offset, W = weights,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, nsteps = alg$nstep, stepsize = alg$stepsize,
-      eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
-      damping = alg$damping, verbose = alg$verbose,
-      frequency = alg$frequency, parallel = alg$parallel,
-      nthreads = alg$nthreads
+      familyname = familyname, linkname = linkname, varfname = varfname,
+      ncomp = ncomp, lambda = lambda, maxiter = alg$maxiter, nsteps = alg$nstep,
+      stepsize = alg$stepsize, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
+      damping = alg$damping, verbose = alg$verbose, frequency = alg$frequency,
+      parallel = alg$parallel, nthreads = alg$nthreads
     )
   }
   if (method == "newton") {
@@ -272,11 +272,11 @@ sgdgmf.fit = function (
     fit = cpp.fit.newton(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z,
       U = init$U, V = init$V, O = offset, W = weights,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, stepsize = alg$stepsize, eps = alg$eps,
-      nafill = alg$nafill, tol = alg$tol, damping = alg$damping,
-      verbose = alg$verbose, frequency = alg$frequency,
-      parallel = alg$parallel, nthreads = alg$nthreads
+      familyname = familyname, linkname = linkname, varfname = varfname,
+      ncomp = ncomp, lambda = lambda, maxiter = alg$maxiter,
+      stepsize = alg$stepsize, eps = alg$eps, nafill = alg$nafill,
+      tol = alg$tol, damping = alg$damping, verbose = alg$verbose,
+      frequency = alg$frequency, parallel = alg$parallel, nthreads = alg$nthreads
     )
   }
   if (method == "sgd" & sampling == "block") {
@@ -284,12 +284,12 @@ sgdgmf.fit = function (
     fit = cpp.fit.block.sgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z,
       U = init$U, V = init$V, O = offset, W = weights,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
-      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
-      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
-      frequency = alg$frequency, progress = alg$progress
+      familyname = familyname, linkname = linkname, varfname = varfname,
+      ncomp = ncomp, lambda = lambda, maxiter = alg$maxiter, eps = alg$eps,
+      nafill = alg$nafill, tol = alg$tol, size1 = alg$size[1], size2 = alg$size[2],
+      burn = alg$burn, rate0 = alg$rate0, decay = alg$decay, damping = alg$damping,
+      rate1 = alg$rate1, rate2 = alg$rate2, parallel = FALSE, nthreads = 1,
+      verbose = alg$verbose, frequency = alg$frequency, progress = alg$progress
     )
   }
   if (method == "sgd" & sampling == "coord") {
@@ -297,12 +297,12 @@ sgdgmf.fit = function (
     fit = cpp.fit.coord.sgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z,
       U = init$U, V = init$V, O = offset, W = weights,
-      familyname = familyname, linkname = linkname, ncomp = ncomp, lambda = lambda,
-      maxiter = alg$maxiter, eps = alg$eps, nafill = alg$nafill, tol = alg$tol,
-      size1 = alg$size[1], size2 = alg$size[2], burn = alg$burn, rate0 = alg$rate0,
-      decay = alg$decay, damping = alg$damping, rate1 = alg$rate1, rate2 = alg$rate2,
-      parallel = FALSE, nthreads = 1, verbose = alg$verbose,
-      frequency = alg$frequency, progress = alg$progress
+      familyname = familyname, linkname = linkname, varfname = varfname,
+      ncomp = ncomp, lambda = lambda, maxiter = alg$maxiter, eps = alg$eps,
+      nafill = alg$nafill, tol = alg$tol, size1 = alg$size[1], size2 = alg$size[2],
+      burn = alg$burn, rate0 = alg$rate0, decay = alg$decay, damping = alg$damping,
+      rate1 = alg$rate1, rate2 = alg$rate2, parallel = FALSE, nthreads = 1,
+      verbose = alg$verbose, frequency = alg$frequency, progress = alg$progress
     )
   }
 

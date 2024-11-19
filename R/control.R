@@ -115,6 +115,7 @@ set.family = function (family) {
     # Gaussian family
     if (family$family == "gaussian") {
       if (family$link == "identity") {
+        family$varfun = "const"
         family$transform = function (y) y
         flag = FALSE
       }
@@ -122,6 +123,7 @@ set.family = function (family) {
     # Binomial family
     if (family$family %in% c("binomial", "quasibinomial")) {
       if (family$link %in% c("logit", "probit", "cauchit", "cloglog")) {
+        family$varfun = "mu(1-mu)"
         family$transform = function (y) jitter(2 * y - 1, amount = 0.25)
         flag = FALSE
       }
@@ -129,6 +131,7 @@ set.family = function (family) {
     # Poisson family
     if (family$family %in% c("poisson", "quasipoisson")) {
       if (family$link == "log") {
+        family$varfun = "mu"
         family$transform = function (y) family$linkfun(y + 0.1)
         flag = FALSE
       }
@@ -137,6 +140,7 @@ set.family = function (family) {
     if (family$family %in% c("gamma", "Gamma")) {
       if (family$link %in% c("inverse", "log", "sqrt")) {
         family$family = "gamma"
+        family$varfun = "mu^2"
         family$transform = function (y) family$linkfun(y)
         flag = FALSE
       }
@@ -145,9 +149,23 @@ set.family = function (family) {
     if (family$family == "negbinom" | substring(family$family, 1, 17) == "Negative Binomial") {
       if (family$link %in% c("inverse", "log", "sqrt")) {
         family$family = "negbinom"
+        family$varfun = "mu(1+t*mu)"
         family$transform = function (y) family$linkfun(y + (y == 0) / 6)
         flag = FALSE
       }
+    }
+    if (family$family == "quasi") {
+      family$varfun = ifelse(family$varfun == "constant", "const", family$varfun)
+      family$transform = switch(family$link,
+        "identity" = function(y) y,
+        "inverse" = function(y) family$linkfun(y),
+        "log" = function(y) family$linkfun(y + 0.1),
+        "sqrt" = function(y) family$linkfun(y + 0.1),
+        "logit" = function(y) jitter(2 * y - 1, amount = 0.25),
+        "probit" = function(y) jitter(2 * y - 1, amount = 0.25),
+        "caichit" = function(y) jitter(2 * y - 1, amount = 0.25),
+        "cloglog" = function(y) jitter(2 * y - 1, amount = 0.25))
+      flag = FALSE
     }
     attr(family$transform, "srcref") = NULL
   }

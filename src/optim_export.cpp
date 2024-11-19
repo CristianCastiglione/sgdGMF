@@ -30,6 +30,7 @@ using namespace glm;
 //' @param X design matrix
 //' @param familyname model family name
 //' @param linkname link function name
+//' @param varfname variance function name
 //' @param offset vector of constants to be added to the linear predictor
 //' @param weights vector of constants non-negative weights
 //' @param penalty penalty parameter of a ridge-type penalty
@@ -38,11 +39,11 @@ using namespace glm;
 // [[Rcpp::export("cpp.airwls.glmstep")]]
 arma::vec cpp_airwls_glmstep (
     const arma::vec & beta, const arma::vec & y, const arma::mat & X,
-    const std::string & familyname, const std::string & linkname, 
+    const std::string & familyname, const std::string & linkname, const std::string & varfname, 
     const arma::vec & offset, const arma::vec & weights, const arma::vec & penalty
 ) {
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false, parallel = false;
@@ -69,6 +70,7 @@ arma::vec cpp_airwls_glmstep (
 //' @param X design matrix
 //' @param familyname model family name
 //' @param linkname link function name
+//' @param varfname variance function name
 //' @param offset vector of constants to be added to the linear predictor
 //' @param weights vector of constants non-negative weights
 //' @param penalty penalty parameter of a ridge-type penalty
@@ -80,12 +82,12 @@ arma::vec cpp_airwls_glmstep (
 // [[Rcpp::export("cpp.airwls.glmfit")]]
 arma::vec cpp_airwls_glmfit (
     const arma::vec & beta, const arma::vec & y, const arma::mat & X,
-    const std::string & familyname, const std::string & linkname, 
+    const std::string & familyname, const std::string & linkname, const std::string & varfname, 
     const arma::vec & offset, const arma::vec & weights, const arma::vec & penalty,
     const int & nsteps = 100, const double & stepsize = 0.1, const bool & print = false
 ) {
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false, parallel = false;
@@ -114,6 +116,7 @@ arma::vec cpp_airwls_glmfit (
 //' @param X design matrix
 //' @param familyname model family name
 //' @param linkname link function name
+//' @param varfname variance function name
 //' @param idx index identifying the parameters to be updated in \code{beta}
 //' @param offset vector of constants to be added to the linear predictor
 //' @param weights vector of constants non-negative weights
@@ -129,7 +132,7 @@ arma::vec cpp_airwls_glmfit (
 // [[Rcpp::export("cpp.airwls.update")]]
 arma::mat cpp_airwls_update (
     const arma::mat & beta, const arma::mat & Y, const arma::mat & X,
-    const std::string & familyname, const std::string & linkname, 
+    const std::string & familyname, const std::string & linkname, const std::string & varfname,
     const arma::uvec & idx, const arma::mat & offset, const arma::vec & weights, 
     const arma::vec & penalty, const bool & transp = false, 
     const int & nsteps = 100, const double & stepsize = 0.1, 
@@ -137,7 +140,7 @@ arma::mat cpp_airwls_update (
     const int & nthreads = 1
 ) {
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
 
     // Instantiate the AIRWLS optimizer
     bool verbose = false;
@@ -179,6 +182,7 @@ arma::mat cpp_airwls_update (
 //' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
+//' @param varfname variance function name
 //' @param ncomp rank of the latent matrix factorization
 //' @param lambda penalization parameters
 //' @param maxiter maximum number of iterations
@@ -207,6 +211,7 @@ Rcpp::List cpp_fit_airwls (
     const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
+    const std::string & varfname,
     const int & ncomp, 
     const arma::vec & lambda,
     const int & maxiter = 500,
@@ -224,7 +229,7 @@ Rcpp::List cpp_fit_airwls (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
     
     // Instantiate the AIRWLS optimizer
     AIRWLS airwls(maxiter, nsteps, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
@@ -251,6 +256,7 @@ Rcpp::List cpp_fit_airwls (
 //' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
+//' @param varfname variance function name
 //' @param ncomp rank of the latent matrix factorization
 //' @param lambda penalization parameters
 //' @param maxiter maximum number of iterations
@@ -278,6 +284,7 @@ Rcpp::List cpp_fit_newton (
     const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
+    const std::string & varfname,
     const int & ncomp, 
     const arma::vec & lambda,
     const int & maxiter = 500,
@@ -294,7 +301,7 @@ Rcpp::List cpp_fit_newton (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
     
     // Instantiate the Newton optimizer
     Newton newton(maxiter, stepsize, eps, nafill, tol, damping, verbose, frequency, parallel, nthreads);
@@ -321,6 +328,7 @@ Rcpp::List cpp_fit_newton (
 //' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
+//' @param varfname variance function name
 //' @param ncomp rank of the latent matrix factorization
 //' @param lambda penalization parameters
 //' @param maxiter maximum number of iterations
@@ -354,7 +362,8 @@ Rcpp::List cpp_fit_coord_sgd (
     const arma::mat & O,
     const arma::mat & W,
     const std::string & familyname,
-    const std::string & linkname, 
+    const std::string & linkname,
+    const std::string & varfname, 
     const int & ncomp, 
     const arma::vec & lambda,
     const int & maxiter = 1000,
@@ -378,7 +387,7 @@ Rcpp::List cpp_fit_coord_sgd (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
     
     // Instantiate the Newton optimizer
     CSGD sgd(
@@ -407,6 +416,7 @@ Rcpp::List cpp_fit_coord_sgd (
 //' @param W matrix of constant weights (\eqn{n \times m})
 //' @param familyname a \code{glm} model family name
 //' @param linkname a \code{glm} link function name
+//' @param varfname variance function name
 //' @param ncomp rank of the latent matrix factorization
 //' @param lambda penalization parameters
 //' @param maxiter maximum number of iterations
@@ -441,6 +451,7 @@ Rcpp::List cpp_fit_block_sgd (
     const arma::mat & W,
     const std::string & familyname,
     const std::string & linkname, 
+    const std::string & varfname,
     const int & ncomp, 
     const arma::vec & lambda,
     const int & maxiter = 1000,
@@ -464,7 +475,7 @@ Rcpp::List cpp_fit_block_sgd (
     arma::mat y = Y;
 
     // Instantiate the parametrized family object
-    std::unique_ptr<Family> family = make_family(familyname, linkname);
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
     
     // Instantiate the Newton optimizer
     BSGD sgd(
