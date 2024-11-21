@@ -136,6 +136,22 @@ class Gamma : public Family {
         }
 };
 
+class InverseGaussian : public Family {
+    public:
+        arma::mat variance (const arma::mat & mu) const;
+        arma::mat initialize (const arma::mat & y) const;
+        arma::mat devresid (const arma::mat & y, const arma::mat & mu) const;
+        
+        InverseGaussian (
+            std::unique_ptr<Link> & link, 
+            std::unique_ptr<Variance> & varf
+        ) : Family(link, varf) {
+            this->family = "Gamma";
+            this->varf = "mu^3";
+            this->estdispp = true;
+        }
+};
+
 class NegativeBinomial : public Family {
     public:
         arma::mat variance (const arma::mat & mu) const;

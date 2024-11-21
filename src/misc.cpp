@@ -15,10 +15,11 @@ std::unique_ptr<Link> make_link (
     if (linkname == "identity") { flag = false; link = std::make_unique<Identity>(); }
     if (linkname == "logit") { flag = false; link = std::make_unique<Logit>(); }
     if (linkname == "probit") { flag = false; link = std::make_unique<Probit>(); }
-    if (linkname == "cauchit") { flag = false; link = std::make_unique<Cauchy>(); }
+    if (linkname == "cauchit") { flag = false; link = std::make_unique<Cauchit>(); }
     if (linkname == "cloglog") { flag = false; link = std::make_unique<cLogLog>(); }
     if (linkname == "log") { flag = false; link = std::make_unique<Log>(); }
     if (linkname == "inverse") { flag = false; link = std::make_unique<Inverse>(); }
+    if (linkname == "1/mu^2") { flag = false; link = std::make_unique<SquaredInverse>(); }
     if (linkname == "sqrt") { flag = false; link = std::make_unique<Sqrt>(); }
     if (flag) { throw std::string("Link function not available"); }
     return link;
@@ -66,6 +67,11 @@ std::unique_ptr<Family> make_family (
     if (familyname == "gamma") { 
         flag = false; 
         varf = make_varf("mu^2");
+        family = std::make_unique<Gamma>(link, varf);
+    }
+    if (familyname == "invgaussian") { 
+        flag = false; 
+        varf = make_varf("mu^3");
         family = std::make_unique<Gamma>(link, varf);
     }
     if (familyname == "negbinom") { 

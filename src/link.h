@@ -48,13 +48,13 @@ class Probit : public Link {
         Probit () {this->link = "Probit";}
 };
 
-class Cauchy : public Link {
+class Cauchit : public Link {
     public:
         bool valideta (const arma::mat & eta);
         arma::mat linkfun (const arma::mat & mu);
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
-        Cauchy () {this->link = "Cauchit";}
+        Cauchit () {this->link = "Cauchit";}
 };
 
 class cLogLog : public Link {
@@ -82,6 +82,15 @@ class Inverse : public Link {
         arma::mat linkinv (const arma::mat & eta);
         arma::mat mueta (const arma::mat & eta);
         Inverse () {this->link = "Inverse";}
+};
+
+class SquaredInverse : public Link {
+    public:
+        bool valideta (const arma::mat & eta);
+        arma::mat linkfun (const arma::mat & mu);
+        arma::mat linkinv (const arma::mat & eta);
+        arma::mat mueta (const arma::mat & eta);
+        SquaredInverse () {this->link = "1/mu^2";}
 };
 
 class Sqrt : public Link {

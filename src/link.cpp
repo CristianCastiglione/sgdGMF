@@ -30,11 +30,11 @@ arma::mat Probit::linkfun (const arma::mat & mu) {
 arma::mat Probit::linkinv (const arma::mat & eta) {return arma::normcdf(eta);}
 arma::mat Probit::mueta (const arma::mat & eta) {return arma::normpdf(eta);}
 
-// Cauchy link
-bool Cauchy::valideta (const arma::mat & eta){return true;}
-arma::mat Cauchy::linkfun (const arma::mat & mu) {return arma::tan(pi * (mu - 0.5));}
-arma::mat Cauchy::linkinv (const arma::mat & eta) {return 0.5 + arma::atan(eta) / pi;}
-arma::mat Cauchy::mueta (const arma::mat & eta) {return invpi / (eta % eta + 1);}
+// Cauchit link
+bool Cauchit::valideta (const arma::mat & eta){return true;}
+arma::mat Cauchit::linkfun (const arma::mat & mu) {return arma::tan(pi * (mu - 0.5));}
+arma::mat Cauchit::linkinv (const arma::mat & eta) {return 0.5 + arma::atan(eta) / pi;}
+arma::mat Cauchit::mueta (const arma::mat & eta) {return invpi / (eta % eta + 1);}
 
 // cLogLog link
 bool cLogLog::valideta (const arma::mat & eta){return true;}
@@ -53,6 +53,12 @@ bool Inverse::valideta (const arma::mat & eta){return utils::all(eta > 0);}
 arma::mat Inverse::linkfun (const arma::mat & mu) {return 1 / mu;}
 arma::mat Inverse::linkinv (const arma::mat & eta) {return 1 / eta;}
 arma::mat Inverse::mueta (const arma::mat & eta) {return - 1 / (eta % eta);}
+
+// Squared inverse link
+bool SquaredInverse::valideta (const arma::mat & eta){return utils::all(eta > 0);}
+arma::mat SquaredInverse::linkfun (const arma::mat & mu) {return 1 / arma::square(mu);}
+arma::mat SquaredInverse::linkinv (const arma::mat & eta) {return 1 / arma::sqrt(eta);}
+arma::mat SquaredInverse::mueta (const arma::mat & eta) {return - 1 / (2 * arma::pow(eta, 1.5));}
 
 // Sqrt link
 bool Sqrt::valideta (const arma::mat & eta){return utils::all(eta > 0);}

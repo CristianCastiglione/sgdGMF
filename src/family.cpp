@@ -33,6 +33,13 @@ arma::mat Gamma::devresid (const arma::mat & y, const arma::mat & mu) const {
     return - 2 * (arma::log(y / mu) - (y - mu) / mu);
 }
 
+// Inverse-Gaussian family
+arma::mat InverseGaussian::variance (const arma::mat & mu) const {return mu % mu % mu;}
+arma::mat InverseGaussian::initialize (const arma::mat & y) const {return this->linkfun(y);}
+arma::mat InverseGaussian::devresid (const arma::mat & y, const arma::mat & mu) const {
+    return arma::square(y - mu) / (y % mu % mu);
+}
+
 // Negative-Binomial family
 arma::mat NegativeBinomial::variance (const arma::mat & mu) const {return mu + (mu % mu) / this->dispersion;}
 arma::mat NegativeBinomial::initialize (const arma::mat & y) const {return this->linkfun(arma::clamp(y, 0.1, infty));}
