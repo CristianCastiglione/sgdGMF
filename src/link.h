@@ -1,7 +1,7 @@
 // link.h
 // author: Cristian Castiglione
 // creation: 28/09/2023
-// last change: 19/10/2024
+// last change: 21/10/2024
 
 #ifndef LINK_H
 #define LINK_H

@@ -1,7 +1,7 @@
 // variance.h
 // author: Cristian Castiglione
 // creation: 08/11/2023
-// last change: 19/11/2024
+// last change: 21/11/2024
 
 #ifndef VARIANCE_H
 #define VARIANCE_H
