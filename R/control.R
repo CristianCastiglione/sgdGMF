@@ -145,6 +145,15 @@ set.family = function (family) {
         flag = FALSE
       }
     }
+    # Inverse-Gaussian family
+    if (family$family %in% c("invgaussian", "inverse.gaussian")) {
+      if (family$link %in% c("inverse", "1/mu^2", "log", "sqrt")) {
+        family$family = "invgaussian"
+        family$varfun = "mu^3"
+        family$transform = function (y) family$linkfun(y)
+        flag = FALSE
+      }
+    }
     # Negative Binomial family
     if (family$family == "negbinom" | substring(family$family, 1, 17) == "Negative Binomial") {
       if (family$link %in% c("inverse", "log", "sqrt")) {

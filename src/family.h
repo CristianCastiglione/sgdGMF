@@ -146,7 +146,7 @@ class InverseGaussian : public Family {
             std::unique_ptr<Link> & link, 
             std::unique_ptr<Variance> & varf
         ) : Family(link, varf) {
-            this->family = "Gamma";
+            this->family = "InverseGaussian";
             this->varf = "mu^3";
             this->estdispp = true;
         }
