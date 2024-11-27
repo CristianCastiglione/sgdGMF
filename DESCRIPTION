@@ -30,6 +30,7 @@ Imports:
     doParallel, 
     foreach,
     MASS,
+    SuppDists,
     methods,
     generics,
     reshape2,
