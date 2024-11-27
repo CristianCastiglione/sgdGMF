@@ -4,40 +4,17 @@
 \alias{simulate.sgdgmf}
 \title{Simulate method for GMF models}
 \usage{
-\method{simulate}{sgdgmf}(
-  object,
-  ...,
-  newY = NULL,
-  newX = NULL,
-  type = c("data", "link", "response", "terms", "coef"),
-  parallel = FALSE,
-  nthreads = 1
-)
+\method{simulate}{sgdgmf}(object, ..., nsim = 1)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
 
 \item{...}{further arguments passed to or from other methods}
 
-\item{newY}{optionally, a matrix of new responses \code{Y}}
-
-\item{newX}{optionally, a matrix of new covariates \code{X}}
-
-\item{type}{the type of prediction which should be returned}
-
-\item{parallel}{if \code{TRUE}, allows for parallel computing using the package \code{foreach}}
-
-\item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
+\item{nsim}{number of samples}
 }
 \description{
 Simulate new data from a fitted generalized matrix factorization models
-}
-\details{
-If \code{newY} and \code{newX} are omitted, the predictions are based on the data
-used for the fit. In that case, the predictions corresponds to the fitted values.
-If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
-\code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
-By doing so, \code{B} and \code{V} are kept fixed.
 }
 \examples{
 library(sgdGMF)
