@@ -708,18 +708,7 @@ predict.sgdgmf = function (
 #'
 #' @param object an object of class \code{sgdgmf}
 #' @param ... further arguments passed to or from other methods
-#' @param newY optionally, a matrix of new responses \code{Y}
-#' @param newX optionally, a matrix of new covariates \code{X}
-#' @param type the type of prediction which should be returned
-#' @param parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach}
-#' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
-#'
-#' @details
-#' If \code{newY} and \code{newX} are omitted, the predictions are based on the data
-#' used for the fit. In that case, the predictions corresponds to the fitted values.
-#' If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
-#' \code{U} are estimated via maximum likelihood using the \code{glm.fit} function.
-#' By doing so, \code{B} and \code{V} are kept fixed.
+#' @param nsim number of samples
 #'
 #' @examples
 #' library(sgdGMF)
@@ -736,17 +725,39 @@ predict.sgdgmf = function (
 #' @method simulate sgdgmf
 #' @export
 simulate.sgdgmf = function (
-    object, ...,
-    newY = NULL, newX = NULL,
-    type = c("data", "link", "response", "terms", "coef"),
-    parallel = FALSE, nthreads = 1
+    object, ..., nsim = 1
 ) {
-  type = match.arg(type)
-  message("S3 method `simulate` for `sgdgmf` objects is not implmented yet.")
-  # ...
-  # ...
-  # ...
-  return(0)
+  # message("S3 method `simulate` for `sgdgmf` objects is not implmented yet.")
+
+  check = object$family$family %in% c("gaussian", "poisson", "binomial", "gamma")
+  if (!check) {
+    stop("Only the following families allow for data simulation: Gaussian, Poisson, Binomial, Gamma.")
+  }
+
+  # Data dimensions
+  n = nrow(object$Y)
+  m = ncol(object$Y)
+  N = nsim * n * m
+
+  # Estimated parameters
+  mu = object$mu
+  phi = object$phi
+  wts = object$weights
+
+  # Simulated values
+  sim = switch(object$family$family,
+    "gaussian" = stats::rnorm(N, mean = mu, sd = sqrt(phi / wts)),
+    "poisson" = stats::rpois(N, lambda = mu),
+    "binomial" = stats::rbinom(N, size = 1, prob = mu),
+    "gamma" = stats::rgamma(N, shape = wts / phi, rate = wts / (phi * mu)),
+    "invgaussian" = SuppDists::rinvGauss(N, nu = mu, lambda = wts / phi),
+    "negbinom" = MASS::rnegbin(N, mu = mu, theta = phi / wts))
+
+  # Reshaping
+  sim = array(sim, dim = c(nsim, n, m))
+
+  # Output
+  return(sim)
 }
 
 #' @title Spectrum method for GMF models
