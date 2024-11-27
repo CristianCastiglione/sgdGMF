@@ -292,13 +292,20 @@ sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), disper
   phi = 3*rbeta(1, 2, 3)
   phi = ifelse(!is.null(dispersion), abs(dispersion), 3 * stats::rbeta(1, 2, 3))
 
+  # Family name
+  fname = family$family
+  if (fname == "Gamma") fname = "gamma"
+  if (fname == "inverse.gaussian") fname = "invgaussian"
+  if (substring(family$family, 1, 17) == "Negative Binomial") fname = "negbinom"
+
   # Simulate the data using an dispersion exponential family distribution
   Y = matrix(
-    switch(family$family,
+    switch(fname,
       "gaussian" = stats::rnorm(n * m, mean = mu, sd = sqrt(phi)),
       "binomial" = stats::rbinom(n * m, size = 1, prob = mu),
       "poisson" = stats::rpois(n * m, lambda = mu),
-      "Gamma" = stats::rgamma(n * m, shape = 1 / phi, scale = phi * mu),
+      "gamma" = stats::rgamma(n * m, shape = 1 / phi, scale = phi * mu),
+      "invgaussian" = SuppDists::rinvGauss(n * m, nu = mu, lambda = 1 / phi),
       "negbinom" = MASS::rnegbin(n * m, mu = mu, theta = phi)),
     nrow = n, ncol = m)
 
