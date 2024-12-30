@@ -23,8 +23,8 @@ knitr::opts_chunk$set(
 Load the \code{sgdGMF} package in the workspace.
 
 ```{r sgdgmf}
-# library(sgdGMF)
-devtools::load_all()
+library(sgdGMF)
+# devtools::load_all()
 ```
 
 Load other useful packages in the workspace.

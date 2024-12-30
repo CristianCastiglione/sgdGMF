@@ -25,8 +25,8 @@ This vignette provides an introductory example on how to work with the `sgdGMF` 
 First, let us load the `sgdGMF` package in the workspace.
 
 ```{r sgdgmf}
-# library(sgdGMF)
-devtools::load_all()
+library(sgdGMF)
+# devtools::load_all()
 ```
 Most of the plotting functions in `sgdGMF` builds upon `ggplot2`, therefore we also need to load it together with other useful packages.
 

@@ -22,14 +22,14 @@ knitr::opts_chunk$set(
 
 Load the \code{sgdGMF} package in the workspace.
 
-```{r sgdgmf}
-# library(sgdGMF)
-devtools::load_all()
+```{r sgdgmf, results = FALSE, message = FALSE, warning = FALSE}
+library(sgdGMF)
+# devtools::load_all()
 ```
 
 Load other useful packages in the workspace.
 
-```{r libraries}
+```{r libraries, results = FALSE, message = FALSE, warning = FALSE}
 library(ggplot2)
 library(ggpubr)
 library(reshape2)
