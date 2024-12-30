@@ -33,7 +33,6 @@ Load other useful packages in the workspace.
 library(ggplot2)
 library(ggpubr)
 library(reshape2)
-library(viridis)
 
 theme_set(theme_bw())
 ```

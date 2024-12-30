@@ -34,7 +34,6 @@ Most of the plotting functions in `sgdGMF` builds upon `ggplot2`, therefore we a
 library(ggplot2)
 library(ggpubr)
 library(reshape2)
-library(viridis)
 
 set.seed(100)
 theme_set(theme_bw())
