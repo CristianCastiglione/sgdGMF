@@ -40,7 +40,7 @@ theme_set(theme_bw())
 Install the \code{mvabund} package.
 
 ```{r datapkg}
-if (!require("mvabund")) {
+if (!require("mvabund", quietly = TRUE)) {
   install.packages("mvabund", repos = "https://cloud.r-project.org") 
 }
 ```
@@ -159,7 +159,7 @@ df = rbind(
 df$model = get.factor(c("Data", "AIRWLS", "Newton", "SGD"), n*m)
 
 ggplot(data = df, map = aes(x = species, y = environments, fill = abundance)) + 
-  geom_raster() + facet_wrap(vars(model), nrow = 2, ncol = 2) + scale_fill_viridis() + 
+  geom_raster() + facet_wrap(vars(model), nrow = 2, ncol = 2) + scale_fill_viridis_c() + 
   theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank()) +
   labs(x = "Species", y = "Environmens", fill = "Abundance", title = "Ant abundance data")
 ```
@@ -180,7 +180,7 @@ plt.envs = data.frame(
   geom_hline(yintercept = 0, lty = 2, color = "grey40") + 
   geom_vline(xintercept = 0, lty = 2, color = "grey40") + 
   geom_point() + facet_grid(cols = vars(model)) + 
-  scale_color_viridis(option = "viridis") +
+  scale_color_viridis_c(option = "viridis") +
   geom_text(color = 1, size = 2.5, nudge_x = -0.2, nudge_y = +0.2) +
   labs(x = "PC 1", y = "PC 2", color = "Environments")
 
@@ -193,7 +193,7 @@ plt.species = data.frame(
   geom_hline(yintercept = 0, lty = 2, color = "grey40") + 
   geom_vline(xintercept = 0, lty = 2, color = "grey40") + 
   geom_point() + facet_grid(cols = vars(model)) + 
-  scale_color_viridis(option = "inferno") +
+  scale_color_viridis_c(option = "inferno") +
   geom_text(color = 1, size = 2.5, nudge_x = -0.2, nudge_y = +0.2) +
   labs(x = "PC 1", y = "PC 2", color = "Species")
 

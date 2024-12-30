@@ -42,7 +42,7 @@ theme_set(theme_bw())
 Install the \code{mvabund} package.
 
 ```{r datapkg}
-if (!require("mvabund")) {
+if (!require("mvabund", quietly = TRUE)) {
   install.packages("mvabund", repos = "https://cloud.r-project.org") 
 }
 ```
