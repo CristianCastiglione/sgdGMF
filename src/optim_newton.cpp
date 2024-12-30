@@ -185,7 +185,7 @@ void Newton::parallel_update (
         }
     }
     #else 
-    this->blocked_update(u, v, pen, idx, deta, ddeta)
+    this->blocked_update(u, v, pen, idx, deta, ddeta);
     #endif
 }
 
