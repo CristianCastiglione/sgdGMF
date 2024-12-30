@@ -39,6 +39,14 @@ set.seed(100)
 theme_set(theme_bw())
 ```
 
+Install the \code{mvabund} package.
+
+```{r datapkg}
+if (!require("mvabund")) {
+  install.packages("mvabund") 
+}
+```
+
 ## Ant traits data
 
 To showcase the basic functionalities of the `sgdGMF` package, we use an ecological dataset which is freely available as part of the `mvabund` package. 
