@@ -727,7 +727,6 @@ predict.sgdgmf = function (
 simulate.sgdgmf = function (
     object, ..., nsim = 1
 ) {
-  # message("S3 method `simulate` for `sgdgmf` objects is not implmented yet.")
 
   check = object$family$family %in% c("gaussian", "poisson", "binomial", "gamma")
   if (!check) {
@@ -758,98 +757,6 @@ simulate.sgdgmf = function (
 
   # Output
   return(sim)
-}
-
-#' @title Spectrum method for GMF models
-#'
-#' @description
-#' Compute the latent spectrum of a GMF model evaluated on the GLM residual scale.
-#'
-#' @param object an object of class \code{sgdgmf}
-#' @param ... further arguments passed to or from other methods
-#' @param ncomp number of eigenvalues to compute
-#' @param type the type of residual which should be returned
-#' @param normalize if \code{TRUE}, standardize the residuals column-by-column
-#'
-#' @details
-#' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top} be the linear predictor of a
-#' GMF model where the latent factorization \eqn{U V^\top} is not included into the
-#' model specification. Let \eqn{R} be the correspondent partial residual matrix.
-#' Either deviance, \eqn{r_{ij} = \textrm{sign}(y_{ij} - \mu_{ij}) \sqrt{D(y_{ij}, \mu_{ij})}},
-#' or Pearson, \eqn{r_{ij} = (y_{ij} - \mu_{ij}) / \sqrt{\nu(\mu_{ij})}}, residuals
-#' can be considered. Finally, we define \eqn{\Sigma} as the empirical variance-covariance
-#' matrix of \eqn{R}, being \eqn{\sigma_{ij} = \textrm{Cov}(r_{:i}, r_{:j})}. Then, we define
-#' the latent spectrum of the model as the collection of eigenvalues of \eqn{\Sigma}.
-#' Notice that, in case of Gaussian data, the latent spectrum corresponds to the principal
-#' component analysis on the regression residuals, whose eigenvalues can be used to
-#' infer how much signal can be explained by each principal component. Similarly,
-#' we can use the latent spectrum in non-Gaussian data settings to infer the correct
-#' number of principal components to include into the GMF model.
-#'
-#' @examples
-#' library(sgdGMF)
-#'
-#' # Generate data from a Poisson model
-#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
-#'
-#' # Fit a GMF model
-#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
-#'
-#' # Get the partial residual spectrum of a GMF model
-#' str(eigenval(gmf)) # returns the eigenvalues of the var-cov matrix of the deviance residuals
-#' str(eigenval(gmf, type = "pearson")) # returns the eigenvalues obtained using the Pearson residuals
-#' str(eigenval(gmf, normalize = TRUE)) # returns the eigenvalues obrained using the correlation matrix
-#'
-#' @method eigenval sgdgmf
-#' @export
-eigenval.sgdgmf = function (
-    object, ...,
-    ncomp = object$ncomp,
-    type = c("deviance", "pearson", "working", "link"),
-    normalize = FALSE
-) {
-  # Set the type and stat parameters
-  type = match.arg(type)
-
-  # Compute the model residuals
-  family = object$family
-  eta = tcrossprod(cbind(object$X, object$A), cbind(object$B, object$Z))
-  mu = family$linkinv(eta)
-  res = switch(type,
-    "deviance" = sign(object$Y - mu) * sqrt(abs(family$dev.resid(object$Y, mu, 1))),
-    "pearson" = (object$Y - mu) / sqrt(abs(family$variance(mu))),
-    "working" = (object$Y - mu) * family$mu.eta(eta) / abs(family$variance(mu)),
-    "link" = (family$transform(object$Y) - eta))
-
-  # Fill the missing values using Gaussian random values
-  if (anyNA(res)) {
-    res = apply(res, 2, function (x) {
-      na = which(is.na(x) | is.nan(x))
-      r = length(na)
-      m = mean(x, na.rm = TRUE)
-      s = stats::sd(x, na.rm = TRUE)
-      x[na] = stats::rnorm(r, mean = m, sd = s)
-      return (x)
-    })
-  }
-
-  # Standardize the residuals column-by-column
-  if (normalize) {
-    res = scale(res, center = TRUE, scale = TRUE)
-  }
-
-  # Decompose the residuals using incomplete SVD
-  pca = RSpectra::eigs_sym(stats::cov(res), ncomp)
-
-  # Estimate the explained and residual variance
-  var.eig = pca$values
-  var.tot = sum(diag(var.eig))
-  var.exp = sum(var.eig)
-  var.res = var.tot - var.exp
-
-  # Return the spectrum
-  list(lambdas = var.eig, explained = var.exp,
-       reminder = var.res, total = var.tot)
 }
 
 #' @title Plot diagnostics for a GMF model
