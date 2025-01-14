@@ -24,7 +24,6 @@ Load the \code{sgdGMF} package in the workspace.
 
 ```{r sgdgmf, results = FALSE, message = FALSE, warning = FALSE}
 library(sgdGMF)
-# devtools::load_all()
 ```
 
 Load other useful packages in the workspace.
@@ -109,7 +108,7 @@ res.sgd = residuals(gmf.sgd, partial = FALSE, spectrum = TRUE, ncomp = 20)
 
 Analyze the residual distribution.
 
-```{r hist, fig.width = 6, fig.height = 5}
+```{r hist, echo = TRUE, include = FALSE, fig.width = 6, fig.height = 5}
 get.factor = function (levels, nrep) factor(rep(levels, each = nrep), levels = levels)
 
 df = data.frame(
@@ -132,7 +131,7 @@ ggpubr::ggarrange(plt.res.vs.fit, plt.res.hist, nrow = 2, align = "v")
 
 Plot the variance explained by each principal component of the residual matrix.
 
-```{r spectrum, fig.width = 6, fig.height = 2.5}
+```{r spectrum, echo = TRUE, include = FALSE, fig.width = 6, fig.height = 2.5}
 data.frame(
   components = rep(1:20, 3),
   variance = c(res.airwls$lambdas, res.newton$lambdas, res.sgd$lambdas),
@@ -145,7 +144,7 @@ data.frame(
 
 Plot the abundance predicted by each method comparing it with the observed matrix.
 
-```{r pred, fig.width = 6, fig.height = 5}
+```{r pred, echo = TRUE, include = FALSE, fig.width = 6, fig.height = 5}
 colnames(gmf.airwls$mu) = colnames(Y)
 colnames(gmf.newton$mu) = colnames(Y)
 colnames(gmf.sgd$mu) = colnames(Y)
@@ -166,7 +165,7 @@ ggplot(data = df, map = aes(x = species, y = environments, fill = abundance)) +
 
 ## Latent scores and low-dimensional representation
 
-```{r scores, fig.width = 8, fig.height = 5}
+```{r scores, echo = TRUE, include = FALSE, fig.width = 8, fig.height = 5}
 pca.airwls = RSpectra::svds(tcrossprod(gmf.airwls$U, gmf.airwls$V), 2)
 pca.newton = RSpectra::svds(tcrossprod(gmf.newton$U, gmf.newton$V), 2)
 pca.sgd = RSpectra::svds(tcrossprod(gmf.sgd$U, gmf.sgd$V), 2)

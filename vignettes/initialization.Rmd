@@ -24,7 +24,6 @@ Load the \code{sgdGMF} package in the workspace.
 
 ```{r sgdgmf}
 library(sgdGMF)
-# devtools::load_all()
 ```
 
 Load other useful packages in the workspace.
@@ -96,7 +95,7 @@ data.frame(
 ```
 
 
-```{r resid, fig.width = 7, fig.height = 10}
+```{r resid, echo = TRUE, include = FALSE, fig.width = 7, fig.height = 10}
 ggpubr::ggarrange(
   # 
   plot(init_glm_dev, type = "res-fit") + labs(subtitle = "GLM - Deviance"),
@@ -127,7 +126,7 @@ ggpubr::ggarrange(
 
 ```
 
-```{r eigen, fig.width = 7, fig.height = 5}
+```{r eigen, echo = TRUE, include = FALSE, fig.width = 7, fig.height = 5}
 ggpubr::ggarrange(
   screeplot(init_glm_dev) + labs(subtitle = "GLM - Deviance"),
   screeplot(init_glm_prs) + labs(subtitle = "GLM - Pearson"),
@@ -140,7 +139,7 @@ ggpubr::ggarrange(
 ```
 
 
-```{r scores, fig.width = 7, fig.height = 7}
+```{r scores, echo = TRUE, include = FALSE, fig.width = 7, fig.height = 7}
 ggpubr::ggarrange(
   ggpubr::ggarrange(
     biplot(init_glm_dev, arrange = FALSE)$scores + theme(axis.title = element_blank()) + labs(subtitle = "GLM - Deviance"),
@@ -163,7 +162,7 @@ ggpubr::ggarrange(
 ```
 
 
-```{r pred, fig.width = 7, fig.height = 10}
+```{r pred, echo = TRUE, include = FALSE, fig.width = 7, fig.height = 10}
 plt_glm_dev = image(init_glm_dev, limits = range(c(Y)), type = "response")
 plt_glm_prs = image(init_glm_prs, limits = range(c(Y)), type = "response")
 plt_glm_lnk = image(init_glm_lnk, limits = range(c(Y)), type = "response")
@@ -182,7 +181,7 @@ ggpubr::ggarrange(
 ```
 
 
-```{r resid2, fig.width = 7, fig.height = 10}
+```{r resid2, echo = TRUE, include = FALSE, fig.width = 7, fig.height = 10}
 limits = c(-20, +20)
 
 plt_glm_dev = image(init_glm_dev, type = "response", limits = limits, resid = TRUE, symmetric = TRUE)
