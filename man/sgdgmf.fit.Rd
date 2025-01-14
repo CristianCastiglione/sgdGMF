@@ -13,7 +13,7 @@ sgdgmf.fit(
   weights = NULL,
   offset = NULL,
   method = c("airwls", "newton", "sgd"),
-  sampling = c("block", "coord"),
+  sampling = c("block", "coord", "rnd-block"),
   penalty = list(),
   control.init = list(),
   control.alg = list()
@@ -145,7 +145,8 @@ four different algorithms
   \item AIRWLS: alternated iterative re-weighted least squares (\code{method="airwls"});
   \item Newton: quasi-Newton algorithm with diagonal Hessian (\code{method="newton"});
   \item C-SGD: adaptive stochastic gradient descent with coordinate-wise sub-sampling (\code{method="sgd", sampling="coord"});
-  \item B-SGD: adaptive stochastic gradient descent with block-wise sub-sampling (\code{method="sgd", sampling="block"}).
+  \item B-SGD: adaptive stochastic gradient descent with block-wise sub-sampling (\code{method="sgd", sampling="block"});
+  \item RB-SGD: as B-SGD but with an alternative rule to scan randomly the minibatch blocks (\code{method="sgd", sampling="rnd-block"}).
 }
 
 \strong{Likelihood families}
@@ -215,6 +216,10 @@ Journal of Machine Learning Research, 23: 1-29.
 Wang, L. and Carvalho, L. (2023).
 \emph{Deviance matrix factorization.}
 Electronic Journal of Statistics, 17(2): 3762-3810.
+
+Castiglione, C., Segers, A., Clement, L, Risso, D. (2024).
+\emph{Stochastic gradient descent estimation of generalized matrix factorization models with application to single-cell RNA sequencing data.}
+arXiv preprint: arXiv:2412.20509.
 }
 \seealso{
 \code{\link{refit.sgdgmf}}, \code{\link{coef.sgdgmf}}, \code{\link{resid.sgdgmf}},

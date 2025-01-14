@@ -6,7 +6,7 @@
 \usage{
 set.control.alg(
   method = c("airwls", "newton", "sgd"),
-  sampling = c("block", "coord"),
+  sampling = c("block", "coord", "rnd-block"),
   control = list()
 )
 }

@@ -13,7 +13,7 @@ sgdgmf.cv(
   weights = NULL,
   offset = NULL,
   method = c("airwls", "newton", "sgd"),
-  sampling = c("block", "coord"),
+  sampling = c("block", "coord", "rnd-block"),
   penalty = list(),
   control.init = list(),
   control.alg = list(),
