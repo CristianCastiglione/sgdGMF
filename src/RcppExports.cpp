@@ -239,6 +239,47 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_fit_random_block_sgd
+Rcpp::List cpp_fit_random_block_sgd(const arma::mat& Y, const arma::mat& X, const arma::mat& B, const arma::mat& A, const arma::mat& Z, const arma::mat& U, const arma::mat& V, const arma::mat& O, const arma::mat& W, const std::string& familyname, const std::string& linkname, const std::string& varfname, const int& ncomp, const arma::vec& lambda, const int& maxiter, const double& eps, const int& nafill, const double& tol, const int& size1, const int& size2, const double& burn, const double& rate0, const double& decay, const double& damping, const double& rate1, const double& rate2, const bool& parallel, const int& nthreads, const bool& verbose, const int& frequency, const bool& progress);
+RcppExport SEXP _sgdGMF_cpp_fit_random_block_sgd(SEXP YSEXP, SEXP XSEXP, SEXP BSEXP, SEXP ASEXP, SEXP ZSEXP, SEXP USEXP, SEXP VSEXP, SEXP OSEXP, SEXP WSEXP, SEXP familynameSEXP, SEXP linknameSEXP, SEXP varfnameSEXP, SEXP ncompSEXP, SEXP lambdaSEXP, SEXP maxiterSEXP, SEXP epsSEXP, SEXP nafillSEXP, SEXP tolSEXP, SEXP size1SEXP, SEXP size2SEXP, SEXP burnSEXP, SEXP rate0SEXP, SEXP decaySEXP, SEXP dampingSEXP, SEXP rate1SEXP, SEXP rate2SEXP, SEXP parallelSEXP, SEXP nthreadsSEXP, SEXP verboseSEXP, SEXP frequencySEXP, SEXP progressSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type U(USEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type O(OSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type familyname(familynameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type linkname(linknameSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type varfname(varfnameSEXP);
+    Rcpp::traits::input_parameter< const int& >::type ncomp(ncompSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< const double& >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nafill(nafillSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const int& >::type size1(size1SEXP);
+    Rcpp::traits::input_parameter< const int& >::type size2(size2SEXP);
+    Rcpp::traits::input_parameter< const double& >::type burn(burnSEXP);
+    Rcpp::traits::input_parameter< const double& >::type rate0(rate0SEXP);
+    Rcpp::traits::input_parameter< const double& >::type decay(decaySEXP);
+    Rcpp::traits::input_parameter< const double& >::type damping(dampingSEXP);
+    Rcpp::traits::input_parameter< const double& >::type rate1(rate1SEXP);
+    Rcpp::traits::input_parameter< const double& >::type rate2(rate2SEXP);
+    Rcpp::traits::input_parameter< const bool& >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nthreads(nthreadsSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< const int& >::type frequency(frequencySEXP);
+    Rcpp::traits::input_parameter< const bool& >::type progress(progressSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fit_random_block_sgd(Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_omp_check", (DL_FUNC) &_sgdGMF_omp_check, 0},
@@ -249,6 +290,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_sgdGMF_cpp_fit_newton", (DL_FUNC) &_sgdGMF_cpp_fit_newton, 24},
     {"_sgdGMF_cpp_fit_coord_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_coord_sgd, 31},
     {"_sgdGMF_cpp_fit_block_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_block_sgd, 31},
+    {"_sgdGMF_cpp_fit_random_block_sgd", (DL_FUNC) &_sgdGMF_cpp_fit_random_block_sgd, 31},
     {NULL, NULL, 0}
 };
 

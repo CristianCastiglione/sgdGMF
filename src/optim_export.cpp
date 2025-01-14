@@ -488,3 +488,91 @@ Rcpp::List cpp_fit_block_sgd (
     // Return the estimated model
     return output;
 }
+
+//' @title Fit a GMF model using the adaptive SGD with block-wise minibatch subsampling
+//'
+//' @description Fit a GMF model using the adaptive SGD with block-wise minibatch subsampling
+//'
+//' @param Y matrix of responses (\eqn{n \times m})
+//' @param X matrix of row fixed effects (\eqn{n \times p})
+//' @param B initial row-effect matrix (\eqn{n \times p})
+//' @param A initial column-effect matrix (\eqn{n \times q})
+//' @param Z matrix of column fixed effects (\eqn{m \times q})
+//' @param U initial factor matrix (\eqn{n \times d})
+//' @param V initial loading matrix (\eqn{m \times d})
+//' @param O matrix of constant offset (\eqn{n \times m})
+//' @param W matrix of constant weights (\eqn{n \times m})
+//' @param familyname a \code{glm} model family name
+//' @param linkname a \code{glm} link function name
+//' @param varfname variance function name
+//' @param ncomp rank of the latent matrix factorization
+//' @param lambda penalization parameters
+//' @param maxiter maximum number of iterations
+//' @param eps shrinkage factor for extreme predictions
+//' @param nafill how often the missing values are updated
+//' @param tol tolerance threshold for the stopping criterion
+//' @param size1 row-minibatch dimension
+//' @param size2 column-minibatch dimension
+//' @param burn burn-in period in which the learning late is not decreased
+//' @param rate0 initial learning rate
+//' @param decay decay rate of the learning rate
+//' @param damping diagonal dumping factor for the Hessian matrix
+//' @param rate1 decay rate of the first moment estimate of the gradient
+//' @param rate2 decay rate of the second moment estimate of the gradient
+//' @param parallel if \code{TRUE}, allows for parallel computing
+//' @param nthreads number of cores to be used in parallel
+//' @param verbose if \code{TRUE}, print the optimization status
+//' @param frequency how often the optimization status is printed
+//' @param progress if \code{TRUE}, print an progress bar
+//' 
+//' @keywords internal
+// [[Rcpp::export("cpp.fit.random.block.sgd")]]
+Rcpp::List cpp_fit_random_block_sgd (
+    const arma::mat & Y, 
+    const arma::mat & X, 
+    const arma::mat & B, 
+    const arma::mat & A, 
+    const arma::mat & Z,
+    const arma::mat & U, 
+    const arma::mat & V,
+    const arma::mat & O,
+    const arma::mat & W,
+    const std::string & familyname,
+    const std::string & linkname, 
+    const std::string & varfname,
+    const int & ncomp, 
+    const arma::vec & lambda,
+    const int & maxiter = 1000,
+    const double & eps = 0.01,
+    const int & nafill = 10,
+    const double & tol = 1e-08,
+    const int & size1 = 100,
+    const int & size2 = 100,
+    const double & burn = 0.75,
+    const double & rate0 = 0.01,
+    const double & decay = 0.01,
+    const double & damping = 1e-03,
+    const double & rate1 = 0.95,
+    const double & rate2 = 0.99,
+    const bool & parallel = false,
+    const int & nthreads = 1,
+    const bool & verbose = true,
+    const int & frequency = 250,
+    const bool & progress = false
+) {
+    arma::mat y = Y;
+
+    // Instantiate the parametrized family object
+    std::unique_ptr<Family> family = make_family(familyname, linkname, varfname);
+    
+    // Instantiate the Newton optimizer
+    BSGD sgd(
+        maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, 
+        damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress);
+
+    // Perform the optimization via Newton algorithm
+    Rcpp::List output = sgd.fit(y, X, B, A, Z, U, V, O, W, family, ncomp, lambda);
+
+    // Return the estimated model
+    return output;
+}

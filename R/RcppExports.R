@@ -237,3 +237,44 @@ cpp.fit.block.sgd <- function(Y, X, B, A, Z, U, V, O, W, familyname, linkname, v
     .Call(`_sgdGMF_cpp_fit_block_sgd`, Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
 }
 
+#' @title Fit a GMF model using the adaptive SGD with block-wise minibatch subsampling
+#'
+#' @description Fit a GMF model using the adaptive SGD with block-wise minibatch subsampling
+#'
+#' @param Y matrix of responses (\eqn{n \times m})
+#' @param X matrix of row fixed effects (\eqn{n \times p})
+#' @param B initial row-effect matrix (\eqn{n \times p})
+#' @param A initial column-effect matrix (\eqn{n \times q})
+#' @param Z matrix of column fixed effects (\eqn{m \times q})
+#' @param U initial factor matrix (\eqn{n \times d})
+#' @param V initial loading matrix (\eqn{m \times d})
+#' @param O matrix of constant offset (\eqn{n \times m})
+#' @param W matrix of constant weights (\eqn{n \times m})
+#' @param familyname a \code{glm} model family name
+#' @param linkname a \code{glm} link function name
+#' @param varfname variance function name
+#' @param ncomp rank of the latent matrix factorization
+#' @param lambda penalization parameters
+#' @param maxiter maximum number of iterations
+#' @param eps shrinkage factor for extreme predictions
+#' @param nafill how often the missing values are updated
+#' @param tol tolerance threshold for the stopping criterion
+#' @param size1 row-minibatch dimension
+#' @param size2 column-minibatch dimension
+#' @param burn burn-in period in which the learning late is not decreased
+#' @param rate0 initial learning rate
+#' @param decay decay rate of the learning rate
+#' @param damping diagonal dumping factor for the Hessian matrix
+#' @param rate1 decay rate of the first moment estimate of the gradient
+#' @param rate2 decay rate of the second moment estimate of the gradient
+#' @param parallel if \code{TRUE}, allows for parallel computing
+#' @param nthreads number of cores to be used in parallel
+#' @param verbose if \code{TRUE}, print the optimization status
+#' @param frequency how often the optimization status is printed
+#' @param progress if \code{TRUE}, print an progress bar
+#' 
+#' @keywords internal
+cpp.fit.random.block.sgd <- function(Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter = 1000L, eps = 0.01, nafill = 10L, tol = 1e-08, size1 = 100L, size2 = 100L, burn = 0.75, rate0 = 0.01, decay = 0.01, damping = 1e-03, rate1 = 0.95, rate2 = 0.99, parallel = FALSE, nthreads = 1L, verbose = TRUE, frequency = 250L, progress = FALSE) {
+    .Call(`_sgdGMF_cpp_fit_random_block_sgd`, Y, X, B, A, Z, U, V, O, W, familyname, linkname, varfname, ncomp, lambda, maxiter, eps, nafill, tol, size1, size2, burn, rate0, decay, damping, rate1, rate2, parallel, nthreads, verbose, frequency, progress)
+}
+

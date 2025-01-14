@@ -713,7 +713,7 @@ set.control.block.sgd = function (
 #' @export set.control.alg
 set.control.alg = function (
     method = c("airwls", "newton", "sgd"),
-    sampling = c("block", "coord"),
+    sampling = c("block", "coord", "rnd-block"),
     control = list()
 ) {
   # Check the optimization method
@@ -726,6 +726,7 @@ set.control.alg = function (
   if (method == "newton") control = do.call("set.control.newton", control)
   if (method == "sgd" & sampling == "block") control = do.call("set.control.block.sgd", control)
   if (method == "sgd" & sampling == "coord") control = do.call("set.control.coord.sgd", control)
+  if (method == "sgd" & sampling == "rnd-block") control = do.call("set.control.block.sgd", control)
 
   # Return the corrected control parameters
   return (control)

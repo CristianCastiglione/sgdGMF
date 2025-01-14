@@ -115,7 +115,8 @@
 #'   \item AIRWLS: alternated iterative re-weighted least squares (\code{method="airwls"});
 #'   \item Newton: quasi-Newton algorithm with diagonal Hessian (\code{method="newton"});
 #'   \item C-SGD: adaptive stochastic gradient descent with coordinate-wise sub-sampling (\code{method="sgd", sampling="coord"});
-#'   \item B-SGD: adaptive stochastic gradient descent with block-wise sub-sampling (\code{method="sgd", sampling="block"}).
+#'   \item B-SGD: adaptive stochastic gradient descent with block-wise sub-sampling (\code{method="sgd", sampling="block"});
+#'   \item RB-SGD: as B-SGD but with an alternative rule to scan randomly the minibatch blocks (\code{method="sgd", sampling="rnd-block"}).
 #' }
 #'
 #' \strong{Likelihood families}
@@ -151,6 +152,10 @@
 #' Wang, L. and Carvalho, L. (2023).
 #' \emph{Deviance matrix factorization.}
 #' Electronic Journal of Statistics, 17(2): 3762-3810.
+#'
+#' Castiglione, C., Segers, A., Clement, L, Risso, D. (2024).
+#' \emph{Stochastic gradient descent estimation of generalized matrix factorization models with application to single-cell RNA sequencing data.}
+#' arXiv preprint: arXiv:2412.20509.
 #'
 #' @seealso
 #' \code{\link{refit.sgdgmf}}, \code{\link{coef.sgdgmf}}, \code{\link{resid.sgdgmf}},
@@ -200,7 +205,7 @@ sgdgmf.fit = function (
     weights = NULL,
     offset = NULL,
     method = c("airwls", "newton", "sgd"),
-    sampling = c("block", "coord"),
+    sampling = c("block", "coord", "rnd-block"),
     penalty = list(),
     control.init = list(),
     control.alg = list()
@@ -295,6 +300,19 @@ sgdgmf.fit = function (
   if (method == "sgd" & sampling == "coord") {
     # Coordinate-wise adaptive SGD algorithm
     fit = cpp.fit.coord.sgd(
+      Y = Y, X = X, B = init$B, A = init$A, Z = Z,
+      U = init$U, V = init$V, O = offset, W = weights,
+      familyname = familyname, linkname = linkname, varfname = varfname,
+      ncomp = ncomp, lambda = lambda, maxiter = alg$maxiter, eps = alg$eps,
+      nafill = alg$nafill, tol = alg$tol, size1 = alg$size[1], size2 = alg$size[2],
+      burn = alg$burn, rate0 = alg$rate0, decay = alg$decay, damping = alg$damping,
+      rate1 = alg$rate1, rate2 = alg$rate2, parallel = FALSE, nthreads = 1,
+      verbose = alg$verbose, frequency = alg$frequency, progress = alg$progress
+    )
+  }
+  if (method == "sgd" & sampling == "rnd-block") {
+    # Block-wise adaptive SGD algorithm
+    fit = cpp.fit.random.block.sgd(
       Y = Y, X = X, B = init$B, A = init$A, Z = Z,
       U = init$U, V = init$V, O = offset, W = weights,
       familyname = familyname, linkname = linkname, varfname = varfname,
