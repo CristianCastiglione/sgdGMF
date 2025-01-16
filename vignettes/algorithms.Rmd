@@ -40,8 +40,7 @@ Install the \code{mvabund} package.
 
 ```{r datapkg}
 if (!require("mvabund", quietly = TRUE)) {
-  install.packages("RcppGSL", repos = "https://cloud.r-project.org")
-  install.packages("mvabund", repos = "https://cloud.r-project.org") 
+  try(install.packages("mvabund", repos = "https://cloud.r-project.org"), silent = TRUE) 
 }
 ```
 
@@ -51,7 +50,10 @@ if (!require("mvabund", quietly = TRUE)) {
 Load the ant traits data in the workspace and define the response matrix `Y` and covariate matrices `X` and `Z`.
 
 ```{r data}
-data(antTraits, package = "mvabund")
+tryCatch(
+  expr = {data(antTraits, package = "mvabund")},
+  finally = {load(url("https://raw.githubusercontent.com/cran/mvabund/master/data/antTraits.RData"))}
+)
 
 Y = as.matrix(antTraits$abund)
 X = as.matrix(antTraits$env[,-3])
