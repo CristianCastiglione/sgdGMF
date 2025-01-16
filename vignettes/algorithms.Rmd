@@ -79,6 +79,29 @@ cat("Selected rank: ", ncomp)
 
 ## Model estimation
 
+\code{sgdGMF} implements four estimation algorithms which are outlined below.
+Notice that we here describe the algorithms by assuming, without loss of generality, 
+that $B = 0$ and $A = 0$ (see the \code{help} documentation of the \code{sgdgmf.fit} 
+function for the notation). In the real implementation, where non-zero $B$ and $A$ are 
+considered, we jointly optimize $[A, U]$ and $[B, V]$ following the same algorithmic 
+strategy, but accounting for regression effects.
+
+```{r airwls, echo = FALSE, out.width = '80%'}
+knitr::include_graphics("../man/alg-AIRWLS.png")
+```
+
+```{r newton, echo = FALSE, out.width = '80%'}
+knitr::include_graphics("../man/alg-Newton.png")
+```
+
+```{r bsgd, echo = FALSE, out.width = '80%'}
+knitr::include_graphics("../man/alg-BSGD.png")
+```
+
+```{r csgd, echo = FALSE, out.width = '80%'}
+knitr::include_graphics("../man/alg-CSGD.png")
+```
+
 Estimate a Poisson GMF model using iterated least squares, diagonal quasi-Newton and
 stochastic gradient descent algorithms.
 
@@ -164,6 +187,8 @@ ggplot(data = df, map = aes(x = species, y = environments, fill = abundance)) +
 ```
 
 ## Latent scores and low-dimensional representation
+
+Plot the latent scores and loadings in a biplot-like figure.
 
 ```{r scores, echo = TRUE, include = FALSE, fig.width = 8, fig.height = 5}
 pca.airwls = RSpectra::svds(tcrossprod(gmf.airwls$U, gmf.airwls$V), 2)
