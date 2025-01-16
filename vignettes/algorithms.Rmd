@@ -87,19 +87,19 @@ considered, we jointly optimize $[A, U]$ and $[B, V]$ following the same algorit
 strategy, but accounting for regression effects.
 
 ```{r airwls, echo = FALSE, out.width = '80%'}
-knitr::include_graphics("../man/alg-AIRWLS.png")
+# knitr::include_graphics("../man/alg-AIRWLS.png")
 ```
 
 ```{r newton, echo = FALSE, out.width = '80%'}
-knitr::include_graphics("../man/alg-Newton.png")
+# knitr::include_graphics("../man/alg-Newton.png")
 ```
 
 ```{r bsgd, echo = FALSE, out.width = '80%'}
-knitr::include_graphics("../man/alg-BSGD.png")
+# knitr::include_graphics("../man/alg-BSGD.png")
 ```
 
 ```{r csgd, echo = FALSE, out.width = '80%'}
-knitr::include_graphics("../man/alg-CSGD.png")
+# knitr::include_graphics("../man/alg-CSGD.png")
 ```
 
 Estimate a Poisson GMF model using iterated least squares, diagonal quasi-Newton and
