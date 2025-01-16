@@ -39,9 +39,9 @@ theme_set(theme_bw())
 Install the \code{mvabund} package.
 
 ```{r datapkg}
-if (!require("mvabund", quietly = TRUE)) {
-  try(install.packages("mvabund", repos = "https://cloud.r-project.org"), silent = TRUE) 
-}
+# if (!require("mvabund", quietly = TRUE)) {
+#   try(install.packages("mvabund", repos = "https://cloud.r-project.org"), silent = TRUE) 
+# }
 ```
 
 ## Ant traits data
@@ -49,10 +49,12 @@ if (!require("mvabund", quietly = TRUE)) {
 Load the ant traits data in the workspace and define the response matrix `Y` and covariate matrices `X` and `Z`.
 
 ```{r data}
-tryCatch(
-  expr = {data(antTraits, package = "mvabund")},
-  finally = {load(url("https://raw.githubusercontent.com/cran/mvabund/master/data/antTraits.RData"))}
-)
+# tryCatch(
+#   expr = {data(antTraits, package = "mvabund")},
+#   finally = {load(url("https://raw.githubusercontent.com/cran/mvabund/master/data/antTraits.RData"))}
+# )
+
+load(url("https://raw.githubusercontent.com/cran/mvabund/master/data/antTraits.RData"))
 
 Y = as.matrix(antTraits$abund)
 X = as.matrix(antTraits$env[,-3])
