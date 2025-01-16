@@ -40,6 +40,7 @@ Install the \code{mvabund} package.
 
 ```{r datapkg}
 if (!require("mvabund", quietly = TRUE)) {
+  install.packages("RcppGSL", repos = "https://cloud.r-project.org")
   install.packages("mvabund", repos = "https://cloud.r-project.org") 
 }
 ```
