@@ -112,10 +112,6 @@ sgdgmf.cv = function (
   parallel = control.cv$parallel
   nthreads = control.cv$nthreads
 
-  if (parallel) {
-    stop("Parallelization is still to be implemented.", call. = FALSE)
-  }
-
   # Check for control conflicts
   if (method %in% c("airwls", "newton")) {
     if (control.cv$parallel && (control.init$parallel || control.alg$parallel)) {
@@ -165,7 +161,6 @@ sgdgmf.cv = function (
     ncores = parallel::detectCores() - 1
     ncores = max(1, min(nthreads, ncores))
     clust = parallel::makeCluster(ncores)
-    # parallel::makeExport(c("sgdGMF"))
     doParallel::registerDoParallel(clust)
   }
 

@@ -11,7 +11,6 @@ pointwise.deviance = function (mu, y, family = gaussian()) {
   nona = !is.na(y)
   dev = y
   dev[] = NA
-  # dev = matrix(NA, nrow = nrow(y), ncol = ncol(y))
   dev[nona] = family$dev.resids(y[nona], mu[nona], 1)
   return(dev)
 }

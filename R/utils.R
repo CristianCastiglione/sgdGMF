@@ -1,7 +1,4 @@
 
-
-
-
 #' @title Procrustes rotation of two configurations
 #' @description Rotates a configuration to maximum similarity with another configuration
 #' @param X target matrix
@@ -10,8 +7,6 @@
 #' @param symmetric if \code{TRUE}, use symmetric Procrustes statistic
 #' @keywords internal
 procrustes <- function (X, Y, scale = TRUE, symmetric = FALSE) {
-  # X <- vegan::scores(X, display = scores, ...)
-  # Y <- vegan::scores(Y, display = scores, ...)
   if (nrow(X) != nrow(Y))
     stop(gettextf("matrices have different number of rows: %d and %d", nrow(X), nrow(Y)))
   if (ncol(X) < ncol(Y)) {
@@ -40,8 +35,6 @@ procrustes <- function (X, Y, scale = TRUE, symmetric = FALSE) {
     c <- sum(sol$d) / ctrace(Y)
   }
   Yrot <- c * Y %*% A
-  ## Translation (b) needs scale (c) although Mardia et al. do not
-  ## have this. Reported by Christian Dudel.
   b <- xmean - c * ymean %*% A
   R2 <- ctrace(X) + c * c * ctrace(Y) - 2 * c * sum(sol$d)
   result <- list(Yrot = Yrot, X = X, ss = R2, rotation = A,
@@ -61,7 +54,6 @@ norm.procrustes = function(A, B){
   A = A / norm(A, type = "F")
   B = B / norm(B, type = "F")
   procrustes(A, B)
-  # vegan::procrustes(A, B)
 }
 
 #' @title Fix sign ambiguity of eigen-vectors

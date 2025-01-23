@@ -211,6 +211,16 @@ sgdgmf.fit = function (
     control.alg = list()
 ) {
 
+  # Set the names of the model matrices
+  names = list()
+  names$Y = list(rows = rownames(Y), cols = colnames(Y))
+  names$X = list(rows = rownames(Y), cols = colnames(X))
+  names$Z = list(rows = colnames(Y), cols = colnames(Z))
+  names$A = list(rows = rownames(Y), cols = colnames(Z))
+  names$B = list(rows = colnames(Y), cols = colnames(X))
+  names$U = list(rows = rownames(Y), cols = paste0("PC", 1:ncomp))
+  names$V = list(rows = colnames(Y), cols = paste0("PC", 1:ncomp))
+
   # Check and set the model matrices
   Y = set.mat.Y(Y)
   X = set.mat.X(X, nrow(Y), ncol(Y))
@@ -379,6 +389,7 @@ sgdgmf.fit = function (
   out$exe.time = exe.time
   out$trace = as.data.frame(fit$trace)
   out$summary.cv = data.frame()
+  out$names = names
 
   # Normalize the latent factors
   if (alg$normalize) {

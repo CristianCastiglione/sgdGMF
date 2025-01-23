@@ -204,19 +204,16 @@ sgdgmf.rank = function (
 eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
 
   # Set the matrix dimension
-  # n = nrow(Y)
   m = ncol(covmat)
 
   # Safety check for the number of maximum components
   if (maxcomp > m - 5) {
-    # maxcomp = m - 6
     maxcomp = floor(m / 2)
     warning("Rank selection: 'maxcomp' set to default value.",
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
 
   # Compute the spectrum of the covariance matrix of Y
-  # lambdas = eigen(cov(Y))$values
   lambdas = eigen(covmat)$values
 
   # Initialize the loop parameters

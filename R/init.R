@@ -123,7 +123,6 @@ sgdgmf.init = function (
     nthreads = 1,
     savedata = TRUE
 ) {
-  # Maybe I can change this function's name to sgdgmf.init
 
   # Set the initialization method
   method = match.arg(method)
@@ -227,7 +226,6 @@ sgdgmf.init.ols = function (
   U = matrix(NA, nrow = n, ncol = d)
   V = matrix(NA, nrow = m, ncol = d)
   eta = matrix(NA, nrow = n, ncol = m)
-
 
   # Fill the initial linear predictor
   eta[] = offset
