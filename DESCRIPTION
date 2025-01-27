@@ -3,18 +3,18 @@ Type: Package
 Title: Estimation of generalized matrix factorization models via stochastic gradient descent
 Version: 1.0
 Date: 2023-09-28
-Author: 
-    person("Cristian", "Castiglione", email = "cristian.castiglione@unibocconi.it", 
-           role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
-    person("Davide", "Risso", email = "davide.risso@unipd.it", 
-           role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012")),
-    person("Alexandre", "Segers", email = "alexandre.segers@ugent.be", 
-           role = c("ctb"), comment = c(ORCID = "0009-0004-2028-7595"))
+Authors@R: 
+    c(person("Cristian", "Castiglione", email = "cristian.castiglione@unibocconi.it", 
+             role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
+      person("Davide", "Risso", email = "davide.risso@unipd.it", 
+             role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012")),
+      person("Alexandre", "Segers", email = "alexandre.segers@ugent.be", 
+             role = c("ctb"), comment = c(ORCID = "0009-0004-2028-7595")))
 Maintainer: Cristian Castiglione <cristian_castiglione@libero.it>
-Description: The sgdGMF package provides an efficient infrastructure 
+Description: The sgdGMF package provides an efficient infrastructure
     to estimate high-dimensional generalized matrix factorization (GMF) models using
     penalized maximum likelihood under a dispersion exponential family specification.
-    Either deterministic and stochastic methods are implemented for the numerical 
+    Either deterministic and stochastic methods are implemented for the numerical
     maximization. In particular, the package implements an original stochastic
     gradient descent (SGD) algorithm with a block-wise minibatch strategy to speed up
     the computations and an efficient adaptive learning rate schedule to stabilize
@@ -50,5 +50,7 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 Encoding: UTF-8
+URL: https://github.com/CristianCastiglione/sgdGMF
+BugReports: https://github.com/CristianCastiglione/sgdGMF/issues
 RoxygenNote: 7.2.3
 VignetteBuilder: knitr
