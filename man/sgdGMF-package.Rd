@@ -8,4 +8,22 @@
 \description{
 The sgdGMF package provides an efficient infrastructure to estimate high-dimensional generalized matrix factorization (GMF) models using penalized maximum likelihood under a dispersion exponential family specification. Either deterministic and stochastic methods are implemented for the numerical maximization. In particular, the package implements an original stochastic gradient descent (SGD) algorithm with a block-wise minibatch strategy to speed up the computations and an efficient adaptive learning rate schedule to stabilize the convergence. Other methods considered for the optimization are the alternated iterative re-weighted least squares (AIRWLS) and the quasi-Newton method with diagonal approximation of the Fisher information matrix.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/CristianCastiglione/sgdGMF}
+  \item Report bugs at \url{https://github.com/CristianCastiglione/sgdGMF/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Cristian Castiglione \email{cristian.castiglione@unibocconi.it} (\href{https://orcid.org/0000-0001-5883-4890}{ORCID})
+
+Other contributors:
+\itemize{
+  \item Davide Risso \email{davide.risso@unipd.it} (\href{https://orcid.org/0000-0001-8508-5012}{ORCID}) [contributor]
+  \item Alexandre Segers \email{alexandre.segers@ugent.be} (\href{https://orcid.org/0009-0004-2028-7595}{ORCID}) [contributor]
+}
+
+}
 \keyword{internal}
