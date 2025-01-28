@@ -8,23 +8,23 @@
 using namespace glm;
 
 void BSGD::summary () {
-    std::printf("------------------\n");
-    std::printf(" maxiter = %i \n", this->maxiter);
-    std::printf(" eps = %.5f \n", this->eps);
-    std::printf(" nafill = %i \n", this->nafill);
-    std::printf(" tol = %.5f \n", this->tol);
-    std::printf(" size1 = %i \n", this->size1);
-    std::printf(" size2 = %i \n", this->size2);
-    std::printf(" burn = %.5f \n", this->burn);
-    std::printf(" rate0 = %.5f \n", this->rate0);
-    std::printf(" decay = %.5f \n", this->decay);
-    std::printf(" damping = %.5f \n", this->damping);
-    std::printf(" rate1 = %.5f \n", this->rate1);
-    std::printf(" rate2 = %.5f \n", this->rate2);
-    std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
-    std::printf(" frequency = %i \n", this->frequency);
-    std::printf(" progress = %s \n", this->progress ? "true" : "false");
-    std::printf("------------------\n");
+    Rprintf("------------------\n");
+    Rprintf(" maxiter = %i \n", this->maxiter);
+    Rprintf(" eps = %.5f \n", this->eps);
+    Rprintf(" nafill = %i \n", this->nafill);
+    Rprintf(" tol = %.5f \n", this->tol);
+    Rprintf(" size1 = %i \n", this->size1);
+    Rprintf(" size2 = %i \n", this->size2);
+    Rprintf(" burn = %.5f \n", this->burn);
+    Rprintf(" rate0 = %.5f \n", this->rate0);
+    Rprintf(" decay = %.5f \n", this->decay);
+    Rprintf(" damping = %.5f \n", this->damping);
+    Rprintf(" rate1 = %.5f \n", this->rate1);
+    Rprintf(" rate2 = %.5f \n", this->rate2);
+    Rprintf(" verbose = %s \n", this->verbose ? "true" : "false");
+    Rprintf(" frequency = %i \n", this->frequency);
+    Rprintf(" progress = %s \n", this->progress ? "true" : "false");
+    Rprintf("------------------\n");
 }
 
 void BSGD::update_rate (double & rate, const int & iter) {
@@ -258,8 +258,8 @@ Rcpp::List BSGD::fit (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("--------------------------------------------\n");
-        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
+        Rprintf("--------------------------------------------\n");
+        Rprintf(" Iteration    Deviance    Change   Exe-Time \n");
         print_state(0, dev / nm, 1., time);
     }
 
@@ -352,7 +352,7 @@ Rcpp::List BSGD::fit (
 
     if (this->verbose) {
         print_state(iter, dev / nm, change, time);
-        std::printf("--------------------------------------------\n");
+        Rprintf("--------------------------------------------\n");
     }
     
     // Get the final output
@@ -489,8 +489,8 @@ Rcpp::List BSGD::fit2 (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("------------------------------------------------------\n");
-        std::printf(" Iteration    Deviance    Change   Scanned   Exe-Time \n");
+        Rprintf("------------------------------------------------------\n");
+        Rprintf(" Iteration    Deviance    Change   Scanned   Exe-Time \n");
         print_state(0, dev / nm, 1., time, scanned);
     }
 
@@ -598,7 +598,7 @@ Rcpp::List BSGD::fit2 (
     if (this->verbose) {
         scanned = (this->maxiter * this->size1) / n;
         print_state(iter, devt / nm, change, time, scanned);
-        std::printf("------------------------------------------------------\n");
+        Rprintf("------------------------------------------------------\n");
     }
     
     // Get the final output

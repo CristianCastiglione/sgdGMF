@@ -8,18 +8,18 @@
 using namespace glm;
 
 void AIRWLS::summary () {
-    std::printf("------------------\n");
-    std::printf(" maxiter = %i \n", this->maxiter);
-    std::printf(" nsteps = %i \n", this->nsteps);
-    std::printf(" stepsize = %.4f \n", this->stepsize);
-    std::printf(" eps = %.4f \n", this->eps);
-    std::printf(" nafill = %i \n", this->nafill);
-    std::printf(" tol = %.5f \n", this->tol);
-    std::printf(" damping = %.5f \n", this->damping);
-    std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
-    std::printf(" frequency = %i \n", this->frequency);
-    std::printf(" parallel = %s \n", this->parallel ? "true" : "false");
-    std::printf("------------------\n");
+    Rprintf("------------------\n");
+    Rprintf(" maxiter = %i \n", this->maxiter);
+    Rprintf(" nsteps = %i \n", this->nsteps);
+    Rprintf(" stepsize = %.4f \n", this->stepsize);
+    Rprintf(" eps = %.4f \n", this->eps);
+    Rprintf(" nafill = %i \n", this->nafill);
+    Rprintf(" tol = %.5f \n", this->tol);
+    Rprintf(" damping = %.5f \n", this->damping);
+    Rprintf(" verbose = %s \n", this->verbose ? "true" : "false");
+    Rprintf(" frequency = %i \n", this->frequency);
+    Rprintf(" parallel = %s \n", this->parallel ? "true" : "false");
+    Rprintf("------------------\n");
 }
 
 void AIRWLS::glmstep (
@@ -332,8 +332,8 @@ Rcpp::List AIRWLS::fit (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("--------------------------------------------\n");
-        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
+        Rprintf("--------------------------------------------\n");
+        Rprintf(" Iteration    Deviance    Change   Exe-Time \n");
         print_state(0, dev / nm, 1., time);
     }
 
@@ -396,7 +396,7 @@ Rcpp::List AIRWLS::fit (
 
     if (this->verbose) {
         print_state(iter, dev / nm, change, time);
-        std::printf("--------------------------------------------\n");
+        Rprintf("--------------------------------------------\n");
     }
     
     // Get the final output

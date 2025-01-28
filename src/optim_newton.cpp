@@ -8,17 +8,17 @@
 using namespace glm;
 
 void Newton::summary () {
-    std::printf("------------------\n");
-    std::printf(" maxiter = %i \n", this->maxiter);
-    std::printf(" stepsize = %.4f \n", this->stepsize);
-    std::printf(" eps = %.4f \n", this->eps);
-    std::printf(" nafill = %i \n", this->nafill);
-    std::printf(" tol = %.5f \n", this->tol);
-    std::printf(" damping = %.5f \n", this->damping);
-    std::printf(" parallel = %s \n", this->parallel ? "true" : "false");
-    std::printf(" verbose = %s \n", this->verbose ? "true" : "false");
-    std::printf(" frequency = %i \n", this->frequency);
-    std::printf("------------------\n");
+    Rprintf("------------------\n");
+    Rprintf(" maxiter = %i \n", this->maxiter);
+    Rprintf(" stepsize = %.4f \n", this->stepsize);
+    Rprintf(" eps = %.4f \n", this->eps);
+    Rprintf(" nafill = %i \n", this->nafill);
+    Rprintf(" tol = %.5f \n", this->tol);
+    Rprintf(" damping = %.5f \n", this->damping);
+    Rprintf(" parallel = %s \n", this->parallel ? "true" : "false");
+    Rprintf(" verbose = %s \n", this->verbose ? "true" : "false");
+    Rprintf(" frequency = %i \n", this->frequency);
+    Rprintf("------------------\n");
 }
 
 void Newton::init_phi (
@@ -289,8 +289,8 @@ Rcpp::List Newton::fit (
 
     // Print the optimization state
     if (verbose) {
-        std::printf("--------------------------------------------\n");
-        std::printf(" Iteration    Deviance    Change   Exe-Time \n");
+        Rprintf("--------------------------------------------\n");
+        Rprintf(" Iteration    Deviance    Change   Exe-Time \n");
         print_state(0, dev / nm, 1., time);
     }
 
@@ -351,7 +351,7 @@ Rcpp::List Newton::fit (
 
     if (this->verbose) {
         print_state(iter, dev / nm, change, time);
-        std::printf("--------------------------------------------\n");
+        Rprintf("--------------------------------------------\n");
     }
     
     // Get the final output

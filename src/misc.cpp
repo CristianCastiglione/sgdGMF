@@ -185,9 +185,9 @@ void print_state (
     const double & change, const double & time
 ) {
     if (time < 60) {
-        std::printf(" %9i %11.2f %9.5f %8.2f s \n", iter, 100*dev, change, time);
+        Rprintf(" %9i %11.2f %9.5f %8.2f s \n", iter, 100*dev, change, time);
     } else {
-        std::printf(" %9i %11.2f %9.5f %8.2f m \n", iter, 100*dev, change, time/60);
+        Rprintf(" %9i %11.2f %9.5f %8.2f m \n", iter, 100*dev, change, time/60);
     }
 }
 
