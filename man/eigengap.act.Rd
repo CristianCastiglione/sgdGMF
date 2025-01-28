@@ -7,9 +7,11 @@
 eigengap.act(covmat, nobs, maxcomp = NULL)
 }
 \arguments{
+\item{covmat}{matrix to be decomposed}
+
 \item{maxcomp}{maximum number of eigenvalues to compute}
 
-\item{Y}{matrix to be decomposed}
+\item{maxiter}{maximum number of iterations}
 }
 \description{
 Select the number of significant principal components of a matrix via adjust

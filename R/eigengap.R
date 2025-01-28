@@ -252,8 +252,9 @@ eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
 #' Select the number of significant principal components of a matrix via adjust
 #' correlation threshold (ACT)
 #'
-#' @param Y matrix to be decomposed
+#' @param covmat matrix to be decomposed
 #' @param maxcomp maximum number of eigenvalues to compute
+#' @param maxiter maximum number of iterations
 #'
 #' @references
 #' Fan, J., Guo, j. and Zheng, S. (2020).
@@ -308,8 +309,9 @@ eigengap.act = function (covmat, nobs, maxcomp = NULL) {
 #' Select the number of significant principal components of a matrix via optimal
 #' hard thresholding (OHT)
 #'
-#' @param Y matrix to be decomposed
+#' @param covmat matrix to be decomposed
 #' @param maxcomp maximum number of eigenvalues to compute
+#' @param maxiter maximum number of iterations
 #'
 #' @references
 #' Gavish, M., Donoho, D.L. (2014)

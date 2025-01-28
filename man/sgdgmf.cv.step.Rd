@@ -14,6 +14,8 @@ sgdgmf.cv.step(
   maxcomp,
   fold,
   nfolds,
+  weights,
+  offset,
   method,
   sampling,
   penalty,
@@ -21,6 +23,41 @@ sgdgmf.cv.step(
   control.alg,
   control.cv
 )
+}
+\arguments{
+\item{train}{train-set matrix of responses (\eqn{n \times m})}
+
+\item{test}{test-set matrix of responses (\eqn{n \times m})}
+
+\item{X}{matrix of row fixed effects (\eqn{n \times p})}
+
+\item{Z}{matrix of column fixed effects (\eqn{q \times m})}
+
+\item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
+
+\item{maxcomp}{maximum rank allowed in the cross-validation exploration}
+
+\item{fold}{integer number identifying the current fold}
+
+\item{nfolds}{maximum number of folds in the cross-validation}
+
+\item{weights}{an optional matrix of weights (\eqn{n \times m})}
+
+\item{offset}{an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.}
+
+\item{method}{estimation method to minimize the negative penalized log-likelihood}
+
+\item{sampling}{sub-sampling strategy to use if \code{method = "sgd"}}
+
+\item{penalty}{list of penalty parameters (see \code{\link{set.penalty}} for more details)}
+
+\item{control.init}{list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)}
+
+\item{control.alg}{list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)}
+
+\item{control.cv}{list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)}
+
+\item{ncomps}{ranks of the latent matrix factorization used in cross-validation (default 1 to 10)}
 }
 \value{
 Returns a \code{data.frame}  containing the current number of latent factors
