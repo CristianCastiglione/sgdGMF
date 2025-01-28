@@ -1,10 +1,10 @@
 Package: sgdGMF
 Type: Package
-Title: Estimation of generalized matrix factorization models via stochastic gradient descent
+Title: Estimation of Generalized Matrix Factorization Models via Stochastic Gradient Descent
 Version: 1.0
 Date: 2023-09-28
 Authors@R: 
-    c(person("Cristian", "Castiglione", email = "cristian.castiglione@unibocconi.it", 
+    c(person("Cristian", "Castiglione", email = "cristian_castiglione@libero.it", 
              role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
       person("Davide", "Risso", email = "davide.risso@unipd.it", 
              role = c("ctb"), comment = c(ORCID = "0000-0001-8508-5012")),
@@ -24,7 +24,6 @@ Description: The sgdGMF package provides an efficient infrastructure
 License: MIT + file LICENSE
 Imports: 
     Rcpp (>= 1.0.10),
-    RcppArmadillo,
     RSpectra, 
     parallel, 
     doParallel, 
