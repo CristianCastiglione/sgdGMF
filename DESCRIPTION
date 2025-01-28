@@ -23,7 +23,8 @@ Description: The sgdGMF package provides an efficient infrastructure
     diagonal approximation of the Fisher information matrix.
 License: MIT + file LICENSE
 Imports: 
-    Rcpp (>= 1.0.10),
+    Rcpp (>= 1.0.10), 
+    RcppArmadillo,
     RSpectra, 
     parallel, 
     doParallel, 
