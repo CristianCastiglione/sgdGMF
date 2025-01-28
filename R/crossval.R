@@ -46,30 +46,18 @@
 #'
 #' # Generate data using Poisson, Binomial and Gamma models
 #' data_pois = sim.gmf.data(n = n, m = m, ncomp = d, family = poisson())
-#' data_bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
-#' data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
 #'
 #' # Initialize the GMF parameters assuming 3 latent factors
 #' gmf_pois = sgdgmf.cv(data_pois$Y, ncomp = 1:10, family = poisson())
-#' gmf_bin = sgdgmf.cv(data_bin$Y, ncomp = 1:10, family = binomial())
-#' gmf_gam = sgdgmf.cv(data_gam$Y, ncomp = 1:10, family = Gamma(link = "log"))
 #'
 #' # Get the fitted values in the link and response scales
 #' mu_hat_pois = fitted(gmf_pois, type = "response")
-#' mu_hat_bin = fitted(gmf_bin, type = "response")
-#' mu_hat_gam = fitted(gmf_gam, type = "response")
 #'
 #' # Compare the results
-#' par(mfrow = c(3,3), mar = c(1,1,3,1))
+#' par(mfrow = c(1,3), mar = c(1,1,3,1))
 #' image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
 #' image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
 #' image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))
-#' image(data_bin$Y, axes = FALSE, main = expression(Y[Bin]))
-#' image(data_bin$mu, axes = FALSE, main = expression(mu[Bin]))
-#' image(mu_hat_bin, axes = FALSE, main = expression(hat(mu)[Bin]))
-#' image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
-#' image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
-#' image(mu_hat_gam, axes = FALSE, main = expression(hat(mu)[Gam]))
 #'
 #' @export sgdgmf.cv
 sgdgmf.cv = function (
@@ -104,6 +92,9 @@ sgdgmf.cv = function (
   # Maximum rank
   ncomps = floor(ncomps)
   maxcomp = max(ncomps)
+
+  weights = set.mat.weights(weights, n, m)
+  offset = set.mat.offset(offset, n, m)
 
   criterion = control.cv$criterion
   refit = control.cv$refit
@@ -178,24 +169,15 @@ sgdgmf.cv = function (
 
       # Run the estimation and compute the GoF statistics
       sgdgmf.cv.step(
-        train = train, test = test, X = X, Z = Z, family = family, ncomp = ncomp,
-        maxcomp = maxcomp, fold = fold, nfolds = nfolds, method = method,
+        train = train, test = test, X = X, Z = Z, family = family,
+        ncomp = ncomp, maxcomp = maxcomp, fold = fold, nfolds = nfolds,
+        weights = weights, offset = offset, method = method,
         sampling = sampling, penalty = penalty, control.init = control.init,
         control.alg = control.alg, control.cv = control.cv)
     }
   } else {
     # Parallel estimation loop
-    # WARNING:
-    # ... this "foreach" loop does not work yet!
-    # ... The problem seems to be that the function "sgdgmf.cv.step"
-    # ... is not visible from the "foreach" environment, as well as
-    # ... all the other functions that are called by "sgdgmf.cv.step".
-    # SOLUTION:
-    # ... I guess that the problem can be solved by just building and installing
-    # ... the "sgdGMF" package. By doing this, the "foreach" option .package = c("sgdGMF")
-    # ... should work properly, including in the "foreach" environment
-    # ... all the functions and utilities of the "sgdGMF" package
-    cv = foreach (iter = 1:niter, .packages = c("sgdGMF"), .combine = "rbind") %dopar% {
+    cv = foreach (iter = 1:niter, .packages = c("sgdGMF"), .export = c("sgdgmf.cv.step"), .combine = "rbind") %dopar% {
 
       # Set the number of components and the group
       ncomp = groups$ncomp[iter]
@@ -206,9 +188,10 @@ sgdgmf.cv = function (
       test = data[[fold]]$test
 
       # Run the estimation and compute the GoF statistics
-      sgdGMF:::sgdgmf.cv.step(
-        train = train, test = test, X = X, Z = Z, family = family, ncomp = ncomp,
-        maxcomp = maxcomp, fold = fold, nfolds = nfolds, method = method,
+      sgdgmf.cv.step(
+        train = train, test = test, X = X, Z = Z, family = family,
+        ncomp = ncomp, maxcomp = maxcomp, fold = fold, nfolds = nfolds,
+        weights = weights, offset = offset, method = method,
         sampling = sampling, penalty = penalty, control.init = control.init,
         control.alg = control.alg, control.cv = control.cv)
     }
@@ -289,6 +272,24 @@ sgdgmf.cv = function (
 #' matrix factorization (GMF) models and calculating some goodness-of-fit measures
 #' on the train and test sets.
 #'
+#' @param train train-set matrix of responses (\eqn{n \times m})
+#' @param test test-set matrix of responses (\eqn{n \times m})
+#' @param X matrix of row fixed effects (\eqn{n \times p})
+#' @param Z matrix of column fixed effects (\eqn{q \times m})
+#' @param family a \code{glm} family (see \code{\link{family}} for more details)
+#' @param ncomps ranks of the latent matrix factorization used in cross-validation (default 1 to 10)
+#' @param maxcomp maximum rank allowed in the cross-validation exploration
+#' @param fold integer number identifying the current fold
+#' @param nfolds maximum number of folds in the cross-validation
+#' @param weights an optional matrix of weights (\eqn{n \times m})
+#' @param offset an optional matrix of offset values (\eqn{n \times m}), that specify a known component to be included in the linear predictor.
+#' @param method estimation method to minimize the negative penalized log-likelihood
+#' @param sampling sub-sampling strategy to use if \code{method = "sgd"}
+#' @param penalty list of penalty parameters (see \code{\link{set.penalty}} for more details)
+#' @param control.init list of control parameters for the initialization (see \code{\link{set.control.init}} for more details)
+#' @param control.alg list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)
+#' @param control.cv list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)
+#'
 #' @return
 #' Returns a \code{data.frame}  containing the current number of latent factors
 #' in the model (\code{ncomp}), the fold identifier (\code{fold}), the degrees of
@@ -299,7 +300,7 @@ sgdgmf.cv = function (
 #' @keywords internal
 sgdgmf.cv.step = function (
     train, test, X, Z, family, ncomp, maxcomp,
-    fold, nfolds, method, sampling, penalty,
+    fold, nfolds, weights, offset, method, sampling, penalty,
     control.init, control.alg, control.cv
 ) {
   # Set the model dimensions
@@ -327,8 +328,8 @@ sgdgmf.cv.step = function (
 
   # Estimated mean matrix
   mu = sgdgmf.fit(
-    Y = train, X = X, Z = Z, family = family,
-    ncomp = ncomp, method = method, sampling = sampling, penalty = penalty,
+    Y = train, X = X, Z = Z, family = family, ncomp = ncomp, weights = weights,
+    offset = offset, method = method, sampling = sampling, penalty = penalty,
     control.init = control.init, control.alg = control.alg)$mu
 
   # Train and test sample sizes
@@ -336,8 +337,8 @@ sgdgmf.cv.step = function (
   n.test = n * m * f
 
   # Train and test goodness-of-fit measures
-  dev.train = sum(family$dev.resids(train, mu, 1), na.rm = TRUE)
-  dev.test = sum(family$dev.resids(test, mu, 1), na.rm = TRUE)
+  dev.train = sum(weights * family$dev.resids(train, mu, 1), na.rm = TRUE)
+  dev.test = sum(weights * family$dev.resids(test, mu, 1), na.rm = TRUE)
   aic.train = dev.train + 2 * df
   bic.train = dev.train + df * log(n.train)
   mae.train = sum(abs(train - mu), na.rm = TRUE)
