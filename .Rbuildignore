@@ -16,6 +16,7 @@
 # GitHub related
 #----------------------------
 ^\.git$
+^\.github$
 ^\.gitignore$
 ^\.gitattributes$
 ^\.svn$
