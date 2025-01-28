@@ -3,7 +3,7 @@ title: "Introduction to the sgdGMF package"
 author: "Cristian Castiglione"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{intro}
+  %\VignetteIndexEntry{introduction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

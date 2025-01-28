@@ -3,7 +3,7 @@ title: "Algorithm comparison"
 author: "Cristian Castiglione"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ants}
+  %\VignetteIndexEntry{algorithms}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
