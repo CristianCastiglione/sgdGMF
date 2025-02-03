@@ -9,9 +9,9 @@ eigengap.act(covmat, nobs, maxcomp = NULL)
 \arguments{
 \item{covmat}{matrix to be decomposed}
 
-\item{maxcomp}{maximum number of eigenvalues to compute}
+\item{nobs}{number of observations used to compute the covariance matrix}
 
-\item{maxiter}{maximum number of iterations}
+\item{maxcomp}{maximum number of eigenvalues to compute}
 }
 \description{
 Select the number of significant principal components of a matrix via adjust

@@ -35,6 +35,8 @@ sgdgmf.cv.step(
 
 \item{family}{a \code{glm} family (see \code{\link{family}} for more details)}
 
+\item{ncomp}{ranks of the latent matrix factorization used in cross-validation (default 1 to 10)}
+
 \item{maxcomp}{maximum rank allowed in the cross-validation exploration}
 
 \item{fold}{integer number identifying the current fold}
@@ -56,8 +58,6 @@ sgdgmf.cv.step(
 \item{control.alg}{list of control parameters for the optimization (see \code{\link{set.control.alg}} for more details)}
 
 \item{control.cv}{list of control parameters for the cross-validation (see \code{\link{set.control.cv}} for more details)}
-
-\item{ncomps}{ranks of the latent matrix factorization used in cross-validation (default 1 to 10)}
 }
 \value{
 Returns a \code{data.frame}  containing the current number of latent factors

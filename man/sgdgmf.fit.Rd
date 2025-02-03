@@ -123,8 +123,8 @@ Equivalently, in matrix form, we have
 The natural parameter \eqn{\theta_{ij}} is linked to the conditional mean of \eqn{y_{ij}}
 through the equation \eqn{E(y_{ij}) = \mu_{ij} = b'(\theta_{ij})}.
 Similarly, the variance of \eqn{y_{ij}} is given by
-\eqn{\text{Var}(y_{ij}) = \phi \,\nu(\mu_{ij}) = \phi \,b''(\mu_{ij})}, where \eqn{\nu(\cdot)}
-is the so-called variance function of the family.
+\eqn{\text{Var}(y_{ij}) = (\phi / w_{ij}) \,\nu(\mu_{ij}) = (\phi / w_{ij}) \,b''(\mu_{ij})},
+where \eqn{\nu(\cdot)} is the so-called variance function of the family.
 Finally, we denote by \eqn{D_\phi(y,\mu)} the deviance function of the family, which
 is defined as \eqn{D_\phi(y,\mu) = - 2 \log\{ f(y, \psi) / f_0 (y) \}},
 where \eqn{f_0(y)} is the likelihood of the saturated model.
@@ -133,9 +133,27 @@ The estimation of the model parameters is performed by minimizing the penalized 
 \deqn{\displaystyle \ell_\lambda (\psi; y) = - \sum_{i = 1}^{n} \sum_{j = 1}^{m} D_\phi(y_{ij}, \mu_{ij}) + \frac{\lambda_{\scriptscriptstyle U}}{2} \| U \|_F^2 + \frac{\lambda_{\scriptscriptstyle V}}{2} \| V \|_F^2,}
 where \eqn{\lambda_{\scriptscriptstyle U} > 0} and \eqn{\lambda_{\scriptscriptstyle V} > 0} are regularization parameters and \eqn{\|\cdot\|_F} is the Frobenious norm.
 Additional \eqn{\ell_2} penalization terms can be introduced to regularize \eqn{B} and \eqn{A}.
-Quasi-likelihood models, where \eqn{D_\phi(y, \mu)} is substituted by
-\eqn{Q_\phi(y, \mu) = - \log \phi - \int_y^\mu \{(y - t) / \nu(t)\} \,dt / \phi},
-can be considered as well.
+Quasi-likelihood models can be considered as well, where \eqn{D_\phi(y, \mu)} is substituted by
+\eqn{Q_\phi(y, \mu) = - \log (\phi/w) - (w / \phi) \int_y^\mu \{(y - t) / \nu(t) \} \,dt,}
+under an appropriate specification of mean, variance and link functions.
+
+\strong{Identifiability constraints}
+
+The GMF model is not identifiable being invariant with respect to rotation, scaling
+and sign-flip transformations of \eqn{U} and \eqn{V}. To enforce the uniqueness of the
+solution, we impose the following identifiability constraints:
+\itemize{
+  \item \eqn{\text{Cov}(U) = U^\top (I_n - 1_n 1_n^\top / n) U / n = I_d},
+  \item \eqn{V} is lower triangular, with positive diagonal entries,
+}
+where \eqn{I_n} and \eqn{1_n} are, respectively, the \eqn{n}-dimensional identity
+matrix and unitary vector.
+
+Alternative identifiability constraints on \eqn{U} and \eqn{V} can be easily obtained
+by post processing. For instance, a PCA-like solution, say \eqn{U^\top U} is diagonal
+and \eqn{V^\top V = I_d}, can by obtained by applying the truncated SVD decomposition
+\eqn{U V^\top = \tilde{U} \tilde{D} \tilde{V}^\top}, and setting
+\eqn{U = \tilde{U} \tilde{D}} and \eqn{V = \tilde{V}}.
 
 \strong{Estimation algorithms}
 
@@ -154,12 +172,14 @@ four different algorithms
 Currently, all standard \code{glm} families are supported, including \code{neg.bin}
 and \code{negative.binomial} families from the \code{MASS} package.
 In such a case, the deviance function we consider takes the form
-\eqn{D_\phi(y, \mu) = 2 \big[ y \log(y / \mu) - (y + \phi) \log\{ (y + \phi) / (\mu + \phi) \} \big]}.
-This correspond a Negative Binomial model with the variance function \eqn{\nu(\mu) = \mu + \mu^2 / \phi}.
+\eqn{D_\phi(y, \mu) = 2 w \big[ y \log(y / \mu) - (y + \phi) \log\{ (y + \phi) / (\mu + \phi) \} \big]}.
+This corresponds to a Negative Binomial model with variance function \eqn{\nu(\mu) = \mu + \mu^2 / \phi}.
 Then, for \eqn{\phi \rightarrow \infty}, the Negative Binomial likelihood converges
 to a Poisson likelihood, having linear variance function, say \eqn{\nu(\mu) = \mu}.
 Notice that the over-dispersion parameter, that here is denoted as \eqn{\phi},
 in the \code{MASS} package is referred to as \eqn{\theta}.
+If the Negative Binomial family is selected, a global over-dispersion parameter
+\eqn{\phi} is estimated from the data using the method of moments.
 
 \strong{Parallelization}
 
@@ -181,31 +201,19 @@ library(sgdGMF)
 n = 100; m = 20; d = 5
 
 # Generate data using Poisson, Binomial and Gamma models
-data_pois = sim.gmf.data(n = n, m = m, ncomp = d, family = poisson())
-data_bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
-data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
+data = sim.gmf.data(n = n, m = m, ncomp = d, family = poisson())
 
 # Estimate the GMF parameters assuming 3 latent factors
-gmf_pois = sgdgmf.fit(data_pois$Y, ncomp = 3, family = poisson(), method = "airwls")
-gmf_bin = sgdgmf.fit(data_bin$Y, ncomp = 3, family = binomial(), method = "airwls")
-gmf_gam = sgdgmf.fit(data_gam$Y, ncomp = 3, family = Gamma(link = "log"), method = "airwls")
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "airwls")
 
 # Get the fitted values in the link and response scales
-mu_hat_pois = fitted(gmf_pois, type = "response")
-mu_hat_bin = fitted(gmf_bin, type = "response")
-mu_hat_gam = fitted(gmf_gam, type = "response")
+mu_hat = fitted(gmf, type = "response")
 
 # Compare the results
-par(mfrow = c(3,3), mar = c(1,1,3,1))
-image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
-image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
-image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))
-image(data_bin$Y, axes = FALSE, main = expression(Y[Bin]))
-image(data_bin$mu, axes = FALSE, main = expression(mu[Bin]))
-image(mu_hat_bin, axes = FALSE, main = expression(hat(mu)[Bin]))
-image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
-image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
-image(mu_hat_gam, axes = FALSE, main = expression(hat(mu)[Gam]))
+par(mfrow = c(1,3), mar = c(1,1,3,1))
+image(data$Y, axes = FALSE, main = expression(Y))
+image(data$mu, axes = FALSE, main = expression(mu))
+image(mu_hat, axes = FALSE, main = expression(hat(mu)))
 
 }
 \references{
