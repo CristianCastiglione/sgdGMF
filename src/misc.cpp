@@ -197,11 +197,11 @@ void print_state (
     const double & scanned
 ) {
     if (time < 60) {
-        std::printf(
+        Rprintf(
             " %9i %11.2f %9.5f %7.0f %% %8.2f s \n", 
             iter, 100*dev, change, 100*scanned, time);
     } else {
-        std::printf(
+        Rprintf(
             " %9i %11.2f %9.5f %7.0f %% %8.2f m \n", 
             iter, 100*dev, change, 100*scanned, time/60);
     }
