@@ -13,25 +13,29 @@
 #' @examples
 #' library(sgdGMF)
 #'
-#' # Generate data from a Poisson model
-#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#' # Set RUN = TRUE to run the example
+#' RUN = FALSE
+#' if (RUN) {
+#'   # Generate data from a Poisson model
+#'   data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
-#' # Fit a GMF model using SGD
-#' gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
+#'   # Fit a GMF model using SGD
+#'   gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
 #'
-#' # Refine the score matrix estimate
-#' gmf_new = refit(gmf_old)
+#'   # Refine the score matrix estimate
+#'   gmf_new = refit(gmf_old)
 #'
-#' # Get the fitted values in the link and response scales
-#' mu_hat_old = fitted(gmf_old, type = "response")
-#' mu_hat_new = fitted(gmf_new, type = "response")
+#'   # Get the fitted values in the link and response scales
+#'   mu_hat_old = fitted(gmf_old, type = "response")
+#'   mu_hat_new = fitted(gmf_new, type = "response")
 #'
-#' # Compare the results
-#' par(mfrow = c(2,2), mar = c(1,1,3,1))
-#' image(data$Y, axes = FALSE, main = expression(Y))
-#' image(data$mu, axes = FALSE, main = expression(mu))
-#' image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
-#' image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
+#'   # Compare the results
+#'   par(mfrow = c(2,2), mar = c(1,1,3,1))
+#'   image(data$Y, axes = FALSE, main = expression(Y))
+#'   image(data$mu, axes = FALSE, main = expression(mu))
+#'   image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
+#'   image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
+#' }
 #'
 #' @method refit sgdgmf
 #' @export
@@ -719,9 +723,9 @@ simulate.sgdgmf = function (
 #'
 #' # Plot the residual-based GMF diagnostics
 #' plot(gmf, type = "res-fit") # Residuals vs fitted values
-#' plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
-#' plot(gmf, type = "qq") # Residual QQ-plot
-#' plot(gmf, type = "hist") # Residual histogram
+#' # plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
+#' # plot(gmf, type = "qq") # Residual QQ-plot
+#' # plot(gmf, type = "hist") # Residual histogram
 #'
 #' @method plot sgdgmf
 #' @export
@@ -835,9 +839,9 @@ plot.sgdgmf = function (
 #'
 #' # Get the partial residual spectrum of a GMF model
 #' screeplot(gmf) # screeplot of the var-cov matrix of the deviance residuals
-#' screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
-#' screeplot(gmf, cumulative = TRUE) # cumulative screeplot
-#' screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
+#' # screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
+#' # screeplot(gmf, cumulative = TRUE) # cumulative screeplot
+#' # screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
 #'
 #' @method screeplot sgdgmf
 #' @export
@@ -896,8 +900,7 @@ screeplot.sgdgmf = function (
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the biplot of a GMF model
-#' biplot(gmf) # 1st vs 2nd principal components
-#' biplot(gmf, choices = 2:3) #2nd vs 3rd principal components
+#' biplot(gmf)
 #'
 #' @method biplot sgdgmf
 #' @export
@@ -1006,15 +1009,15 @@ biplot.sgdgmf = function (
 #' # Generate data from a Poisson model
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
-#' # Fit a GMF model
-#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#'  # Fit a GMF model
+#'  gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the heatmap of a GMF model
 #' image(gmf, type = "data") # original data
-#' image(gmf, type = "response") # fitted values in response scale
-#' image(gmf, type = "scores") # estimated score matrix
-#' image(gmf, type = "loadings") # estimated loading matrix
-#' image(gmf, type = "deviance", resid = TRUE) # deviance residual matrix
+#' # image(gmf, type = "response") # fitted values in response scale
+#' # image(gmf, type = "scores") # estimated score matrix
+#' # image(gmf, type = "loadings") # estimated loading matrix
+#' # image(gmf, type = "deviance", resid = TRUE) # deviance residual matrix
 #'
 #' @method image sgdgmf
 #' @export

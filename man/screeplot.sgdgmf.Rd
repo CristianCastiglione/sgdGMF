@@ -47,8 +47,8 @@ gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Get the partial residual spectrum of a GMF model
 screeplot(gmf) # screeplot of the var-cov matrix of the deviance residuals
-screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
-screeplot(gmf, cumulative = TRUE) # cumulative screeplot
-screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
+# screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
+# screeplot(gmf, cumulative = TRUE) # cumulative screeplot
+# screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
 
 }

@@ -253,8 +253,8 @@ eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
 #' correlation threshold (ACT)
 #'
 #' @param covmat matrix to be decomposed
+#' @param nobs number of observations used to compute the covariance matrix
 #' @param maxcomp maximum number of eigenvalues to compute
-#' @param maxiter maximum number of iterations
 #'
 #' @references
 #' Fan, J., Guo, j. and Zheng, S. (2020).
@@ -310,8 +310,8 @@ eigengap.act = function (covmat, nobs, maxcomp = NULL) {
 #' hard thresholding (OHT)
 #'
 #' @param covmat matrix to be decomposed
+#' @param nobs number of observations used to compute the covariance matrix
 #' @param maxcomp maximum number of eigenvalues to compute
-#' @param maxiter maximum number of iterations
 #'
 #' @references
 #' Gavish, M., Donoho, D.L. (2014)

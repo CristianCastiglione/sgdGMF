@@ -53,8 +53,8 @@ gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Plot the residual-based GMF diagnostics
 plot(gmf, type = "res-fit") # Residuals vs fitted values
-plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
-plot(gmf, type = "qq") # Residual QQ-plot
-plot(gmf, type = "hist") # Residual histogram
+# plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
+# plot(gmf, type = "qq") # Residual QQ-plot
+# plot(gmf, type = "hist") # Residual histogram
 
 }

@@ -49,7 +49,6 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Get the biplot of a GMF model
-biplot(gmf) # 1st vs 2nd principal components
-biplot(gmf, choices = 2:3) #2nd vs 3rd principal components
+biplot(gmf)
 
 }

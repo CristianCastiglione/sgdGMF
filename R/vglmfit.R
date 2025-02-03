@@ -81,7 +81,7 @@ vglm.fit.coef = function (
     ## for (j in 1:m) {
     ##   yj = as.vector(Y[,j])
     ##   oj = as.vector(offset[,j])
-    ##   fit = stats::glm.fit(x = X, y = yj, family = family, offset = oj)
+    ##   fit = stats::glm.fit(x = X, y = yj, family = family, weights = wj, offset = oj)
     ##   coefs[j, ] = as.vector(fit$coefficients)
     ## }
   } else {
