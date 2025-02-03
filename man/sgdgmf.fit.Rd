@@ -73,6 +73,7 @@ In particular, the returned object collects the following information:
   \item \code{objective}: the penalized objective function at the end of the optimization
   \item \code{aic}: Akaike information criterion
   \item \code{bic}: Bayesian information criterion
+  \item \code{names}: list of row and column names for all the output matrices
   \item \code{exe.time}: the total execution time in seconds
   \item \code{trace}: a trace matrix recording the optimization history
   \item \code{summary.cv}:
@@ -104,7 +105,7 @@ We assume for the \eqn{(i,j)}th observation in the matrix a dispersion exponenti
 \eqn{(y_{ij} \mid \theta_{ij}) \sim EF(\theta_{ij}, \phi)}, where \eqn{\theta_{ij}} is the
 natural parameter and \eqn{\phi} is the dispersion parameter.
 Recall that the conditional probability density function of \eqn{y_{ij}} is given by
-\deqn{f (y_{ij}; \psi) = \exp \big[ w_{ij} \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - w_{ij} c(y_{ij}, \phi) \big],}
+\deqn{f (y_{ij}; \psi) = \exp \big[ w_{ij} \{(y_{ij} \theta_{ij} - b(\theta_{ij})\} / \phi - c(y_{ij}, \phi / w_{ij}) \big],}
 where \eqn{\psi} is the vector of unknown parameters to be estimated,
 \eqn{b(\cdot)} is a convex twice differentiable log-partition function,
 and \eqn{c(\cdot,\cdot)} is the cumulant function of the family.
