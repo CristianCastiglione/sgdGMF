@@ -19,6 +19,10 @@
 Computes the fitted values of a GMF model.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

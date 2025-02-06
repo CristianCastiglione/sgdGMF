@@ -51,6 +51,10 @@ Moreover, if required, return the partial residual of the model obtained by
 excluding the matrix decomposition from the linear predictor.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

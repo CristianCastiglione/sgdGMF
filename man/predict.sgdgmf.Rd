@@ -43,6 +43,10 @@ If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
 By doing so, \code{B} and \code{V} are kept fixed.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

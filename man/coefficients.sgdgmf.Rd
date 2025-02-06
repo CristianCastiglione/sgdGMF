@@ -25,6 +25,10 @@ Return the estimated coefficients of a GMF model, i.e., the row- and column-spec
 regression effects, the latent scores and loadings.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

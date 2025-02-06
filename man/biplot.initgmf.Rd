@@ -32,11 +32,19 @@
 
 \item{palette}{the color-palette which should be used}
 }
+\value{
+If \code{arrange=TRUE}, a single ggplot object with the selected biplots,
+otherwise, a list of two ggplot objects showing the row and column latent variables.
+}
 \description{
 Plot the observations on a two-dimensional projection determined by the
 estimated score matrix
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model
@@ -45,9 +53,10 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 # Fit a GMF model
 init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
+\donttest{
 # Get the biplot of a GMF model
 biplot(init) # 1st vs 2nd principal components
-biplot(init, choices = 2:3) #2nd vs 3rd principal components
+biplot(init, choices = 2:3) #2nd vs 3rd principal components}
 
 }
 \seealso{

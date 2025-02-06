@@ -35,6 +35,9 @@
 
 \item{fillna}{if \code{TRUE}, fills the \code{NA} values with \code{0}}
 }
+\value{
+A ggplot object showing the selected diagnostic plot.
+}
 \description{
 Plots (one of) six diagnostics to graphically analyze the marginal and conditional
 distribution of the residuals of a GMF model. Currently, the following plots are
@@ -43,6 +46,10 @@ absolute square-root residuals against fitted values, histogram of the residuals
 residual QQ-plot, residual ECDF-plot.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model
@@ -51,11 +58,11 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 # Fit a GMF model
 init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
-# Plot the residual-based GMF diagnostics
+\donttest{# Plot the residual-based GMF diagnostics
 plot(init, type = "res-fit") # Residuals vs fitted values
 plot(init, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
 plot(init, type = "qq") # Residual QQ-plot
-plot(init, type = "hist") # Residual histogram
+plot(init, type = "hist") # Residual histogram}
 
 }
 \seealso{

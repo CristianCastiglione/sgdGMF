@@ -21,10 +21,17 @@
 
 \item{k}{the penalty parameter to be used for AIC; the default is \code{k = 2}}
 }
+\value{
+The value of the deviance extracted from a \code{initgmf} object.
+}
 \description{
 Compute deviance, AIC and BIC of an initialized GMF object
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

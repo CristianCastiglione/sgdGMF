@@ -26,34 +26,41 @@
 
 \item{nthreads}{number of cores to be used in the \code{"glm"} method}
 }
+\value{
+An \code{sgdgmf} object containing the re-fitted model.
+}
 \description{
 Refine the estimated latent scores of a GMF model via IRWLS
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
-# Set RUN = TRUE to run the example
-RUN = FALSE
-if (RUN) {
-  # Generate data from a Poisson model
-  data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+\donttest{# Generate data from a Poisson model
+data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 
-  # Fit a GMF model using SGD
-  gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
+# Fit a GMF model using SGD
+gmf_old = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "sgd")
 
-  # Refine the score matrix estimate
-  gmf_new = refit(gmf_old)
+# Refine the score matrix estimate
+gmf_new = refit(gmf_old)
 
-  # Get the fitted values in the link and response scales
-  mu_hat_old = fitted(gmf_old, type = "response")
-  mu_hat_new = fitted(gmf_new, type = "response")
+# Get the fitted values in the link and response scales
+mu_hat_old = fitted(gmf_old, type = "response")
+mu_hat_new = fitted(gmf_new, type = "response")
 
-  # Compare the results
-  par(mfrow = c(2,2), mar = c(1,1,3,1))
-  image(data$Y, axes = FALSE, main = expression(Y))
-  image(data$mu, axes = FALSE, main = expression(mu))
-  image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
-  image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
+# Compare the results
+oldpar = par(); par(mfrow = c(2,2), mar = c(1,1,3,1))
+image(data$Y, axes = FALSE, main = expression(Y))
+image(data$mu, axes = FALSE, main = expression(mu))
+image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
+image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
+par(oldpar)}
+
 }
-
+\seealso{
+\code{\link{sgdgmf.fit}}
 }

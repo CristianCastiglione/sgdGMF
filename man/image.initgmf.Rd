@@ -33,12 +33,19 @@
 
 \item{palette}{the color-palette which should be used}
 }
+\value{
+A ggplot object showing the selected heatmap.
+}
 \description{
 Plots a heatmap of either the data, the fitted values, or the residual values
 of a GMF model allowing for different types of transformations and normalizations.
 Moreover, it also permits to plot the latent score and loading matrices.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model
@@ -47,11 +54,12 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 # Fit a GMF model
 init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 
+\donttest{
 # Get the heatmap of a GMF model
 image(init, type = "data") # original data
 image(init, type = "response") # fitted values in response scale
 image(init, type = "scores") # estimated score matrix
 image(init, type = "loadings") # estimated loading matrix
-image(init, type = "deviance", resid = TRUE) # deviance residual matrix
+image(init, type = "deviance", resid = TRUE) # deviance residual matrix}
 
 }
