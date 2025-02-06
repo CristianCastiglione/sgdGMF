@@ -8,9 +8,15 @@
 #' @param normalize if \code{TRUE}, normalize the result using the null-deviance
 #' @param k the penalty parameter to be used for AIC; the default is \code{k = 2}
 #'
+#' @returns The value of the deviance extracted from a \code{initgmf} object.
+#'
 #' @seealso \code{\link{deviance.sgdgmf}}, \code{\link{AIC.sgdgmf}} and \code{\link{AIC.sgdgmf}}.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -79,6 +85,10 @@ BIC.initgmf = function (object, ...) {
 #' @param ... further arguments passed to or from other methods
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -135,6 +145,10 @@ print.initgmf = function (x, ...) {
 #' @seealso \code{\link{coefficients.sgdgmf}} and \code{\link{coef.sgdgmf}}.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -195,6 +209,10 @@ coef.initgmf = function (
 #' @seealso \code{\link{residuals.sgdgmf}} and \code{\link{resid.sgdgmf}} for more details on the residual computation.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -312,6 +330,10 @@ resid.initgmf = function (
 #' @seealso \code{\link{fitted.sgdgmf}}.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -375,9 +397,15 @@ fitted.initgmf = function (
 #' @param normalize if \code{TRUE}, standardizes the residuals column-by-column
 #' @param fillna if \code{TRUE}, fills the \code{NA} values with \code{0}
 #'
+#' @returns A ggplot object showing the selected diagnostic plot.
+#'
 #' @seealso \code{\link{plot.sgdgmf}}.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -386,11 +414,11 @@ fitted.initgmf = function (
 #' # Fit a GMF model
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
-#' # Plot the residual-based GMF diagnostics
+#' \donttest{# Plot the residual-based GMF diagnostics
 #' plot(init, type = "res-fit") # Residuals vs fitted values
 #' plot(init, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
 #' plot(init, type = "qq") # Residual QQ-plot
-#' plot(init, type = "hist") # Residual histogram
+#' plot(init, type = "hist") # Residual histogram}
 #'
 #' @method plot initgmf
 #' @export
@@ -427,9 +455,15 @@ plot.initgmf = function (
 #' @param cumulative if \code{TRUE}, plots the cumulative sum of the eigenvalues
 #' @param proportion if \code{TRUE}, plots the fractions of explained variance
 #'
+#' @returns A ggplot object showing the residual screeplot of the model.
+#'
 #' @seealso \code{\link{screeplot.sgdgmf}}.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -438,11 +472,12 @@ plot.initgmf = function (
 #' # Fit a GMF model
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
+#' \donttest{
 #' # Get the partial residual spectrum of a GMF model
 #' screeplot(init) # screeplot of the var-cov matrix of the deviance residuals
 #' screeplot(init, partial = TRUE) # screeplot of the partial residuals
 #' screeplot(init, cumulative = TRUE) # cumulative screeplot
-#' screeplot(init, proportion = TRUE) # proportion of explained residual variance
+#' screeplot(init, proportion = TRUE) # proportion of explained residual variance}
 #'
 #' @method screeplot initgmf
 #' @export
@@ -481,9 +516,17 @@ screeplot.initgmf = function (
 #' @param labels a vector of labels which should be plotted
 #' @param palette the color-palette which should be used
 #'
+#' @return
+#' If \code{arrange=TRUE}, a single ggplot object with the selected biplots,
+#' otherwise, a list of two ggplot objects showing the row and column latent variables.
+#'
 #' @seealso \code{\link{biplot.sgdgmf}}.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -492,9 +535,10 @@ screeplot.initgmf = function (
 #' # Fit a GMF model
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
+#' \donttest{
 #' # Get the biplot of a GMF model
 #' biplot(init) # 1st vs 2nd principal components
-#' biplot(init, choices = 2:3) #2nd vs 3rd principal components
+#' biplot(init, choices = 2:3) #2nd vs 3rd principal components}
 #'
 #' @method biplot initgmf
 #' @export
@@ -525,7 +569,13 @@ biplot.initgmf = function (
 #' @param limits the color limits which should be used
 #' @param palette the color-palette which should be used
 #'
+#' @returns A ggplot object showing the selected heatmap.
+#'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -534,12 +584,13 @@ biplot.initgmf = function (
 #' # Fit a GMF model
 #' init = sgdgmf.init(data$Y, ncomp = 3, family = poisson())
 #'
+#' \donttest{
 #' # Get the heatmap of a GMF model
 #' image(init, type = "data") # original data
 #' image(init, type = "response") # fitted values in response scale
 #' image(init, type = "scores") # estimated score matrix
 #' image(init, type = "loadings") # estimated loading matrix
-#' image(init, type = "deviance", resid = TRUE) # deviance residual matrix
+#' image(init, type = "deviance", resid = TRUE) # deviance residual matrix}
 #'
 #' @method image initgmf
 #' @export

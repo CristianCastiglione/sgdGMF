@@ -252,7 +252,7 @@ partition = function (y, p = 0.3) {
 #' data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
 #'
 #' # Compare the results
-#' par(mfrow = c(3,3), mar = c(1,1,3,1))
+#' oldpar = par(); par(mfrow = c(3,3), mar = c(1,1,3,1))
 #' image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
 #' image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
 #' image(data_pois$U, axes = FALSE, main = expression(U[Pois]))
@@ -262,6 +262,7 @@ partition = function (y, p = 0.3) {
 #' image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
 #' image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
 #' image(data_gam$U, axes = FALSE, main = expression(U[Gam]))
+#' par(oldpar)
 #'
 #' @export sim.gmf.data
 sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), dispersion = 1) {

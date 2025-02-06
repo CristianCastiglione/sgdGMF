@@ -230,6 +230,10 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #' @param parallel if \code{TRUE}, use parallel computing for the \code{"glm"} method
 #' @param nthreads number of cores to be used in the \code{"glm"} method
 #'
+#' @returns A \code{list} of control parameters for the initialization
+#'
+#' @seealso \code{\link{set.control.alg}}, \code{\link{set.control.cv}}, \code{\link{sgdgmf.init}}
+#'
 #' @examples
 #' library(sgdGMF)
 #'
@@ -305,6 +309,8 @@ set.control.init = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#'
+#' @returns A \code{list} of control parameters for the AIRWLS algorithm
 #'
 #' @examples
 #' library(sgdGMF)
@@ -405,6 +411,8 @@ set.control.airwls = function (
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TTUE})
 #'
+#' @returns A \code{list} of control parameters for the quasi-Newton algorithm
+#'
 #' @examples
 #' library(sgdGMF)
 #'
@@ -501,6 +509,8 @@ set.control.newton = function (
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#'
+#' @returns A \code{list} of control parameters for the adaptive SGD algorithm with coordinate-wise sub-sampling
 #'
 #' @examples
 #' library(sgdGMF)
@@ -601,6 +611,8 @@ set.control.coord.sgd = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
 #'
+#' @returns A \code{list} of control parameters for the adaptive SGD algorithm with block-wise sub-sampling
+#'
 #' @examples
 #' library(sgdGMF)
 #'
@@ -700,6 +712,10 @@ set.control.block.sgd = function (
 #' \code{\link{set.control.block.sgd}} (\code{method="sgd"}, \code{sampling="block"}).
 #' \code{\link{set.control.coord.sgd}} (\code{method="sgd"}, \code{sampling="coord"}),
 #'
+#' @returns A \code{list} of control parameters for the selected estimation algorithm
+#'
+#' @seealso \code{\link{set.control.init}}, \code{\link{set.control.cv}}, \code{\link{sgdgmf.fit}}
+#'
 #' @examples
 #' library(sgdGMF)
 #'
@@ -747,6 +763,10 @@ set.control.alg = function (
 #' @param verbose if \code{TRUE}, print the cross-validation status
 #' @param parallel if \code{TRUE}, allows for parallel computing
 #' @param nthreads number of cores to use in parallel (only if \code{parallel=TRUE})
+#'
+#' @returns A \code{list} of control parameters for the cross-validation algorithm
+#'
+#' @seealso \code{\link{set.control.init}}, \code{\link{set.control.alg}}, \code{\link{sgdgmf.cv}}
 #'
 #' @examples
 #' library(sgdGMF)

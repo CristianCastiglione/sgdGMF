@@ -179,11 +179,17 @@
 #' arXiv preprint: arXiv:2412.20509.
 #'
 #' @seealso
+#' \code{\link{set.control.init}}, \code{\link{set.control.alg}},
+#' \code{\link{sgdgmf.init}}, \code{\link{sgdgmf.rank}},
 #' \code{\link{refit.sgdgmf}}, \code{\link{coef.sgdgmf}}, \code{\link{resid.sgdgmf}},
 #' \code{\link{fitted.sgdgmf}}, \code{\link{predict.sgdgmf}}, \code{\link{plot.sgdgmf}},
 #' \code{\link{screeplot.sgdgmf}}, \code{\link{biplot.sgdgmf}}, \code{\link{image.sgdgmf}}
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Set the data dimensions

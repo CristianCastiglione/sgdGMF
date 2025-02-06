@@ -39,6 +39,10 @@
 #' out-of-sample error.
 #'
 #' @examples
+#' \dontshow{
+#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+#' Sys.setenv(MKL_NUM_THREADS = 1)
+#' }# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Set the data dimensions
@@ -66,7 +70,7 @@
 #'   mu_hat_gam = fitted(gmf_gam, type = "response")
 #'
 #'   # Compare the results
-#'   par(mfrow = c(1,3), mar = c(1,1,3,1))
+#'   oldpar = par(); par(mfrow = c(1,3), mar = c(1,1,3,1))
 #'   image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
 #'   image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
 #'   image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))
@@ -76,6 +80,7 @@
 #'   image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
 #'   image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
 #'   image(mu_hat_gam, axes = FALSE, main = expression(hat(mu)[Gam]))
+#'   par(oldpar)
 #' }
 #'
 #' @export sgdgmf.cv
@@ -256,7 +261,7 @@ sgdgmf.cv = function (
 
   if (refit) {
     # Re-fit the model using the selected optimizer
-    cat("Final refit with rank =", ncomp, "\n")
+    if (control.cv$verbose) cat("Final refit with rank =", ncomp, "\n")
     control.init$values$U = control.init$values$U[, 1:ncomp, drop = FALSE]
     control.init$values$V = control.init$values$V[, 1:ncomp, drop = FALSE]
 
