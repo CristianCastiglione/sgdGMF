@@ -32,6 +32,9 @@ set.control.init(
 
 \item{nthreads}{number of cores to be used in the \code{"glm"} method}
 }
+\value{
+A \code{list} of control parameters for the initialization
+}
 \description{
 Check if the input initialization parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined options which specify how
@@ -46,4 +49,7 @@ set.control.init()
 # Parametrized call
 set.control.init(method = "glm", type = "deviance", niter = 10)
 
+}
+\seealso{
+\code{\link{set.control.alg}}, \code{\link{set.control.cv}}, \code{\link{sgdgmf.init}}
 }

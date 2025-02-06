@@ -62,6 +62,13 @@ sgdgmf.rank(
 
 \item{return.cov}{if \code{TRUE}, return the covariance matrix of the residuals}
 }
+\value{
+A list containing the \code{method}, the selected latent rank \code{ncomp},
+and the eigenvalues used to select the latent rank \code{lambdas}.
+Additionally, if required, in the output list will also provide the linear predictor
+\code{eta}, the predicted mean matrix \code{mu}, the residual matrix \code{res}, and
+the implied residual covariance matrix \code{covmat}.
+}
 \description{
 Select the number of significant principal components of a GMF model via
 exploitation of eigenvalue-gap methods
@@ -88,11 +95,11 @@ print(paste("Binomial:", ncomp_bin$ncomp))
 print(paste("Gamma:", ncomp_gam$ncomp))
 
 # Plot the screeplot used for the component determination
-par(mfrow = c(3,1))
+oldpar = par(); par(mfrow = c(3,1))
 barplot(ncomp_pois$lambdas, main = "Poisson screeplot")
 barplot(ncomp_bin$lambdas, main = "Binomial screeplot")
 barplot(ncomp_gam$lambdas, main = "Gamma screeplot")
-par(mfrow = c(1,1))
+par(oldpar)
 
 }
 \references{

@@ -11,6 +11,9 @@ simulate(object, ...)
 
 \item{...}{additional arguments passed to or from other methods}
 }
+\value{
+An array containing the simulated data.
+}
 \description{
 Generic function to simulate new data from a statistical model
 }

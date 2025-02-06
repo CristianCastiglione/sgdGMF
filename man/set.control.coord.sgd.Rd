@@ -53,6 +53,9 @@ set.control.coord.sgd(
 
 \item{progress}{if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})}
 }
+\value{
+A \code{list} of control parameters for the adaptive SGD algorithm with coordinate-wise sub-sampling
+}
 \description{
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.

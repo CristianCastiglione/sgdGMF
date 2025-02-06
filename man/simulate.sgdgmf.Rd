@@ -13,10 +13,17 @@
 
 \item{nsim}{number of samples}
 }
+\value{
+An 3-fold array containing the simulated data.
+}
 \description{
 Simulate new data from a fitted generalized matrix factorization models
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

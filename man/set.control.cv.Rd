@@ -32,6 +32,9 @@ set.control.cv(
 
 \item{nthreads}{number of cores to use in parallel (only if \code{parallel=TRUE})}
 }
+\value{
+A \code{list} of control parameters for the cross-validation algorithm
+}
 \description{
 Check if the input cross-validation parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined cross-validation parameters.
@@ -45,4 +48,7 @@ set.control.cv()
 # Parametrized call
 set.control.cv(criterion = "bic", proportion = 0.2)
 
+}
+\seealso{
+\code{\link{set.control.init}}, \code{\link{set.control.alg}}, \code{\link{sgdgmf.cv}}
 }

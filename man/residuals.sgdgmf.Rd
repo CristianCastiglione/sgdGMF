@@ -76,6 +76,10 @@ the correct number of principal components to include into the GMF model or to
 detect some residual dependence structures not already explained by the model.
 }
 \examples{
+\dontshow{
+Sys.setenv(OPENBLAS_NUM_THREADS = 1)
+Sys.setenv(MKL_NUM_THREADS = 1)
+}# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

@@ -44,6 +44,9 @@ set.control.airwls(
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
 }
+\value{
+A \code{list} of control parameters for the AIRWLS algorithm
+}
 \description{
 Check if the input control parameters of the AIRWLS algorithm are allowed
 and set them to default values if they are not. Returns a list of

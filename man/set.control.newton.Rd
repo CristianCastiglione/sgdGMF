@@ -41,6 +41,9 @@ set.control.newton(
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TTUE})}
 }
+\value{
+A \code{list} of control parameters for the quasi-Newton algorithm
+}
 \description{
 Check if the input control parameters of the quasi-Newton algorithm  are
 allowed and set them to default values if they are not. Returns a list of

@@ -52,7 +52,7 @@ data_bin = sim.gmf.data(n = n, m = m, ncomp = d, family = binomial())
 data_gam = sim.gmf.data(n = n, m = m, ncomp = d, family = Gamma(link = "log"), dispersion = 0.25)
 
 # Compare the results
-par(mfrow = c(3,3), mar = c(1,1,3,1))
+oldpar = par(); par(mfrow = c(3,3), mar = c(1,1,3,1))
 image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
 image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
 image(data_pois$U, axes = FALSE, main = expression(U[Pois]))
@@ -62,5 +62,6 @@ image(data_bin$U, axes = FALSE, main = expression(U[Bin]))
 image(data_gam$Y, axes = FALSE, main = expression(Y[Gam]))
 image(data_gam$mu, axes = FALSE, main = expression(mu[Gam]))
 image(data_gam$U, axes = FALSE, main = expression(U[Gam]))
+par(oldpar)
 
 }

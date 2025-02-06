@@ -17,6 +17,9 @@ set.control.alg(
 
 \item{control}{list of algorithm-specific control parameters}
 }
+\value{
+A \code{list} of control parameters for the selected estimation algorithm
+}
 \description{
 Check if the input control parameters are allowed and set them to default
 values if they are not. Returns a list of well-defined control parameters.
@@ -42,4 +45,7 @@ set.control.alg()
 set.control.alg(method = "airwls", control = list(maxiter = 200, stepsize = 0.3))
 
 
+}
+\seealso{
+\code{\link{set.control.init}}, \code{\link{set.control.cv}}, \code{\link{sgdgmf.fit}}
 }
