@@ -11,7 +11,6 @@ vignette: >
 ## Workspace setup
 
 ```{r setup, include = FALSE}
-options(warn = -1)
 options(rmarkdown.html_vignette.check_title = FALSE)
 
 knitr::opts_chunk$set(
@@ -32,8 +31,6 @@ Load other useful packages in the workspace.
 library(ggplot2)
 library(ggpubr)
 library(reshape2)
-
-theme_set(theme_bw())
 ```
 
 ## Ant traits data
