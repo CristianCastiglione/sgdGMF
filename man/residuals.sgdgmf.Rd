@@ -44,6 +44,14 @@
 
 \item{ncomp}{number of eigenvalues to be calculated (only if \code{spectrum=TRUE})}
 }
+\value{
+If \code{spectrum=FALSE}, a matrix containing the selected residuals.
+If \code{spectrum=TRUE}, a list containing the residuals (\code{res}), the first \code{ncomp}
+eigenvalues of the residual covariance matrix, say (\code{lambdas}), the variance explained by the first
+\code{ncomp} principal component of the residuals (\code{explained.var}), the variance not
+explained by the first \code{ncomp} principal component of the residuals (\code{residual.var}),
+the total variance of the residuals (\code{total.var}).
+}
 \description{
 Extract the residuals of a GMF model and, if required, compute the eigenvalues
 of the residuals covariance/correlation matrix.
@@ -76,10 +84,7 @@ the correct number of principal components to include into the GMF model or to
 detect some residual dependence structures not already explained by the model.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

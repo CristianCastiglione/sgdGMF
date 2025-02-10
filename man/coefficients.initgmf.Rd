@@ -20,15 +20,16 @@
 
 \item{type}{the type of coefficients which should be returned}
 }
+\value{
+If \code{type="all"}, a list of coefficients containing the fields \code{B}, \code{A}, \code{U} and \code{V}.
+Otherwise, a matrix of coefficients, corresponding to the selected \code{type}.
+}
 \description{
 Return the initialized coefficients of a GMF model, i.e., the row- and column-specific
 regression effects, the latent scores and loadings.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

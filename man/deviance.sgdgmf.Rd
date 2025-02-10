@@ -28,10 +28,7 @@ The value of the deviance extracted from a \code{sgdgmf} object.
 Compute deviance, AIC and BIC of a GMF object
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

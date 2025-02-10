@@ -29,6 +29,11 @@
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
 }
+\value{
+If \code{type="link"} or \code{typr="response"}, a matrix of predictions.
+If \code{type="terms"}, a list of matrices containing the fields \code{XB}, \code{AZ} and \code{UV}.
+If \code{type="coef"}, a list of matrices containing the field \code{B}, \code{A}, \code{U} and \code{V}.
+}
 \description{
 Computes the predictions of a GMF model. Out-of-sample predictions for a new
 set of responses and covariates are computed via MLE, by keeping fixed the values
@@ -43,10 +48,7 @@ If \code{newY} and \code{newX} are provided, a corresponding set of \code{A} and
 By doing so, \code{B} and \code{V} are kept fixed.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

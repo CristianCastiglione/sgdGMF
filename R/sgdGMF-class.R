@@ -15,13 +15,10 @@
 #' @seealso \code{\link{sgdgmf.fit}}
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' \donttest{# Load the sgdGMF package
 #' library(sgdGMF)
 #'
-#' \donttest{# Generate data from a Poisson model
+#' # Generate data from a Poisson model
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
 #' # Fit a GMF model using SGD
@@ -40,8 +37,8 @@
 #' image(data$mu, axes = FALSE, main = expression(mu))
 #' image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
 #' image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
-#' par(oldpar)}
-#'
+#' par(oldpar)
+#' }
 #' @method refit sgdgmf
 #' @export
 refit.sgdgmf = function (
@@ -121,10 +118,7 @@ refit.sgdgmf = function (
 #' @returns The value of the deviance extracted from a \code{sgdgmf} object.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -179,6 +173,8 @@ BIC.sgdgmf = function (object, ...) {
 #'
 #' @param x an object of class \code{sgdgmf}
 #' @param ... further arguments passed to or from other methods
+#'
+#' @returns No return value, called only for printing.
 #'
 #' @examples
 #' \dontshow{
@@ -237,11 +233,12 @@ print.sgdgmf = function (x, ...) {
 #' @param ... further arguments passed to or from other methods
 #' @param type the type of coefficients which should be returned
 #'
+#' @return
+#' If \code{type="all"}, a list of coefficients containing the fields \code{B}, \code{A}, \code{U} and \code{V}.
+#' Otherwise, a matrix of coefficients, corresponding to the selected \code{type}.
+#'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -267,8 +264,8 @@ coefficients.sgdgmf = function (
     "rowreg" = object$A,
     "scores" = object$U,
     "loadings" = object$V,
-    "all" = list(colcoef = object$B, rowcoef = object$A,
-                 scores = object$U, loadings = object$V))
+    "all" = list(B = object$B, A = object$A,
+                 U = object$U, V = object$V))
 }
 
 #' @rdname coefficients.sgdgmf
@@ -298,6 +295,14 @@ coef.sgdgmf = function (
 #' @param spectrum if \code{TRUE}, returns the eigenvalues of the residual covariance matrix
 #' @param ncomp number of eigenvalues to be calculated (only if \code{spectrum=TRUE})
 #'
+#' @return
+#' If \code{spectrum=FALSE}, a matrix containing the selected residuals.
+#' If \code{spectrum=TRUE}, a list containing the residuals (\code{res}), the first \code{ncomp}
+#' eigenvalues of the residual covariance matrix, say (\code{lambdas}), the variance explained by the first
+#' \code{ncomp} principal component of the residuals (\code{explained.var}), the variance not
+#' explained by the first \code{ncomp} principal component of the residuals (\code{residual.var}),
+#' the total variance of the residuals (\code{total.var}).
+#'
 #' @details
 #' Let \eqn{g(\mu) = \eta = X B^\top + \Gamma Z^\top + U V^\top} be the linear predictor of a
 #' GMF model. Let \eqn{R = (r_{ij})} be the correspondent residual matrix.
@@ -324,10 +329,7 @@ coef.sgdgmf = function (
 #' detect some residual dependence structures not already explained by the model.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -444,11 +446,13 @@ resid.sgdgmf = function (
 #' @param type the type of fitted values which should be returned
 #' @param partial if \code{TRUE}, returns the partial fitted values
 #'
+#' @return
+#' If \code{type="terms"}, a list of fitted values containing the fields \code{XB},
+#' \code{AZ} and \code{UV}. Otherwise, a matrix of fitted values in the link or
+#' response scale, depending on the selected \code{type}.
+#'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -505,6 +509,11 @@ fitted.sgdgmf = function (
 #' @param parallel if \code{TRUE}, allows for parallel computing using the package \code{foreach}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
 #'
+#' @return
+#' If \code{type="link"} or \code{typr="response"}, a matrix of predictions.
+#' If \code{type="terms"}, a list of matrices containing the fields \code{XB}, \code{AZ} and \code{UV}.
+#' If \code{type="coef"}, a list of matrices containing the field \code{B}, \code{A}, \code{U} and \code{V}.
+#'
 #' @details
 #' If \code{newY} and \code{newX} are omitted, the predictions are based on the data
 #' used for the fit. In that case, the predictions corresponds to the fitted values.
@@ -513,10 +522,7 @@ fitted.sgdgmf = function (
 #' By doing so, \code{B} and \code{V} are kept fixed.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -678,10 +684,7 @@ predict.sgdgmf = function (
 #' @returns An 3-fold array containing the simulated data.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -752,10 +755,7 @@ simulate.sgdgmf = function (
 #' @returns A ggplot object showing the selected diagnostic plot.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' \donttest{# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -764,13 +764,12 @@ simulate.sgdgmf = function (
 #' # Fit a GMF model
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
-#' \donttest{
 #' # Plot the residual-based GMF diagnostics
 #' plot(gmf, type = "res-fit") # Residuals vs fitted values
 #' plot(gmf, type = "std-fit") # Abs-sqrt-transformed residuals vs fitted values
 #' plot(gmf, type = "qq") # Residual QQ-plot
-#' plot(gmf, type = "hist") # Residual histogram}
-#'
+#' plot(gmf, type = "hist") # Residual histogram
+#' }
 #' @method plot sgdgmf
 #' @export
 plot.sgdgmf = function (
@@ -875,10 +874,7 @@ plot.sgdgmf = function (
 #' @returns A ggplot object showing the residual screeplot of the model.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' \donttest{# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -887,13 +883,12 @@ plot.sgdgmf = function (
 #' # Fit a GMF model
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
-#' \donttest{
 #' # Get the partial residual spectrum of a GMF model
 #' screeplot(gmf) # screeplot of the var-cov matrix of the deviance residuals
 #' screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
 #' screeplot(gmf, cumulative = TRUE) # cumulative screeplot
-#' screeplot(gmf, proportion = TRUE) # proportion of explained residual variance}
-#'
+#' screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
+#' }
 #' @method screeplot sgdgmf
 #' @export
 screeplot.sgdgmf = function (
@@ -946,10 +941,7 @@ screeplot.sgdgmf = function (
 #' otherwise, a list of two ggplot objects showing the row and column latent variables.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' \donttest{# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -958,10 +950,9 @@ screeplot.sgdgmf = function (
 #' # Fit a GMF model
 #' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
-#' \donttest{
 #' # Get the biplot of a GMF model
-#' biplot(gmf)}
-#'
+#' biplot(gmf)
+#' }
 #' @method biplot sgdgmf
 #' @export
 biplot.sgdgmf = function (
@@ -1066,10 +1057,7 @@ biplot.sgdgmf = function (
 #' @returns A ggplot object showing the selected heatmap.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' \donttest{# Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Generate data from a Poisson model
@@ -1078,14 +1066,13 @@ biplot.sgdgmf = function (
 #'  # Fit a GMF model
 #'  gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
-#' \donttest{
 #' # Get the heatmap of a GMF model
 #' image(gmf, type = "data") # original data
 #' image(gmf, type = "response") # fitted values in response scale
 #' image(gmf, type = "scores") # estimated score matrix
 #' image(gmf, type = "loadings") # estimated loading matrix
-#' image(gmf, type = "deviance", resid = TRUE) # deviance residual matrix}
-#'
+#' image(gmf, type = "deviance", resid = TRUE) # deviance residual matrix
+#' }
 #' @method image sgdgmf
 #' @export
 image.sgdgmf = function (

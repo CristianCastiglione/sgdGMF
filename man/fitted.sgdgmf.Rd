@@ -15,14 +15,16 @@
 
 \item{partial}{if \code{TRUE}, returns the partial fitted values}
 }
+\value{
+If \code{type="terms"}, a list of fitted values containing the fields \code{XB},
+\code{AZ} and \code{UV}. Otherwise, a matrix of fitted values in the link or
+response scale, depending on the selected \code{type}.
+}
 \description{
 Computes the fitted values of a GMF model.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model

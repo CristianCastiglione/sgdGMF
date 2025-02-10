@@ -11,6 +11,9 @@
 
 \item{...}{further arguments passed to or from other methods}
 }
+\value{
+No return value, called only for printing.
+}
 \description{
 Print some summary information of a GMF model.
 }

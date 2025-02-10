@@ -33,13 +33,10 @@ An \code{sgdgmf} object containing the re-fitted model.
 Refine the estimated latent scores of a GMF model via IRWLS
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+\donttest{# Load the sgdGMF package
 library(sgdGMF)
 
-\donttest{# Generate data from a Poisson model
+# Generate data from a Poisson model
 data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 
 # Fit a GMF model using SGD
@@ -58,8 +55,8 @@ image(data$Y, axes = FALSE, main = expression(Y))
 image(data$mu, axes = FALSE, main = expression(mu))
 image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))
 image(mu_hat_new, axes = FALSE, main = expression(hat(mu)[new]))
-par(oldpar)}
-
+par(oldpar)
+}
 }
 \seealso{
 \code{\link{sgdgmf.fit}}

@@ -40,10 +40,7 @@ Plots the variances of the principal components of the residuals against the
 number of principal component.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+\donttest{# Load the sgdGMF package
 library(sgdGMF)
 
 # Generate data from a Poisson model
@@ -52,11 +49,10 @@ data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 # Fit a GMF model
 gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
-\donttest{
 # Get the partial residual spectrum of a GMF model
 screeplot(gmf) # screeplot of the var-cov matrix of the deviance residuals
 screeplot(gmf, partial = TRUE) # screeplot of the partial residuals
 screeplot(gmf, cumulative = TRUE) # cumulative screeplot
-screeplot(gmf, proportion = TRUE) # proportion of explained residual variance}
-
+screeplot(gmf, proportion = TRUE) # proportion of explained residual variance
+}
 }
