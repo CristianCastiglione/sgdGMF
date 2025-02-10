@@ -14,11 +14,15 @@ Description: Efficient framework to estimate high-dimensional generalized matrix
     factorization models using penalized maximum likelihood under a dispersion 
     exponential family specification. Either deterministic and stochastic methods 
     are implemented for the numerical maximization. In particular, the package 
-    implements an original stochastic gradient descent algorithm with a block-wise 
+    implements the stochastic gradient descent algorithm with a block-wise 
     mini-batch strategy to speed up the computations and an efficient adaptive 
-    learning rate schedule to stabilize the convergence. Other methods considered 
-    for the optimization are the alternated iterative re-weighted least squares and 
-    the quasi-Newton method with diagonal approximation of the Fisher information matrix.
+    learning rate schedule to stabilize the convergence. 
+    All the theoretical details can be found in Castiglione, Segers, Clement, Risso 
+    (2024, <https://arxiv.org/abs/2412.20509>). 
+    Other methods considered for the optimization are the alternated iterative 
+    re-weighted least squares and the quasi-Newton method with diagonal approximation 
+    of the Fisher information matrix discussed in Kidzinski, Hui, Warton, Hastie 
+    (2022, <http://jmlr.org/papers/v23/20-1104.html>).
 License: MIT + file LICENSE
 Imports: 
     Rcpp (>= 1.0.10), 
