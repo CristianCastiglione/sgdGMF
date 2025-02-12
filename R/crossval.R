@@ -39,10 +39,7 @@
 #' out-of-sample error.
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Set the data dimensions
@@ -70,7 +67,8 @@
 #'   mu_hat_gam = fitted(gmf_gam, type = "response")
 #'
 #'   # Compare the results
-#'   oldpar = par(); par(mfrow = c(1,3), mar = c(1,1,3,1))
+#'   oldpar = par(no.readonly = TRUE)
+#'   par(mfrow = c(1,3), mar = c(1,1,3,1))
 #'   image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
 #'   image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
 #'   image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))

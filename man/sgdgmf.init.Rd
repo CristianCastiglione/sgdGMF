@@ -181,7 +181,8 @@ mu_hat_bin = fitted(init_bin, type = "response")
 mu_hat_gam = fitted(init_gam, type = "response")
 
 # Compare the results
-oldpar = par(); par(mfrow = c(3,3), mar = c(1,1,3,1))
+oldpar = par(no.readonly = TRUE)
+par(mfrow = c(3,3), mar = c(1,1,3,1))
 image(data_pois$Y, axes = FALSE, main = expression(Y[Pois]))
 image(data_pois$mu, axes = FALSE, main = expression(mu[Pois]))
 image(mu_hat_pois, axes = FALSE, main = expression(hat(mu)[Pois]))

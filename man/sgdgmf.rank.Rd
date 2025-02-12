@@ -95,7 +95,8 @@ print(paste("Binomial:", ncomp_bin$ncomp))
 print(paste("Gamma:", ncomp_gam$ncomp))
 
 # Plot the screeplot used for the component determination
-oldpar = par(); par(mfrow = c(3,1))
+oldpar = par(no.readonly = TRUE)
+par(mfrow = c(3,1))
 barplot(ncomp_pois$lambdas, main = "Poisson screeplot")
 barplot(ncomp_bin$lambdas, main = "Binomial screeplot")
 barplot(ncomp_gam$lambdas, main = "Gamma screeplot")

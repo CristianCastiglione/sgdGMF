@@ -32,7 +32,8 @@
 #' mu_hat_new = fitted(gmf_new, type = "response")
 #'
 #' # Compare the results
-#' oldpar = par(); par(mfrow = c(2,2), mar = c(1,1,3,1))
+#' oldpar = par(no.readonly = TRUE)
+#' par(mfrow = c(2,2), mar = c(1,1,3,1))
 #' image(data$Y, axes = FALSE, main = expression(Y))
 #' image(data$mu, axes = FALSE, main = expression(mu))
 #' image(mu_hat_old, axes = FALSE, main = expression(hat(mu)[old]))

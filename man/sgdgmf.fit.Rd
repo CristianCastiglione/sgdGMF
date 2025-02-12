@@ -196,10 +196,7 @@ it is not possible to run the \code{sgdgmf.fit} function within \code{R} level
 parallel functions, e.g., \code{foreach} loop.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Set the data dimensions
@@ -215,10 +212,12 @@ gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(), method = "airwls")
 mu_hat = fitted(gmf, type = "response")
 
 # Compare the results
+oldpar = par(no.readonly = TRUE)
 par(mfrow = c(1,3), mar = c(1,1,3,1))
 image(data$Y, axes = FALSE, main = expression(Y))
 image(data$mu, axes = FALSE, main = expression(mu))
 image(mu_hat, axes = FALSE, main = expression(hat(mu)))
+par(oldpar)
 
 }
 \references{

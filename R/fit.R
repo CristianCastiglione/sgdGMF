@@ -186,10 +186,7 @@
 #' \code{\link{screeplot.sgdgmf}}, \code{\link{biplot.sgdgmf}}, \code{\link{image.sgdgmf}}
 #'
 #' @examples
-#' \dontshow{
-#' Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-#' Sys.setenv(MKL_NUM_THREADS = 1)
-#' }# Load the sgdGMF package
+#' # Load the sgdGMF package
 #' library(sgdGMF)
 #'
 #' # Set the data dimensions
@@ -205,10 +202,12 @@
 #' mu_hat = fitted(gmf, type = "response")
 #'
 #' # Compare the results
+#' oldpar = par(no.readonly = TRUE)
 #' par(mfrow = c(1,3), mar = c(1,1,3,1))
 #' image(data$Y, axes = FALSE, main = expression(Y))
 #' image(data$mu, axes = FALSE, main = expression(mu))
 #' image(mu_hat, axes = FALSE, main = expression(hat(mu)))
+#' par(oldpar)
 #'
 #' @export sgdgmf.fit
 sgdgmf.fit = function (
