@@ -71,10 +71,7 @@ model. Then, the predicted, i.e. imputed, values are used to compute the fold-sp
 out-of-sample error.
 }
 \examples{
-\dontshow{
-Sys.setenv(OPENBLAS_NUM_THREADS = 1)
-Sys.setenv(MKL_NUM_THREADS = 1)
-}# Load the sgdGMF package
+# Load the sgdGMF package
 library(sgdGMF)
 
 # Set the data dimensions
