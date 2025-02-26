@@ -209,7 +209,7 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
   if (is.numeric(A) && A >= .0) penalty[2] = A else message("A")
   if (is.numeric(U) && U >= .0) penalty[3] = U else message("U")
   if (is.numeric(V) && V >= .0) penalty[4] = V else message("V")
-  if (sum(abs(penalty[3:4])) == 0) penalty[3] = 1.
+  if (sum(abs(penalty[3:4])) == 0) {penalty[3] = 1.; message("U")}
 
   return (penalty)
 }
