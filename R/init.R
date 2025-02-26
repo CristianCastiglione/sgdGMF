@@ -448,8 +448,8 @@ sgdgmf.init.custom = function (
 ) {
 
   # Set the covariate matrices
-  if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
-  if (is.null(Z)) Z = matrix(1, nrow = n, ncol = 1)
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
 
   # Data dimensions
   n = nrow(Y)
