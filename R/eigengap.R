@@ -222,7 +222,12 @@ eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
   }
 
   # Compute the spectrum of the covariance matrix of Y
-  lambdas = eigen(covmat)$values
+  # lambdas = eigen(covmat)$values
+  if (maxcomp < m - 5) {
+    lambdas = RSpectra::eigs_sym(covmat, maxcomp + 5)$values
+  } else {
+    lambdas = eigen(covmat)$values
+  }
 
   # Initialize the loop parameters
   tol = 1e+03
@@ -272,10 +277,9 @@ eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
 #' @keywords internal
 eigengap.act = function (covmat, nobs, maxcomp = NULL) {
   # Set the data dimensions
-  n = nobs;
-  p = ncol(covmat);
-  d = maxcomp
-  d = ifelse(is.null(maxcomp), p, d)
+  n = nobs
+  p = ncol(covmat)
+  d = ifelse(is.null(maxcomp), p, maxcomp)
 
   # Convert the covariance matrix to a correlation matrix
   cormat = stats::cov2cor(covmat)
