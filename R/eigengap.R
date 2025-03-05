@@ -216,7 +216,7 @@ eigengap.onatski = function (covmat, maxcomp = 50, maxiter = 100) {
 
   # Safety check for the number of maximum components
   if (maxcomp > m - 5) {
-    maxcomp = floor(m / 2)
+    maxcomp = max(1, min(m - 5, floor(m / 2)))
     warning("Rank selection: 'maxcomp' set to default value.",
             call. = FALSE, immediate. = TRUE, domain = NULL)
   }
