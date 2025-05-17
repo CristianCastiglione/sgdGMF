@@ -90,10 +90,15 @@ sandbox
 sandbox/
 sandbox/**
 
-#
+# Zip archive folder
 zip
 zip/
 zip/**
+
+# CRAN related folder
+cran
+cran/
+cran/**
 
 # Compressed files
 *.zip
