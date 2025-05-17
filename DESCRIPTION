@@ -2,7 +2,7 @@ Package: sgdGMF
 Type: Package
 Title: Estimation of Generalized Matrix Factorization Models via Stochastic Gradient Descent
 Version: 1.0.1
-Date: 2025-01-28
+Date: 2025-05-17
 Authors@R: 
     c(person("Cristian", "Castiglione", email = "cristian_castiglione@libero.it", 
              role = c("aut","cre"), comment = c(ORCID = "0000-0001-5883-4890")),
