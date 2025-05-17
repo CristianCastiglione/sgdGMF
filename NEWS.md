@@ -2,4 +2,5 @@
 
 * `sgdgmf.rank` : changed default method from `"onatski"` to `"evr"` method
 * `eigengap.evr` (new function) : implemented the eigenvalue ratio method for rank selection
-* `eigengap.onatski` : fixed bug occuring when no optimal rank can be selected
+* `eigengap.onatski` : fixed bug occurring when no optimal rank can be selected
+* added option `CXXFLAGS = $(CXXFLAGS) -Os` to `Makevars` and `Makevars.win` to optimize the memory space of compiled C++ files
