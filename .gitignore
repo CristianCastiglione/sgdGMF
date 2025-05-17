@@ -53,7 +53,7 @@ rsconnect/
 # R package: bookdown caching files
 /*_files/
 
-# C++ 
+# C++
 *.o
 *.so
 *.dll
@@ -89,6 +89,11 @@ sim/**
 sandbox
 sandbox/
 sandbox/**
+
+#
+zip
+zip/
+zip/**
 
 # Compressed files
 *.zip
