@@ -12,7 +12,7 @@ sgdgmf.rank(
   family = gaussian(),
   weights = NULL,
   offset = NULL,
-  method = c("onatski", "act", "oht"),
+  method = c("evr", "onatski", "act", "oht"),
   type.reg = c("ols", "glm"),
   type.res = c("deviance", "pearson", "working", "link"),
   normalize = FALSE,
@@ -107,6 +107,10 @@ par(oldpar)
 Onatski, A. (2010).
 \emph{Determining the number of factors from empirical distribution of eigenvalues.}
 Review of Economics and Statistics, 92(4): 1004-1016
+
+Ahn, S.C., Horenstein, A.R. (2013).
+\emph{Eigenvalue ratio test for the number of factors.}
+Econometrica, 81, 1203-1227
 
 Gavish, M., Donoho, D.L. (2014)
 \emph{The optimal hard thresholding for singular values is 4/sqrt(3).}

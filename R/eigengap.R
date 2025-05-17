@@ -37,6 +37,10 @@
 #' \emph{Determining the number of factors from empirical distribution of eigenvalues.}
 #' Review of Economics and Statistics, 92(4): 1004-1016
 #'
+#' Ahn, S.C., Horenstein, A.R. (2013).
+#' \emph{Eigenvalue ratio test for the number of factors.}
+#' Econometrica, 81, 1203-1227
+#'
 #' Gavish, M., Donoho, D.L. (2014)
 #' \emph{The optimal hard thresholding for singular values is 4/sqrt(3).}
 #' IEEE Transactions on Information Theory, 60(8): 5040--5053
@@ -87,7 +91,7 @@ sgdgmf.rank = function (
     family = gaussian(),
     weights = NULL,
     offset = NULL,
-    method = c("onatski", "act", "oht"),
+    method = c("evr", "onatski", "act", "oht"),
     type.reg = c("ols", "glm"),
     type.res = c("deviance", "pearson", "working", "link"),
     normalize = FALSE,
@@ -174,7 +178,8 @@ sgdgmf.rank = function (
   eigengap = switch(method,
     "onatski" = eigengap.onatski(covmat, min(maxcomp, n-6, m-6), maxiter),
     "act" = eigengap.act(covmat, n, maxcomp),
-    "oht" = eigengap.oht(covmat, n, maxcomp))
+    "oht" = eigengap.oht(covmat, n, maxcomp),
+    "evr" = eigengap.evr(covmat, maxcomp))
 
   # Build the output
   out = list()
@@ -192,6 +197,50 @@ sgdgmf.rank = function (
   return (out)
 }
 
+#' @title Rank selection via eigenvalue ratio maximization
+#'
+#' @description
+#' Select the number of significant principal components of a matrix via the
+#' eigenvalue ratio (EVR) maximization method
+#'
+#' @param covmat matrix to be decomposed
+#' @param maxcomp maximum number of eigenvalues to compute
+#'
+#' @references
+#' Ahn, S.C., Horenstein, A.R. (2013).
+#' \emph{Eigenvalue ratio test for the number of factors.}
+#' Econometrica, 81, 1203-1227
+#'
+#' @keywords internal
+eigengap.evr = function(covmat, maxcomp = 50, thr = 0.95) {
+
+  # Set the matrix dimension
+  m = ncol(covmat)
+
+  # Safety check for the number of maximum components
+  maxcomp = floor(maxcomp)
+  if (maxcomp < 1 | maxcomp > m) {
+    maxcomp = max(1, min(m, maxcomp))
+    warning("Rank selection: 'maxcomp' set to default value.",
+            call. = FALSE, immediate. = TRUE, domain = NULL)
+  }
+
+  # Compute the spectrum of the covariance matrix of Y
+  if (maxcomp < m) {
+    lambdas = RSpectra::eigs_sym(covmat, maxcomp)$values
+  } else {
+    lambdas = eigen(covmat)$values
+  }
+
+  # Compute the maximum of the eigenvalue ratio
+  # (I exclude some eigenvalues if their do not explain enough variance)
+  idx = head(cumsum(lambdas) < thr * sum(lambdas), -1)
+  ratio = head(lambdas, -1) / tail(lambdas, -1)
+  ncomp = which.max(ratio[idx]) + 1
+
+  #Return the selected rank
+  list(ncomp = ncomp, lambdas = lambdas, ratio = ratio)
+}
 
 #' @title Rank selection via the Onatski method
 #'
