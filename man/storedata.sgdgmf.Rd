@@ -41,14 +41,14 @@ cat("Is mu null?", is.null(gmf$mu), "\n")
 cat("Is var null?", is.null(gmf$var), "\n")
 
 # Store the data in the GMF object a posteriori
-gmf = storedata(gmf.empty, data$Y)
+gmf = storedata(gmf, data$Y)
 
 cat("savedata:", gmf$control.alg$savedata, "\n")
-cat("Y:", head(gmf$Y), "\n")
-cat("X:", head(gmf$X), "\n")
-cat("Z:", head(gmf$Z), "\n")
-cat("eta:", head(gmf$eta), "\n")
-cat("mu:", head(gmf$mu), "\n")
-cat("var:", head(gmf$var), "\n")
+cat("Y:", dim(gmf$Y), "\n")
+cat("X:", dim(gmf$X), "\n")
+cat("Z:", dim(gmf$Z), "\n")
+cat("eta:", dim(gmf$eta), "\n")
+cat("mu:", dim(gmf$mu), "\n")
+cat("var:", dim(gmf$var), "\n")
 }
 }
