@@ -4,10 +4,12 @@
 \alias{storedata.sgdgmf}
 \title{Save response and covariate data into an empty sgdGMF object}
 \usage{
-\method{storedata}{sgdgmf}(object, Y, X = NULL, Z = NULL)
+\method{storedata}{sgdgmf}(object, ..., Y = NULL, X = NULL, Z = NULL)
 }
 \arguments{
 \item{object}{an object of class \code{sgdgmf}}
+
+\item{...}{further arguments passed to or from other methods}
 
 \item{Y}{matrix of responses (\eqn{n \times m})}
 
@@ -41,7 +43,7 @@ cat("Is mu null?", is.null(gmf$mu), "\n")
 cat("Is var null?", is.null(gmf$var), "\n")
 
 # Store the data in the GMF object a posteriori
-gmf = storedata(gmf, data$Y)
+gmf = storedata(gmf, Y = data$Y)
 
 cat("savedata:", gmf$control.alg$savedata, "\n")
 cat("Y:", dim(gmf$Y), "\n")
