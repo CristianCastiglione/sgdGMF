@@ -1169,6 +1169,7 @@ image.sgdgmf = function (
 #' Save response and covariate data into an empty sgdGMF object
 #'
 #' @param object an object of class \code{sgdgmf}
+#' @param ... further arguments passed to or from other methods
 #' @param Y matrix of responses (\eqn{n \times m})
 #' @param X matrix of row fixed effects (\eqn{n \times p})
 #' @param Z matrix of column fixed effects (\eqn{q \times m})
@@ -1195,7 +1196,7 @@ image.sgdgmf = function (
 #' cat("Is var null?", is.null(gmf$var), "\n")
 #'
 #' # Store the data in the GMF object a posteriori
-#' gmf = storedata(gmf, data$Y)
+#' gmf = storedata(gmf, Y = data$Y)
 #'
 #' cat("savedata:", gmf$control.alg$savedata, "\n")
 #' cat("Y:", dim(gmf$Y), "\n")
@@ -1207,8 +1208,10 @@ image.sgdgmf = function (
 #' }
 #' @method storedata sgdgmf
 #' @export
-storedata.sgdgmf = function(object, Y, X = NULL, Z = NULL) {
+storedata.sgdgmf = function(object, ..., Y = NULL, X = NULL, Z = NULL) {
+
   # Safety checks for Y
+  if (is.null(Y)) stop("Y is not available.")
   if (!is.numeric(Y)) stop("Y is not numeric.")
   if (!is.matrix(Y)) stop("Y is not matrix.")
   if (nrow(Y) != object$nrow) stop("Incompatible dimensions.")
