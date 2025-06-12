@@ -58,6 +58,27 @@ testthat::test_that("SVD orthogonalization", {
   testthat::expect_equal(colSums(new$V^2), RSpectra::svds(tcrossprod(new$U, new$V), d)$d^2)
 })
 
+testthat::test_that("Column-space orthogonalization", {
+  n = 100; m = 10; p = 3; q = 2; d = 5
+
+  X = matrix(rnorm(n*p), n, p)
+  Z = matrix(rnorm(m*q), m, q)
+  A = matrix(rnorm(n*q), n, q)
+  B = matrix(rnorm(m*p), m, p)
+  U = matrix(rnorm(n*d), n, d)
+  V = matrix(rnorm(m*d), m, d)
+
+  old = list(B = B, A = A, U = U, V = V)
+  new = orthogonalize(X, Z, B, A, U, V)
+
+  Yold = tcrossprod(cbind(X, old$A, old$U), cbind(old$B, Z, old$V))
+  Ynew = tcrossprod(cbind(X, new$A, new$U), cbind(new$B, Z, new$V))
+
+  testthat::expect_lt(mean(abs(crossprod(X, new$A))), 1e-10)
+  testthat::expect_lt(mean(abs(crossprod(X, new$U))), 1e-10)
+  testthat::expect_lt(mean(abs(crossprod(new$U, new$U) - diag(d))), 1e-10)
+  testthat::expect_lt(mean(abs(Yold - Ynew)), 1e-10)
+})
 
 testthat::test_that("GMF data simulation", {
   n = 100; m = 10; d = 5
