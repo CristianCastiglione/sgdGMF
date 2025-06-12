@@ -406,8 +406,8 @@ sgdgmf.fit = function (
   out$B = fit$V[, idxB, drop = FALSE]
   out$U = fit$U[, idxU, drop = FALSE]
   out$V = fit$V[, idxV, drop = FALSE]
-  out$weights = if (null.wts) 1 else weights
-  out$offset = if (null.off) 0 else offset
+  out$weights = weights
+  out$offset = offset
   out$eta = NULL
   out$mu = NULL
   out$var = NULL
