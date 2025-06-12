@@ -1,3 +1,14 @@
+# sgdGMF 1.0.2
+* `sgdgmf.fit` : implemented orthogonality between covariates and latent variables
+* `orthogonalize` (new function) : implemented orthogonality between covariates and latent variables
+* `sgdgmf.fit` : implemented the possibility to not save a cocy of the data and fitted values
+* `set.control.airwls` : introduced new argument `savedata` to specify of store a copy of the data or not
+* `set.control.newton` : introduced new argument `savedata` to specify of store a copy of the data or not
+* `set.control.coord.sgd` : introduced new argument `savedata` to specify of store a copy of the data or not
+* `set.control.block.sgd` : introduced new argument `savedata` to specify of store a copy of the data or not
+* `storedata` (new function) : implemented ex-post inclusion of data in a generic object
+* `storedata.sgdgmf` (new method) : implemented ex-post inclusion of data in a fitted `sgdgmf` object
+
 # sgdGMF 1.0.1
 
 * `sgdgmf.rank` : changed default method from `"onatski"` to `"evr"` method
