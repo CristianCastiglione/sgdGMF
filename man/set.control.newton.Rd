@@ -15,7 +15,8 @@ set.control.newton(
   verbose = FALSE,
   frequency = 50,
   parallel = FALSE,
-  nthreads = 1
+  nthreads = 1,
+  savedata = TRUE
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ set.control.newton(
 \item{parallel}{if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}}
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TTUE})}
+
+\item{savedata}{if \code{TRUE}, saves a copy of the data and fitted values}
 }
 \value{
 A \code{list} of control parameters for the quasi-Newton algorithm

@@ -48,8 +48,8 @@ library(sgdGMF)
 # Generate data from a Poisson model
 data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 
- # Fit a GMF model
- gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+# Fit a GMF model
+gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 
 # Get the heatmap of a GMF model
 image(gmf, type = "data") # original data

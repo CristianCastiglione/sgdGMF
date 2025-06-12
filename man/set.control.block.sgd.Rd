@@ -19,7 +19,8 @@ set.control.block.sgd(
   rate2 = 0.01,
   verbose = FALSE,
   frequency = 250,
-  progress = FALSE
+  progress = FALSE,
+  savedata = TRUE
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ set.control.block.sgd(
 \item{frequency}{how often the optimization status is printed (only if \code{verbose=TRUE})}
 
 \item{progress}{if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})}
+
+\item{savedata}{if \code{TRUE}, saves a copy of the data and fitted values}
 }
 \value{
 A \code{list} of control parameters for the adaptive SGD algorithm with block-wise sub-sampling

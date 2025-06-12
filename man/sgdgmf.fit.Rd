@@ -52,6 +52,11 @@ In particular, the returned object collects the following information:
   \item \code{family}: the model family
   \item \code{ncomp}: rank of the latent matrix factorization
   \item \code{npar}: number of unknown parameters to be estimated
+  \item \code{nmiss}: number of missing entries
+  \item \code{nrow}: number of rows
+  \item \code{ncol}: number of columns
+  \item \code{ncovrow}: number of row-specific covariates (\code{X})
+  \item \code{ncovcol}: number of column-specific covariates (\code{Z})
   \item \code{control.init}: list of control parameters used for the initialization
   \item \code{control.alg}: list of control parameters used for the optimization
   \item \code{control.cv}: list of control parameters used for the cross.validation
@@ -76,7 +81,7 @@ In particular, the returned object collects the following information:
   \item \code{names}: list of row and column names for all the output matrices
   \item \code{exe.time}: the total execution time in seconds
   \item \code{trace}: a trace matrix recording the optimization history
-  \item \code{summary.cv}:
+  \item \code{summary.cv}: a \code{data.frame} summarizing the cross-validation results,
 }
 }
 \description{
@@ -235,7 +240,7 @@ arXiv preprint: arXiv:2412.20509.
 }
 \seealso{
 \code{\link{set.control.init}}, \code{\link{set.control.alg}},
-\code{\link{sgdgmf.init}}, \code{\link{sgdgmf.rank}},
+\code{\link{sgdgmf.init}}, \code{\link{sgdgmf.rank}}, \code{\link{storedata.sgdgmf}},
 \code{\link{refit.sgdgmf}}, \code{\link{coef.sgdgmf}}, \code{\link{resid.sgdgmf}},
 \code{\link{fitted.sgdgmf}}, \code{\link{predict.sgdgmf}}, \code{\link{plot.sgdgmf}},
 \code{\link{screeplot.sgdgmf}}, \code{\link{biplot.sgdgmf}}, \code{\link{image.sgdgmf}}

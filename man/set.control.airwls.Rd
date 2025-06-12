@@ -16,7 +16,8 @@ set.control.airwls(
   verbose = FALSE,
   frequency = 10,
   parallel = FALSE,
-  nthreads = 1
+  nthreads = 1,
+  savedata = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ set.control.airwls(
 \item{parallel}{if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}}
 
 \item{nthreads}{number of cores to be used in parallel (only if \code{parallel=TRUE})}
+
+\item{savedata}{if \code{TRUE}, saves a copy of the data and fitted values}
 }
 \value{
 A \code{list} of control parameters for the AIRWLS algorithm
