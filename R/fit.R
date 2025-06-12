@@ -39,6 +39,11 @@
 #'   \item \code{family}: the model family
 #'   \item \code{ncomp}: rank of the latent matrix factorization
 #'   \item \code{npar}: number of unknown parameters to be estimated
+#'   \item \code{nmiss}: number of missing entries
+#'   \item \code{nrow}: number of rows
+#'   \item \code{ncol}: number of columns
+#'   \item \code{ncovrow}: number of row-specific covariates (\code{X})
+#'   \item \code{ncovcol}: number of column-specific covariates (\code{Z})
 #'   \item \code{control.init}: list of control parameters used for the initialization
 #'   \item \code{control.alg}: list of control parameters used for the optimization
 #'   \item \code{control.cv}: list of control parameters used for the cross.validation
@@ -63,7 +68,7 @@
 #'   \item \code{names}: list of row and column names for all the output matrices
 #'   \item \code{exe.time}: the total execution time in seconds
 #'   \item \code{trace}: a trace matrix recording the optimization history
-#'   \item \code{summary.cv}:
+#'   \item \code{summary.cv}: a \code{data.frame} summarizing the cross-validation results,
 #' }
 #'
 #' @details
@@ -180,7 +185,7 @@
 #'
 #' @seealso
 #' \code{\link{set.control.init}}, \code{\link{set.control.alg}},
-#' \code{\link{sgdgmf.init}}, \code{\link{sgdgmf.rank}},
+#' \code{\link{sgdgmf.init}}, \code{\link{sgdgmf.rank}}, \code{\link{storedata.sgdgmf}},
 #' \code{\link{refit.sgdgmf}}, \code{\link{coef.sgdgmf}}, \code{\link{resid.sgdgmf}},
 #' \code{\link{fitted.sgdgmf}}, \code{\link{predict.sgdgmf}}, \code{\link{plot.sgdgmf}},
 #' \code{\link{screeplot.sgdgmf}}, \code{\link{biplot.sgdgmf}}, \code{\link{image.sgdgmf}}
@@ -240,6 +245,10 @@ sgdgmf.fit = function (
   X = set.mat.X(X, nrow(Y), ncol(Y))
   Z = set.mat.Z(Z, nrow(Y), ncol(Y))
 
+  # Check if weigths and offset are NULL
+  null.wts = is.null(weights)
+  null.off = is.null(offset)
+
   # Check and set weights and offset
   weights = set.mat.weights(weights, nrow(Y), ncol(Y))
   offset = set.mat.offset(offset, nrow(Y), ncol(Y))
@@ -249,6 +258,9 @@ sgdgmf.fit = function (
   m = ncol(Y)
   p = ncol(X)
   q = ncol(Z)
+
+  # Number of missing values
+  nmiss = sum(is.na(Y))
 
   # Check the model family
   family = set.family(family)
@@ -354,7 +366,7 @@ sgdgmf.fit = function (
 
   # Model dimensions
   df = p * m + q * n + (n + m) * ncomp
-  nm = n * m - sum(is.na(Y))
+  nm = n * m - nmiss
 
   # Set the indices of A, B, U and V
   idxA = seq(from = p+1, to = p+q)
@@ -379,21 +391,26 @@ sgdgmf.fit = function (
   out$family = family
   out$ncomp = ncomp
   out$npar = m*p + n*q + (n+m)*ncomp
+  out$nrow = n
+  out$ncol = m
+  out$nmiss = nmiss
+  out$ncovrow = p
+  out$ncovcol = q
   out$control.init = control.init
   out$control.alg = control.alg
   out$control.cv = list()
-  out$Y = Y
-  out$X = X
-  out$Z = Z
+  out$Y = NULL
+  out$X = NULL
+  out$Z = NULL
   out$A = fit$U[, idxA, drop = FALSE]
   out$B = fit$V[, idxB, drop = FALSE]
   out$U = fit$U[, idxU, drop = FALSE]
   out$V = fit$V[, idxV, drop = FALSE]
-  out$weights = weights
-  out$offset = offset
-  out$eta = fit$eta
-  out$mu = fit$mu
-  out$var = fit$var
+  out$weights = if (null.wts) 1 else weights
+  out$offset = if (null.off) 0 else offset
+  out$eta = NULL
+  out$mu = NULL
+  out$var = NULL
   out$phi = fit$phi
   out$penalty = fit$penalty
   out$deviance = fit$deviance
@@ -404,6 +421,15 @@ sgdgmf.fit = function (
   out$trace = as.data.frame(fit$trace)
   out$summary.cv = data.frame()
   out$names = names
+
+  if (alg$savedata) {
+    out$Y = Y
+    out$X = X
+    out$Z = Z
+    out$eta = fit$eta
+    out$mu = fit$mu
+    out$var = fit$var
+  }
 
   # Normalize the latent factors
   if (alg$normalize) {

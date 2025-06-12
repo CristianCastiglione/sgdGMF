@@ -55,6 +55,11 @@ refit.sgdgmf = function (
     warning(paste0("Refit control: '", var,"' was set to default value."),
             call. = FALSE, immediate. = TRUE, domain = NULL)
 
+  # Check if a copy of the data is available for estimation
+  if (!object$control.alg$savedata) {
+    stop("Data are not available for refitting.")
+  }
+
   # Safety checks
   if (!is.logical(normalize)) {message("normalize"); normalize = TRUE}
   if (!is.logical(verbose)) {message("verbose"); verbose = FALSE}
@@ -136,13 +141,20 @@ refit.sgdgmf = function (
 #' @method deviance sgdgmf
 #' @export
 deviance.sgdgmf = function (object, ..., normalize = FALSE) {
-  dev = sum(object$family$dev.resids(object$Y, object$mu, 1), na.rm = TRUE)
-  if (normalize) {
-    n = nrow(object$Y)
-    m = ncol(object$Y)
-    mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
-    dev0 = sum(object$family$dev.resids(object$Y, mu0, 1), na.rm = TRUE)
-    dev = dev / dev0
+  if (!object$control.alg$savedata) {
+    dev = object$deviance
+    if (normalize) {
+      warning("No available data for normalization, annormalized deviance is returned.")
+    }
+  } else {
+    dev = sum(object$family$dev.resids(object$Y, object$mu, 1), na.rm = TRUE)
+    if (normalize) {
+      n = nrow(object$Y)
+      m = ncol(object$Y)
+      mu0 = matrix(mean(object$Y, na.rm = TRUE), nrow = n, ncol = m)
+      dev0 = sum(object$family$dev.resids(object$Y, mu0, 1), na.rm = TRUE)
+      dev = dev / dev0
+    }
   }
   return (dev)
 }
@@ -193,27 +205,32 @@ BIC.sgdgmf = function (object, ...) {
 #' @method print sgdgmf
 #' @export
 print.sgdgmf = function (x, ...) {
-  object = x
-
   # Percentage of explained deviance
-  dev = 100 * (1 - deviance(object, normalize = TRUE))
+  if (x$control.alg$savedata) {
+    dev = 100 * (1 - deviance(x, normalize = TRUE))
+  } else {
+    dev = NULL
+  }
 
   # Elapsed execution time
-  time.init = object$exe.time[1]
-  time.opt = object$exe.time[2]
-  time.tot = object$exe.time[3]
+  time.init = x$exe.time[1]
+  time.opt = x$exe.time[2]
+  time.tot = x$exe.time[3]
+
+  # Compute the matrix sparsity
+  sparsity = 100 * x$nmiss / (x$nrow * x$ncol)
 
   # Print the output
-  cat(gettextf("\n Number of samples: %d", nrow(object$Y)))
-  cat(gettextf("\n Number of features: %d", ncol(object$Y)))
-  cat(gettextf("\n Data sparsity: %.2f %%", 100 * mean(is.na(object$Y))))
-  cat(gettextf("\n Column covariates: %d", ncol(object$X)))
-  cat(gettextf("\n Row covariates: %d", ncol(object$Z)))
-  cat(gettextf("\n Latent space rank: %d", object$ncomp))
-  cat(gettextf("\n Number of parameters: %d", object$npar))
-  cat(gettextf("\n Model family: %s", object$family$family))
-  cat(gettextf("\n Model link: %s", object$family$link))
-  cat(gettextf("\n Estimation method: %s", object$method))
+  cat(gettextf("\n Number of samples: %d", x$nrow))
+  cat(gettextf("\n Number of features: %d", x$ncol))
+  cat(gettextf("\n Data sparsity: %.2f %%", sparsity))
+  cat(gettextf("\n Column covariates: %d", x$ncovrow))
+  cat(gettextf("\n Row covariates: %d", x$ncovcol))
+  cat(gettextf("\n Latent space rank: %d", x$ncomp))
+  cat(gettextf("\n Number of parameters: %d", x$npar))
+  cat(gettextf("\n Model family: %s", x$family$family))
+  cat(gettextf("\n Model link: %s", x$family$link))
+  cat(gettextf("\n Estimation method: %s", x$method))
   cat(gettextf("\n Explained deviance: %.2f %%", dev))
   cat(gettextf("\n Initialization exe. time: %.2f s (%.2f m)", time.init, time.init/60))
   cat(gettextf("\n Optimization exe. time: %.2f s (%.2f m)", time.opt, time.opt/60))
@@ -351,6 +368,11 @@ residuals.sgdgmf = function (
   # Set the residual type
   type = match.arg(type)
 
+  # Check if a copy of the data is available for estimation
+  if (!object$control.alg$savedata) {
+    stop("Data are not available for computing the residuals.")
+  }
+
   # Compute the predicted values
   y = object$Y
   family = object$family
@@ -472,6 +494,11 @@ fitted.sgdgmf = function (
   # Set the fitted value type
   type = match.arg(type)
 
+  # Check if a copy of the data is available for estimation
+  if (!object$control.alg$savedata) {
+    stop("Data are not available for compute the fitted values.")
+  }
+
   # Return the fitted values depending on the prediction type
   if (!partial) {
     switch(type,
@@ -551,6 +578,11 @@ predict.sgdgmf = function (
 
   # Set the prediction type
   type = match.arg(type)
+
+  # Check if a copy of the data is available for estimation
+  if (!object$control.alg$savedata) {
+    stop("Data are not available for prediction.")
+  }
 
   # Set the model family
   family = object$family
@@ -700,6 +732,11 @@ simulate.sgdgmf = function (
     object, ..., nsim = 1
 ) {
 
+  # Check if a copy of the data is available for estimation
+  if (!object$control.alg$savedata) {
+    stop("Data are not available for model-based simulation.")
+  }
+
   check = object$family$family %in% c("gaussian", "poisson", "binomial", "gamma")
   if (!check) {
     stop("Only the following families allow for data simulation: Gaussian, Poisson, Binomial, Gamma.")
@@ -795,8 +832,8 @@ plot.sgdgmf = function (
 
   # Eventually, extract only a fraction of the data
   if (subsample) {
-    n = nrow(object$Y)
-    m = ncol(object$Y)
+    n = object$nrow
+    m = object$ncol
     if (sample.size < n*m) {
       idx = cbind(
         row = sample.int(n = n, size = sample.size, replace = TRUE),
@@ -899,7 +936,7 @@ screeplot.sgdgmf = function (
   object = x
 
   # Compute the spctrum of the residuals
-  ncomp = max(1, min(ncomp, nrow(object$U), nrow(object$V)))
+  ncomp = max(1, min(ncomp, object$nrow, object$ncol))
   res = residuals(object, type = type, partial = partial,
                   normalize = normalize, fillna = TRUE,
                   spectrum = TRUE, ncomp = ncomp)
@@ -1061,8 +1098,8 @@ biplot.sgdgmf = function (
 #' # Generate data from a Poisson model
 #' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
 #'
-#'  # Fit a GMF model
-#'  gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
+#' # Fit a GMF model
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson())
 #'
 #' # Get the heatmap of a GMF model
 #' image(gmf, type = "data") # original data
@@ -1125,4 +1162,80 @@ image.sgdgmf = function (
   return (plt)
 }
 
+
+#' @title Save response and covariate data into an empty sgdGMF object
+#'
+#' @description
+#' Save response and covariate data into an empty sgdGMF object
+#'
+#' @param object an object of class \code{sgdgmf}
+#' @param Y matrix of responses (\eqn{n \times m})
+#' @param X matrix of row fixed effects (\eqn{n \times p})
+#' @param Z matrix of column fixed effects (\eqn{q \times m})
+#'
+#' @returns A \code{sgdgmf} object containing a copy of the data
+#'
+#' @examples
+#' \donttest{# Load the sgdGMF package
+#' library(sgdGMF)
+#'
+#' # Generate data from a Poisson model
+#' data = sim.gmf.data(n = 100, m = 20, ncomp = 5, family = poisson())
+#'
+#' # Fit a GMF model without storing a copy of the data
+#' gmf = sgdgmf.fit(data$Y, ncomp = 3, family = poisson(),
+#'                  control.alg = list(savedata = FALSE))
+#'
+#' cat("savedata:", gmf$control.alg$savedata, "\n")
+#' cat("Is Y null?", is.null(gmf$Y), "\n")
+#' cat("Is X null?", is.null(gmf$X), "\n")
+#' cat("Is Z null?", is.null(gmf$Z), "\n")
+#' cat("Is eta null?", is.null(gmf$eta), "\n")
+#' cat("Is mu null?", is.null(gmf$mu), "\n")
+#' cat("Is var null?", is.null(gmf$var), "\n")
+#'
+#' # Store the data in the GMF object a posteriori
+#' gmf = storedata(gmf, data$Y)
+#'
+#' cat("savedata:", gmf$control.alg$savedata, "\n")
+#' cat("Y:", dim(gmf$Y), "\n")
+#' cat("X:", dim(gmf$X), "\n")
+#' cat("Z:", dim(gmf$Z), "\n")
+#' cat("eta:", dim(gmf$eta), "\n")
+#' cat("mu:", dim(gmf$mu), "\n")
+#' cat("var:", dim(gmf$var), "\n")
+#' }
+#' @method storedata sgdgmf
+#' @export
+storedata.sgdgmf = function(object, Y, X = NULL, Z = NULL) {
+  # Safety checks for Y
+  if (!is.numeric(Y)) stop("Y is not numeric.")
+  if (!is.matrix(Y)) stop("Y is not matrix.")
+  if (nrow(Y) != object$nrow) stop("Incompatible dimensions.")
+  if (ncol(Y) != object$ncol) stop("Incompatible dimensions.")
+
+  # Safety checks for X and Z
+  X = set.mat.X(X, object$nrow, object$ncol)
+  Z = set.mat.Z(Z, object$nrow, object$ncol)
+
+  # Final dimension checks for X and Z
+  if (ncol(X) != object$ncovrow) stop("Incompatible dimensions.")
+  if (ncol(Z) != object$ncovcol) stop("Incompatible dimensions.")
+
+  # Set the algorithm control
+  object$control.alg$savedata = TRUE
+
+  # Store the data
+  object$Y = Y
+  object$X = X
+  object$Z = Z
+
+  # Compute and store the fitted values
+  object$eta = tcrossprod(cbind(X, object$A, object$U), cbind(object$B, Z, object$V))
+  object$mu = object$family$linkinv(object$eta)
+  object$var = object$family$variance(object$mu)
+
+  # Return the updated object
+  return(object)
+}
 

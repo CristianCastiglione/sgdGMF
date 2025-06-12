@@ -309,6 +309,7 @@ set.control.init = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TRUE})
+#' @param savedata if \code{TRUE}, saves a copy of the data and fitted values
 #'
 #' @returns A \code{list} of control parameters for the AIRWLS algorithm
 #'
@@ -335,7 +336,8 @@ set.control.airwls = function (
     verbose = FALSE,
     frequency = 10,
     parallel = FALSE,
-    nthreads = 1
+    nthreads = 1,
+    savedata = TRUE
 ) {
   # Set the default control parameters
   ctr = list()
@@ -351,6 +353,7 @@ set.control.airwls = function (
   ctr$frequency = 10
   ctr$parallel = FALSE
   ctr$nthreads = 1
+  ctr$savedata = TRUE
 
   message = function (var)
     warning(paste0("AIRWLS control: '", var,"' was set to default value."),
@@ -369,6 +372,7 @@ set.control.airwls = function (
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
   if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
   if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
+  if (is.logical(savedata)) ctr$savedata = savedata else message("verbose")
 
   # Additional safety checks
   if (ctr$stepsize > 1) {ctr$stepsize = 1; message("stepsize")}
@@ -410,6 +414,7 @@ set.control.airwls = function (
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE}
 #' @param parallel if \code{TRUE}, allows for parallel computing using the \code{C++} library \code{OpenMP}
 #' @param nthreads number of cores to be used in parallel (only if \code{parallel=TTUE})
+#' @param savedata if \code{TRUE}, saves a copy of the data and fitted values
 #'
 #' @returns A \code{list} of control parameters for the quasi-Newton algorithm
 #'
@@ -434,7 +439,8 @@ set.control.newton = function (
     verbose = FALSE,
     frequency = 50,
     parallel = FALSE,
-    nthreads = 1
+    nthreads = 1,
+    savedata = TRUE
 ) {
   # Set the default control parameters
   ctr = list()
@@ -449,6 +455,7 @@ set.control.newton = function (
   ctr$frequency = 50
   ctr$parallel = FALSE
   ctr$nthreads = 1
+  ctr$savedata = TRUE
 
   message = function (var)
     warning(paste0("Newton control: '", var,"' was set to default value."),
@@ -466,6 +473,7 @@ set.control.newton = function (
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
   if (is.logical(parallel)) ctr$parallel = parallel else message("parallel")
   if (is.numeric(nthreads) && nthreads >= 1) ctr$nthreads = floor(nthreads) else message("nthreads")
+  if (is.logical(savedata)) ctr$savedata = savedata else message("verbose")
 
   # Additional consistency checks
   if (ctr$stepsize > 1) {ctr$stepsize = 1; message("stepsize")}
@@ -509,6 +517,7 @@ set.control.newton = function (
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#' @param savedata if \code{TRUE}, saves a copy of the data and fitted values
 #'
 #' @returns A \code{list} of control parameters for the adaptive SGD algorithm with coordinate-wise sub-sampling
 #'
@@ -537,7 +546,8 @@ set.control.coord.sgd = function (
     rate2 = 0.01,
     verbose = FALSE,
     frequency = 250,
-    progress = FALSE
+    progress = FALSE,
+    savedata = TRUE
 ) {
   # Set the default control parameters
   ctr = list()
@@ -556,6 +566,7 @@ set.control.coord.sgd = function (
   ctr$verbose = FALSE
   ctr$frequency = 250
   ctr$progress = FALSE
+  ctr$savedata = TRUE
 
   message = function (var)
     warning(paste0("C-SGD control: '", var,"' was set to default value."),
@@ -577,6 +588,7 @@ set.control.coord.sgd = function (
   if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
   if (is.logical(progress)) ctr$progress = progress else message("progress")
+  if (is.logical(savedata)) ctr$savedata = savedata else message("verbose")
 
   # Additional consistency checks
   if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("maxiter")}
@@ -610,6 +622,7 @@ set.control.coord.sgd = function (
 #' @param verbose if \code{TRUE}, print the optimization status
 #' @param frequency how often the optimization status is printed (only if \code{verbose=TRUE})
 #' @param progress if \code{TRUE}, print a compact progress-bar instead of a full-report of the optimization status (only if \code{verbose=TRUE})
+#' @param savedata if \code{TRUE}, saves a copy of the data and fitted values
 #'
 #' @returns A \code{list} of control parameters for the adaptive SGD algorithm with block-wise sub-sampling
 #'
@@ -639,7 +652,8 @@ set.control.block.sgd = function (
     rate2 = 0.01,
     verbose = FALSE,
     frequency = 250,
-    progress = FALSE
+    progress = FALSE,
+    savedata = TRUE
 ) {
   # Set the default control parameters
   ctr = list()
@@ -658,6 +672,7 @@ set.control.block.sgd = function (
   ctr$verbose = FALSE
   ctr$frequency = 250
   ctr$progress = FALSE
+  ctr$savedata = TRUE
 
   message = function (var)
     warning(paste0("B-SGD control: '", var,"' was set to default value."),
@@ -679,6 +694,7 @@ set.control.block.sgd = function (
   if (is.logical(verbose)) ctr$verbose = verbose else message("verbose")
   if (is.numeric(frequency) && frequency >= 1) ctr$frequency = floor(frequency) else message("frequency")
   if (is.logical(progress)) ctr$progress = progress else message("progress")
+  if (is.logical(savedata)) ctr$savedata = savedata else message("verbose")
 
   # Additional consistency checks
   if (ctr$nafill > ctr$maxiter) {ctr$nafill = ctr$maxiter; message("nafill")}
