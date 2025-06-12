@@ -190,7 +190,6 @@ orthogonalize = function (X, Z, B, A, U, V) {
   Y = tcrossprod(cbind(X, A, U), cbind(B, Z, V))
   # Inverse Gram matrix induced by X
   XtX = crossprod(X)
-  # L = t(chol(crossprod(X)))
   # Orthogonalize A and U wrt X
   A = A - X %*% solve(XtX, crossprod(X, A))
   U = U - X %*% solve(XtX, crossprod(X, U))
