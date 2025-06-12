@@ -132,7 +132,7 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
       s = RSpectra::svds(uv, ncomp)
       if (ncomp == 1) {
         U = s$u
-        V = s$v *s$d
+        V = s$v * s$d
       } else {
         U = s$u
         V = s$v %*% diag(s$d)
@@ -186,27 +186,21 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
 #'
 #' @keywords internal
 orthogonalize = function (X, Z, B, A, U, V) {
-  # Input dimensions
-  n = nrow(x) #
-  m = nrow(Z)
-  p = ncol(B)
-  q = ncol(A)
-  d = ncol(U)
-  # Projection onto the complement of the column space
-  proj = function(x, b) b - x %*% solve(crossprod(x), crossprod(x, b))
   # Get the outer product matrix
   Y = tcrossprod(cbind(X, A, U), cbind(B, Z, V))
+  # Inverse Gram matrix induced by X
+  XtX = crossprod(X)
+  # L = t(chol(crossprod(X)))
   # Orthogonalize A and U wrt X
-  W = proj(X, cbind(A, U))
-  A = W[,1:q]
-  U = W[,(q+1):(q+d)]
+  A = A - X %*% solve(XtX, crossprod(X, A))
+  U = U - X %*% solve(XtX, crossprod(X, U))
+  # Recompute B
+  E = Y - tcrossprod(cbind(A, U), cbind(Z, V))
+  B = t(solve(XtX, crossprod(X, E)))
   # Correct U and V
   qrU = qr(U)
   U = qr.Q(qrU)
   V = tcrossprod(V, qr.R(qrU))
-  # Recompute B
-  E = Y - tcrossprod(cbind(A, U), cbind(Z, V))
-  B = t(solve(crossprod(X), crossprod(X, E)))
   # Output
   list(B = B, A = A, U = U, V = V)
 }
