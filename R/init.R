@@ -427,9 +427,7 @@ sgdgmf.init.light = function (
   rm(means, idx); gc()
 
   # Initialize the parameters
-  Y[] = family$transform(Y)
-  B = matrix(NA, nrow = m, ncol = p)
-  A = matrix(NA, nrow = n, ncol = q)
+  Y = family$transform(Y)
 
   # Set the offset
   if (is.null(offset)) {
@@ -444,12 +442,12 @@ sgdgmf.init.light = function (
 
   # Compute the initial column-specific regression parameters
   if (verbose) cat(" Initialization: column-specific covariates \n")
-  B[] = solve(crossprod(X), crossprod(X, Y - eta))
+  B = t(solve(crossprod(X), crossprod(X, Y - eta)))
   eta = offset + tcrossprod(X, B)
 
   # Compute the initial row-specific regression parameter
   if (verbose) cat(" Initialization: row-specific covariates \n")
-  A[] = solve(crossprod(Z), crossprod(Z, t(Y - eta)))
+  A = t(solve(crossprod(Z), crossprod(Z, t(Y - eta))))
   eta = eta + tcrossprod(A, Z)
 
   # Compute the initial latent factor and loading matrices via incomplete SVD
