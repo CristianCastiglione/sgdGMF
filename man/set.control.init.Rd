@@ -5,7 +5,7 @@
 \title{Check and set the initialization parameters for a GMF model}
 \usage{
 set.control.init(
-  method = c("ols", "glm", "random", "values"),
+  method = c("ols", "glm", "light", "random", "values"),
   type = c("deviance", "pearson", "working", "link"),
   values = list(),
   niter = 5,

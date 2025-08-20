@@ -4,6 +4,7 @@
 \alias{sgdgmf.init}
 \alias{sgdgmf.init.ols}
 \alias{sgdgmf.init.glm}
+\alias{sgdgmf.init.light}
 \alias{sgdgmf.init.random}
 \alias{sgdgmf.init.custom}
 \title{Initialize the parameters of a generalized matrix factorization model}
@@ -16,7 +17,7 @@ sgdgmf.init(
   family = gaussian(),
   weights = NULL,
   offset = NULL,
-  method = c("ols", "glm", "random", "values"),
+  method = c("ols", "glm", "light", "random", "values"),
   type = c("deviance", "pearson", "working", "link"),
   niter = 0,
   values = list(),
@@ -50,6 +51,17 @@ sgdgmf.init.glm(
   verbose = FALSE,
   parallel = FALSE,
   nthreads = 1
+)
+
+sgdgmf.init.light(
+  Y,
+  X = NULL,
+  Z = NULL,
+  ncomp = 2,
+  family = gaussian(),
+  weights = NULL,
+  offset = NULL,
+  verbose = FALSE
 )
 
 sgdgmf.init.random(
@@ -149,6 +161,11 @@ In particular, to set \eqn{\beta_j}, we use independent GLM fit with \eqn{y_j \s
 Similarly, to set \eqn{\alpha_i}, we fit the model \eqn{y_i \sim Z \alpha_i + o_i}, with offset \eqn{o_i = B x_i}.
 Then, we obtain \eqn{U} via SVD on the residuals. Finally, we obtain \eqn{V} via independent GLM fit
 under the model \eqn{y_j \sim U v_j + o_j}, with offset \eqn{o_i = X \beta_j + A z_j}.
+
+If \code{method = "light"}, the initialization is performed via an optimized implementation
+of \code{method = "ols"} and \code{type = "link"}, which saves as much memory as possible.
+This option is thought for high dimensional applications, where memory usage is of critical
+importance.
 
 Both under \code{method = "ols"} and \code{method = "glm"}, it is possible to specify the
 parameter \code{type} to change the type of residuals used for the SVD decomposition.
