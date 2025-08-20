@@ -194,12 +194,14 @@ orthogonalize = function (X, Z, B, A, U, V) {
   A = A - X %*% solve(XtX, crossprod(X, A))
   U = U - X %*% solve(XtX, crossprod(X, U))
   # Recompute B
-  E = Y - tcrossprod(cbind(A, U), cbind(Z, V))
-  B = t(solve(XtX, crossprod(X, E)))
+  Y = Y - tcrossprod(cbind(A, U), cbind(Z, V))
+  B = t(solve(XtX, crossprod(X, Y)))
+  rm(Y, XtX); gc()
   # Correct U and V
   qrU = qr(U)
   U = qr.Q(qrU)
   V = tcrossprod(V, qr.R(qrU))
+  rm(qrU); gc()
   # Output
   list(B = B, A = A, U = U, V = V)
 }

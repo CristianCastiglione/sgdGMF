@@ -457,11 +457,11 @@ sgdgmf.init.light = function (
   SVD = RSpectra::svds(Y - eta, ncomp)
 
   # Free the from unused data
-  rm(eta); gc()
+  rm(Y, eta); gc()
 
   # Set the orthogonalized latent factor and loading matrix
   U = SVD$u
-  V = sweep(SVD$v, MARGIN = 2, STATS = SVD$d, FUN = "*")
+  V = SVD$v %*% diag(SVD$d)
 
   # Free the from unused data
   rm(SVD); gc()
