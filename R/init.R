@@ -63,6 +63,11 @@
 #' Then, we obtain \eqn{U} via SVD on the residuals. Finally, we obtain \eqn{V} via independent GLM fit
 #' under the model \eqn{y_j \sim U v_j + o_j}, with offset \eqn{o_i = X \beta_j + A z_j}.
 #'
+#' If \code{method = "light"}, the initialization is performed via an optimized implementation
+#' of \code{method = "ols"} and \code{type = "link"}, which saves as much memory as possible.
+#' This option is thought for high dimensional applications, where memory usage is of critical
+#' importance.
+#'
 #' Both under \code{method = "ols"} and \code{method = "glm"}, it is possible to specify the
 #' parameter \code{type} to change the type of residuals used for the SVD decomposition.
 #'
@@ -116,7 +121,7 @@ sgdgmf.init = function (
     family = gaussian(),
     weights = NULL,
     offset = NULL,
-    method = c("ols", "glm", "random", "values"),
+    method = c("ols", "glm", "light", "random", "values"),
     type = c("deviance", "pearson", "working", "link"),
     niter = 0,
     values = list(),
@@ -133,6 +138,7 @@ sgdgmf.init = function (
   init = switch(method,
     "ols" = sgdgmf.init.ols(Y, X, Z, ncomp, family, weights, offset, type, verbose),
     "glm" = sgdgmf.init.glm(Y, X, Z, ncomp, family, weights, offset, type, verbose, parallel, nthreads),
+    "light" = sgdgmf.init.light(Y, X, Z, ncomp, family, weights, offset, verbose),
     "random" = sgdgmf.init.random(Y, X, Z, ncomp),
     "values" = sgdgmf.init.custom(Y, X, Z, ncomp, family, values, verbose))
 
@@ -213,13 +219,9 @@ sgdgmf.init.ols = function (
 
   # Compute the transformed data
   if (verbose) cat(" Initialization: working data \n")
-  if (anyNA(Y)) {
-    isna = is.na(Y)
-    Y[] = apply(Y, 2, function (x) {
-      x[is.na(x)] = mean(x, na.rm = TRUE)
-      return (x)
-    })
-  }
+  means = colMeans(Y, na.rm = TRUE)
+  idx = which(is.na(Y), arr.ind = TRUE)
+  if (nrow(idx) > 0) Y[idx] = means[idx[,2]]
   gY = family$transform(Y)
 
   # Initialize the parameters
@@ -273,7 +275,6 @@ sgdgmf.init.ols = function (
   list(U = U, V = V, A = A, B = B, phi = phi)
 }
 
-
 #' @rdname sgdgmf.init
 #' @keywords internal
 sgdgmf.init.glm = function (
@@ -304,13 +305,9 @@ sgdgmf.init.glm = function (
 
   # Compute the transformed data
   if (verbose) cat(" Initialization: working data \n")
-  if (anyNA(Y)) {
-    isna = is.na(Y)
-    Y[] = apply(Y, 2, function (x) {
-      x[is.na(x)] = mean(x, na.rm = TRUE)
-      return (x)
-    })
-  }
+  means = colMeans(Y, na.rm = TRUE)
+  idx = which(is.na(Y), arr.ind = TRUE)
+  if (nrow(idx) > 0) Y[idx] = means[idx[,2]]
 
   # Set the covariate matrices
   if (is.null(X)) X = matrix(1, nrow = n, ncol = 1)
@@ -391,6 +388,90 @@ sgdgmf.init.glm = function (
   list(U = U, V = V, A = A, B = B, phi = phi)
 }
 
+
+#' @rdname sgdgmf.init
+#' @keywords internal
+sgdgmf.init.light = function (
+    Y,
+    X = NULL,
+    Z = NULL,
+    ncomp = 2,
+    family = gaussian(),
+    weights = NULL,
+    offset = NULL,
+    verbose = FALSE
+) {
+
+  # Set the covariate matrices
+  if (is.null(X)) X = matrix(1, nrow = nrow(Y), ncol = 1)
+  if (is.null(Z)) Z = matrix(1, nrow = ncol(Y), ncol = 1)
+
+  # Set the model dimensions
+  n = nrow(Y)
+  m = ncol(Y)
+  p = ncol(X)
+  q = ncol(Z)
+  d = ncomp
+
+  # Set the data transformation to use for
+  # the initialization of the working data
+  family = set.family(family)
+
+  # Compute the transformed data
+  if (verbose) cat(" Initialization: working data \n")
+  means = colMeans(Y, na.rm = TRUE)
+  idx = which(is.na(Y), arr.ind = TRUE)
+  if (nrow(idx) > 0) Y[idx] = means[idx[,2]]
+
+  # Free the from unused data
+  rm(means, idx); gc()
+
+  # Initialize the parameters
+  Y[] = family$transform(Y)
+  B = matrix(NA, nrow = m, ncol = p)
+  A = matrix(NA, nrow = n, ncol = q)
+
+  # Set the offset
+  if (is.null(offset)) {
+    offset = 0
+  } else {
+    if (!is.numeric(offset)) stop("offset is not numeric.")
+    if (!is.matrix(offset)) stop("offset is not a matrix.")
+    if (nrow(offset) != n) stop("The dimensions of offset are not compatible with Y.")
+    if (ncol(offset) != m) stop("The dimensions of offset are not compatible with Y.")
+    if (anyNA(offset)) stop("offset contains some NA.")
+  }
+
+  # Compute the initial column-specific regression parameters
+  if (verbose) cat(" Initialization: column-specific covariates \n")
+  B[] = solve(crossprod(X), crossprod(X, Y - eta))
+  eta = offset + tcrossprod(X, B)
+
+  # Compute the initial row-specific regression parameter
+  if (verbose) cat(" Initialization: row-specific covariates \n")
+  A[] = solve(crossprod(Z), crossprod(Z, t(Y - eta)))
+  eta = eta + tcrossprod(A, Z)
+
+  # Compute the initial latent factor and loading matrices via incomplete SVD
+  if (verbose) cat(" Initialization: latent scores and loadings \n")
+  SVD = RSpectra::svds(Y - eta, ncomp)
+
+  # Free the from unused data
+  rm(eta); gc()
+
+  # Set the orthogonalized latent factor and loading matrix
+  U = SVD$u
+  V = sweep(SVD$v, MARGIN = 2, STATS = SVD$d, FUN = "*")
+
+  # Free the from unused data
+  rm(SVD); gc()
+
+  # Set the initial vector of dispersion parameters
+  phi = rep(1, times = m)
+
+  # Return the obtained initial values
+  list(U = U, V = V, A = A, B = B, phi = phi)
+}
 
 #' @rdname sgdgmf.init
 #' @keywords internal

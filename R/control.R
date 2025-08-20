@@ -87,11 +87,11 @@ set.mat.weights = function (W, n, m) {
 #' @keywords internal
 set.mat.offset = function (O, n, m) {
   if (!is.null(O)) {
-    if (!is.numeric(O)) stop("weights is not numeric.")
-    if (!is.matrix(O)) stop("weights is not a matrix.")
-    if (nrow(O) != n) stop("The dimensions of weights are not compatible with Y.")
-    if (ncol(O) != m) stop("The dimensions of weights are not compatible with Y.")
-    if (anyNA(O)) stop("weights contains some NA.")
+    if (!is.numeric(O)) stop("offset is not numeric.")
+    if (!is.matrix(O)) stop("offset is not a matrix.")
+    if (nrow(O) != n) stop("The dimensions of offset are not compatible with Y.")
+    if (ncol(O) != m) stop("The dimensions of offset are not compatible with Y.")
+    if (anyNA(O)) stop("offset contains some NA.")
     O = matrix(c(O), nrow = nrow(O), ncol = ncol(O))
   } else {
     O = matrix(0, nrow = n, ncol = m)
@@ -245,7 +245,7 @@ set.penalty = function (B = 0, A = 0, U = 1, V = 0) {
 #'
 #' @export set.control.init
 set.control.init = function (
-    method = c("ols", "glm", "random", "values"),
+    method = c("ols", "glm", "light", "random", "values"),
     type = c("deviance", "pearson", "working", "link"),
     values = list(),
     niter = 5,
