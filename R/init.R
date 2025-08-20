@@ -442,7 +442,7 @@ sgdgmf.init.light = function (
 
   # Compute the initial column-specific regression parameters
   if (verbose) cat(" Initialization: column-specific covariates \n")
-  B = t(solve(crossprod(X), crossprod(X, Y - eta)))
+  B = t(solve(crossprod(X), crossprod(X, Y - offset)))
   eta = offset + tcrossprod(X, B)
 
   # Compute the initial row-specific regression parameter
