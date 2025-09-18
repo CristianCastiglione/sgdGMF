@@ -7,7 +7,9 @@
 orthogonalize(X, Z, B, A, U, V)
 }
 \description{
-Orthogonalize U and V with respect to X and Z, respectively, sequentially applying
-multivariate least squares and residual SVD.
+Orthogonalize (A, U) and V with respect to X and Z, respectively. sequentially
+applying multivariate least squares and residual whitening on U. The result must
+satisfy the following contraints: \eqn{X^\top A = 0}, \eqn{X^\top U = 0},
+\eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
 }
 \keyword{internal}
