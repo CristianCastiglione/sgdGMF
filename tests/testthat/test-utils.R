@@ -76,6 +76,7 @@ testthat::test_that("Column-space orthogonalization", {
 
   testthat::expect_lt(mean(abs(crossprod(X, new$A))), 1e-10)
   testthat::expect_lt(mean(abs(crossprod(X, new$U))), 1e-10)
+  testthat::expect_lt(mean(abs(crossprod(Z, new$V))), 1e-10)
   testthat::expect_lt(mean(abs(crossprod(new$U, new$U) - diag(d))), 1e-10)
   testthat::expect_lt(mean(abs(Yold - Ynew)), 1e-10)
 })
