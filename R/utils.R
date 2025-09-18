@@ -181,27 +181,38 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
 #' @title Orthogonalize the matrices U and V with respect to X and Z
 #'
 #' @description
-#' Orthogonalize U and V with respect to X and Z, respectively, sequentially applying
-#' multivariate least squares and residual SVD.
+#' Orthogonalize (A, U) and V with respect to X and Z, respectively. sequentially
+#' applying multivariate least squares and residual whitening on U. The result must
+#' satisfy the following contraints: \eqn{X^\top A = 0}, \eqn{X^\top U = 0},
+#' \eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
 #'
 #' @keywords internal
 orthogonalize = function (X, Z, B, A, U, V) {
-  # Get the outer product matrix
-  Y = tcrossprod(cbind(X, A, U), cbind(B, Z, V))
-  # Inverse Gram matrix induced by X
-  XtX = crossprod(X)
-  # Orthogonalize A and U wrt X
-  A = A - X %*% solve(XtX, crossprod(X, A))
-  U = U - X %*% solve(XtX, crossprod(X, U))
-  # Recompute B
-  Y = Y - tcrossprod(cbind(A, U), cbind(Z, V))
-  B = t(solve(XtX, crossprod(X, Y)))
-  rm(Y, XtX); gc()
-  # Correct U and V
+
+  # Parameter dimension
+  p = ncol(X)
+  q = ncol(Z)
+  d = ncol(U)
+
+  # Orthogonalize A and U wrt X, and update B
+  DU = solve(crossprod(X), crossprod(X, cbind(A, U)))
+  A = A - X %*% DU[,  (1:q)]
+  U = U - X %*% DU[,q+(1:d)]
+  B = B + tcrossprod(cbind(Z, V), DU)
+  rm(DU); gc()
+
+  # Orthogonalize V wrt Z, and update A
+  DV = solve(crossprod(Z), crossprod(Z, V))
+  V = V - Z %*% DV
+  A = A + tcrossprod(U, DV)
+  rm(DV); gc()
+
+  # Orthogonalize U and V
   qrU = qr(U)
   U = qr.Q(qrU)
   V = tcrossprod(V, qr.R(qrU))
   rm(qrU); gc()
+
   # Output
   list(B = B, A = A, U = U, V = V)
 }
