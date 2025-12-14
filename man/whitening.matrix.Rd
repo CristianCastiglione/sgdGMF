@@ -2,12 +2,27 @@
 % Please edit documentation in R/utils.R
 \name{whitening.matrix}
 \alias{whitening.matrix}
+\alias{whitening.zca}
+\alias{whitening.zca.cor}
+\alias{whitening.pca}
+\alias{whitening.pca.cor}
+\alias{whitening.chol}
 \title{Compute the whitening matrix from a given covariance matrix}
 \usage{
 whitening.matrix(
   sigma,
   method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")
 )
+
+whitening.zca(sigma)
+
+whitening.zca.cor(sigma)
+
+whitening.pca(sigma)
+
+whitening.pca.cor(sigma)
+
+whitening.chol(sigma)
 }
 \arguments{
 \item{sigma}{covariance matrix.}
