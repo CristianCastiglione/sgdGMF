@@ -7,6 +7,8 @@
 #' @param symmetric if \code{TRUE}, use symmetric Procrustes statistic
 #' @keywords internal
 procrustes <- function (X, Y, scale = TRUE, symmetric = FALSE) {
+
+  # Safety checks
   if (nrow(X) != nrow(Y))
     stop(gettextf("matrices have different number of rows: %d and %d", nrow(X), nrow(Y)))
   if (ncol(X) < ncol(Y)) {
@@ -14,33 +16,49 @@ procrustes <- function (X, Y, scale = TRUE, symmetric = FALSE) {
     addcols <- ncol(Y) - ncol(X)
     for (i in 1:addcols) X <- cbind(X, 0)
   }
+
+  # Squared matrix trace (Frobenius norm)
   ctrace <- function(mat) sum(mat^2)
-  c <- 1
+
+  # Symmetric standardization
   if (symmetric) {
     X <- scale(X, scale = FALSE)
     Y <- scale(Y, scale = FALSE)
     X <- X / sqrt(ctrace(X))
     Y <- Y / sqrt(ctrace(Y))
   }
+
+  # Get the colum-wise means
   xmean <- colMeans(X, 2, mean)
   ymean <- colMeans(Y, 2, mean)
+
+  # Asymmetric standardization
   if (!symmetric) {
     X <- scale(X, scale = FALSE)
     Y <- scale(Y, scale = FALSE)
   }
-  XY <- crossprod(X, Y)
-  sol <- svd(XY)
+
+  # Get the rotation matrix
+  sol <- svd(crossprod(X, Y))
   A <- sol$v %*% t(sol$u)
+  c <- 1
   if (scale) {
     c <- sum(sol$d) / ctrace(Y)
   }
+
+  # Rotate and scale the matrix
   Yrot <- c * Y %*% A
+
+  # Transformed mean
   b <- xmean - c * ymean %*% A
+
+  # Residual sum of squares (R2)
   R2 <- ctrace(X) + c * c * ctrace(Y) - 2 * c * sum(sol$d)
+
+  # Output object
   result <- list(Yrot = Yrot, X = X, ss = R2, rotation = A,
                  translation = b, scale = c, xmean = xmean,
-                 symmetric = symmetric, call = match.call())
-  result$svd <- sol
+                 symmetric = symmetric, svd = sol, call = match.call())
   class(reslt) <- "procrustes"
   return(result)
 }
@@ -73,44 +91,63 @@ make.pos.diag = function(U) {
 #' in the \code{whitening} package. See the original documentation to get more details.
 #' @keywords internal
 whitening.matrix = function(sigma, method = c("ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
-
-  W = NULL
+  # Check the method
   method = match.arg(method)
-  switch(method,
-    "ZCA" = {
-      eS = eigen(sigma, symmetric = TRUE)
-      U = eS$vectors
-      lambda = eS$values
-      W = U %*% diag(1 / sqrt(lambda)) %*% t(U)
-    },
-    "ZCA-cor" = {
-      v = diag(sigma)
-      R = stats::cov2cor(sigma)
-      eR = eigen(R, symmetric = TRUE)
-      G = eR$vectors
-      theta = eR$values
-      W = G %*% diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
-    },
-    "PCA" = {
-      eS = eigen(sigma, symmetric = TRUE)
-      U = make.pos.diag(eS$vectors)
-      lambda = eS$values
-      W = diag(1 / sqrt(lambda)) %*% t(U)
-    },
-    "PCA-cor" = {
-      v = diag(sigma)
-      R = stats::cov2cor(sigma)
-      eR = eigen(R, symmetric = TRUE)
-      G = make.pos.diag(eR$vectors)
-      theta = eR$values
-      W = diag(1 / sqrt(theta)) %*% t(G) %*% diag(1 / sqrt(v))
-    },
-    "Cholesky" = {
-      W = solve(t(chol(sigma)))
-    })
 
+  # Orthogonalize U and V
+  switch(method,
+         "ZCA" = whitening.zca(sigma),
+         "PCA" = whitening.pca(sigma),
+         "ZCA-cor" = whitening.zca.cor(sigma),
+         "PCA-cor" = whitening.pca.cor(sigma),
+         "Cholesky" = whitening.chol(sigma))
+}
+
+
+#' @rdname whitening.matrix
+#' @keywords internal
+whitening.zca = function(sigma) {
+  eigS = eigen(sigma, symmetric = TRUE)
+  W = eigS$vectors %*% (t(eigS$vectors) / sqrt(eigS$values))
   return(W)
 }
+
+#' @rdname whitening.matrix
+#' @keywords internal
+whitening.zca.cor = function(sigma) {
+  v = sqrt(diag(sigma))
+  eigR = eigen(stats::cov2cor(sigma), symmetric = TRUE)
+  W = eigR$vectors %*% (t(eigR$vectors) / sqrt(eigR$values)) %*% diag(1/v)
+  return(W)
+}
+
+#' @rdname whitening.matrix
+#' @keywords internal
+whitening.pca = function(sigma) {
+  eigS = eigen(sigma, symmetric = TRUE)
+  eigS$vectors = make.pos.diag(eigS$vectors)
+  W = t(eigS$vectors) / sqrt(eigS$values)
+  return(W)
+}
+
+#' @rdname whitening.matrix
+#' @keywords internal
+whitening.pca.cor = function(sigma) {
+  v = sqrt(diag(sigma))
+  R = stats::cov2cor(sigma)
+  eigR = eigen(R, symmetric = TRUE)
+  eigR$vectors = make.pos.diag(eigR$vectors)
+  W = (t(eigR$vectors) / sqrt(eigR$values)) %*% diag(1/v)
+  return(W)
+}
+
+#' @rdname whitening.matrix
+#' @keywords internal
+whitening.chol = function(sigma) {
+  W = solve(t(chol(sigma)))
+  return(W)
+}
+
 
 #' @title Normalize the matrices U and V
 #'
@@ -128,8 +165,7 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
   if (method == "svd") {
     try({
       ncomp = ncol(U)
-      uv = tcrossprod(U, V)
-      s = RSpectra::svds(uv, ncomp)
+      s = RSpectra::svds(tcrossprod(U, V), ncomp)
       if (ncomp == 1) {
         U = s$u
         V = s$v * s$d
@@ -158,7 +194,7 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
         # Make the covariance of U identity
         W = whitening.matrix(S)
         U = U %*% W
-        V = V %*% t(solve(W))
+        V = t(solve(W, t(V)))
 
         # Make V lower triangular
         V.qr = qr(t(V))
@@ -181,10 +217,10 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
 #' @title Orthogonalize the matrices U and V with respect to X and Z
 #'
 #' @description
-#' Orthogonalize (A, U) and V with respect to X and Z, respectively. sequentially
-#' applying multivariate least squares and residual whitening on U. The result must
-#' satisfy the following contraints: \eqn{X^\top A = 0}, \eqn{X^\top U = 0},
-#' \eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
+#' Orthogonalize \code{[A, U]} and \code{V} with respect to \code{X} and \code{Z},
+#' respectively, sequentially applying multivariate least squares and residual
+#' whitening on U. The result must satisfy the following contraints:
+#' \eqn{X^\top A = 0}, \eqn{X^\top U = 0}, \eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
 #'
 #' @keywords internal
 orthogonalize = function (X, Z, B, A, U, V) {
@@ -216,6 +252,126 @@ orthogonalize = function (X, Z, B, A, U, V) {
   # Output
   list(B = B, A = A, U = U, V = V)
 }
+
+#' @title Normalize the matrices U and V
+#'
+#' @description
+#' Rotate U and V using either QR or SVD decompositions.
+#'
+#' @details
+#' Orthogonalization is implemented using the following methods:
+#' \itemize{
+#'   \item \code{method = "SVD"}: orthogonal \eqn{U} and scaled orthogonal \eqn{V} based on SVD decomposition;
+#'   \item \code{method = "QR"}: orthogonal \eqn{U} and lower triangular \eqn{V} based on QR decomposition;
+#'   \item \code{method = "ZCA"}: standardized \eqn{U} and lower triangular \eqn{V} based on ZCA whitening and QR decomposition;
+#'   \item \code{method = "ZCA-cor"}: uncorrelated \eqn{U} and lower triangular \eqn{V} based on ZCA whitening and QR decomposition;
+#'   \item \code{method = "PCA"}: standardized \eqn{U} and lower triangular \eqn{V} based on PCA whitening and QR decomposition;
+#'   \item \code{method = "PCA-cor"}: uncorrelated \eqn{U} and lower triangular \eqn{V} based on PCA whitening and QR decomposition;
+#'   \item \code{method = "Cholesky"}: standardized \eqn{U} and lower triangular \eqn{V} based on Cholesky whitening and QR decomposition.
+#' }
+#'
+#' @keywords internal
+orthogonalize.uv = function(U, V, method = c("SVD", "QR", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
+  # Check the method
+  method = match.arg(method)
+
+  # Orthogonalize U and V
+  switch(method,
+         "SVD" = orthogonalize.svd(U, V),
+         "QR" = orthogonalize.qr(U, V),
+         "ZCA" = orthogonalize.std(U, V, method),
+         "PCA" = orthogonalize.std(U, V, method),
+         "ZCA-cor" = orthogonalize.std(U, V, method),
+         "PCA-cor" = orthogonalize.std(U, V, method),
+         "Cholesky" = orthogonalize.std(U, V, method))
+}
+
+#' @rdname orthogonalize.uv
+#' @keywords internal
+orthogonalize.svd = function(U, V) {
+  try({
+    # SVD of U*Vt
+    ncomp = ncol(U)
+    s = RSpectra::svds(tcrossprod(U, V), ncomp)
+    if (ncomp == 1) {
+      # Orthogonalize U and V
+      U = sign(s$v[,1]) * s$u
+      V = sign(s$v[,1]) * s$v * s$d
+    } else {
+      # Orthogonalize U and V
+      U = s$u
+      V = s$v %*% diag(s$d)
+
+      # Fix the sign of U and V
+      D = diag(V)
+      V = t(sign(D) * t(V))
+      U = t(sign(D) * t(U))
+    }
+  })
+  list(U = U, V = V)
+}
+
+#' @rdname orthogonalize.uv
+#' @keywords internal
+orthogonalize.qr = function(U, V) {
+  try({
+    if (ncol(U) == 1) {
+      # Normalize U
+      normU = sqrt(sum(U^2))
+      signV = sign(V[,1])
+      U = signV * U / normU
+      V = signV * V * normU
+    } else {
+      # Orthogonalize U
+      qrU = qr(U)
+      U = qr.Q(qrU)
+      V = tcrossprod(V, qr.R(qrU))
+
+      # Triangularize V
+      qrV = qr(t(V))
+      U = U %*% qr.Q(qrV)
+      V = t(qr.R(qrV))
+
+      # Fix the sign of U and V
+      D = diag(V)
+      V = t(sign(D) * t(V))
+      U = t(sign(D) * t(U))
+    }
+  })
+  list(U = U, V = V)
+}
+
+#' @rdname orthogonalize.uv
+#' @keywords internal
+orthogonalize.std = function(U, V, method) {
+  if (is.vector(U) | (is.matrix(U) & ncol(U) == 1)){
+    sdU = stats::sd(c(U))
+    U = U / sdU
+    V = V * sdU
+  }
+  if (is.matrix(U) & ncol(U) > 1) {
+    try({
+      # Compute the covariance of U
+      S = stats::cov(U)
+
+      # Make the covariance of U identity
+      W = whitening.matrix(S, method=method)
+      U = U %*% W
+      V = t(solve(W, t(V)))
+
+      # Make V lower triangular
+      V.qr = qr(t(V))
+      U = U %*% qr.Q(V.qr)
+      V = t(qr.R(V.qr))
+
+      # Positive diagonal of V
+      D = diag(V)
+      V = t(sign(D) * t(V))
+      U = t(sign(D) * t(U))
+    })
+  }
+}
+
 
 #' @title Split the data matrix in train and test sets
 #'
@@ -323,8 +479,7 @@ sim.gmf.data = function (n = 100, m = 20, ncomp = 5, family = gaussian(), disper
   # Compute the linear predictor, the conditional mean and the dispersion parameter
   eta = tcrossprod(U, V)
   mu = family$linkinv(eta)
-  phi = 3*rbeta(1, 2, 3)
-  phi = ifelse(!is.null(dispersion), abs(dispersion), 3 * stats::rbeta(1, 2, 3))
+  phi = ifelse(!is.null(dispersion), abs(dispersion), 3*stats::rbeta(1, 2, 3))
 
   # Family name
   fname = family$family
