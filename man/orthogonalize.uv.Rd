@@ -10,7 +10,7 @@
 orthogonalize.uv(
   U,
   V,
-  method = c("SVD", "QR", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")
+  method = c("QR", "SVD", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")
 )
 
 orthogonalize.svd(U, V)

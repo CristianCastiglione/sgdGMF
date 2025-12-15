@@ -4,12 +4,20 @@
 \alias{orthogonalize}
 \title{Orthogonalize the matrices U and V with respect to X and Z}
 \usage{
-orthogonalize(X, Z, B, A, U, V)
+orthogonalize(
+  X,
+  Z,
+  B,
+  A,
+  U,
+  V,
+  method = c("QR", "SVD", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")
+)
 }
 \description{
-Orthogonalize (A, U) and V with respect to X and Z, respectively. sequentially
-applying multivariate least squares and residual whitening on U. The result must
-satisfy the following contraints: \eqn{X^\top A = 0}, \eqn{X^\top U = 0},
-\eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
+Orthogonalize \code{[A, U]} and \code{V} with respect to \code{X} and \code{Z},
+respectively, sequentially applying multivariate least squares and residual
+whitening on U. The result must satisfy the following contraints:
+\eqn{X^\top A = 0}, \eqn{X^\top U = 0}, \eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
 }
 \keyword{internal}
