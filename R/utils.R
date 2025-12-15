@@ -223,7 +223,7 @@ normalize.uv = function (U, V, method = c("qr", "svd")) {
 #' \eqn{X^\top A = 0}, \eqn{X^\top U = 0}, \eqn{Z^\top V = 0}, \eqn{U^\top U = 0}.
 #'
 #' @keywords internal
-orthogonalize = function (X, Z, B, A, U, V) {
+orthogonalize = function (X, Z, B, A, U, V, method = c("QR", "SVD", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
 
   # Parameter dimension
   p = ncol(X)
@@ -244,13 +244,14 @@ orthogonalize = function (X, Z, B, A, U, V) {
   rm(DV); gc()
 
   # Orthogonalize U and V
-  qrU = qr(U)
-  U = qr.Q(qrU)
-  V = tcrossprod(V, qr.R(qrU))
-  rm(qrU); gc()
+  QR = orthogonalize.uv(U, V, method=method)
+  # qrU = qr(U)
+  # U = qr.Q(qrU)
+  # V = tcrossprod(V, qr.R(qrU))
+  # rm(qrU); gc()
 
   # Output
-  list(B = B, A = A, U = U, V = V)
+  list(B = B, A = A, U = QR$U, V = QR$V)
 }
 
 #' @title Normalize the matrices U and V
@@ -271,7 +272,7 @@ orthogonalize = function (X, Z, B, A, U, V) {
 #' }
 #'
 #' @keywords internal
-orthogonalize.uv = function(U, V, method = c("SVD", "QR", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
+orthogonalize.uv = function(U, V, method = c("QR", "SVD", "ZCA", "ZCA-cor", "PCA", "PCA-cor", "Cholesky")) {
   # Check the method
   method = match.arg(method)
 
@@ -370,6 +371,7 @@ orthogonalize.std = function(U, V, method) {
       U = t(sign(D) * t(U))
     })
   }
+  list(U = U, V = V)
 }
 
 

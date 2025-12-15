@@ -436,16 +436,16 @@ sgdgmf.fit = function (
 
   # Normalize the latent factors
   if (alg$normalize) {
-    # ort = orthogonalize(X, Z, out$B, out$A, out$U, out$V)
-    # out$B = ort$B
-    # out$A = ort$A
-    # out$U = ort$U
-    # out$V = ort$V
-    # rm(ort); gc()
-    uv = normalize.uv(out$U, out$V, method = "qr")
-    out$U = uv$U
-    out$V = uv$V
-    rm(uv); gc()
+    ort = orthogonalize(X, Z, out$B, out$A, out$U, out$V, method = "QR")
+    out$B = ort$B
+    out$A = ort$A
+    out$U = ort$U
+    out$V = ort$V
+    rm(ort); gc()
+    # uv = normalize.uv(out$U, out$V, method = "qr")
+    # out$U = uv$U
+    # out$V = uv$V
+    # rm(uv); gc()
   }
 
   # Set the S3 class of the output model
