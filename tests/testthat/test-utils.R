@@ -10,6 +10,7 @@ testthat::test_that("Whitening matrix", {
   V = matrix(rnorm(d*d), d, d)
   X = U %*% V
   S = cov(X)
+
   W.zca = whitening.matrix(cov(X), method = "ZCA")
   W.pca = whitening.matrix(cov(X), method = "PCA")
   W.zca.cor = whitening.matrix(cov(X), method = "ZCA-cor")
@@ -67,19 +68,36 @@ testthat::test_that("Column-space orthogonalization", {
   B = matrix(rnorm(m*p), m, p)
   U = matrix(rnorm(n*d), n, d)
   V = matrix(rnorm(m*d), m, d)
+  Y = tcrossprod(cbind(X, A, U), cbind(B, Z, V))
 
   old = list(B = B, A = A, U = U, V = V)
-  new = orthogonalize(X, Z, B, A, U, V)
+  new = orthogonalize(X, Z, B, A, U, V, method="SVD")
 
-  Yold = tcrossprod(cbind(X, old$A, old$U), cbind(old$B, Z, old$V))
-  Ynew = tcrossprod(cbind(X, new$A, new$U), cbind(new$B, Z, new$V))
+  new = list(
+    QR = orthogonalize(X, Z, B, A, U, V, method="QR"),
+    SVD = orthogonalize(X, Z, B, A, U, V, method="SVD"),
+    ZCA = orthogonalize(X, Z, B, A, U, V, method="ZCA"),
+    PCA = orthogonalize(X, Z, B, A, U, V, method="PCA"),
+    Chol = orthogonalize(X, Z, B, A, U, V, method="Cholesky"))
 
-  testthat::expect_lt(mean(abs(crossprod(X, new$A))), 1e-10)
-  testthat::expect_lt(mean(abs(crossprod(X, new$U))), 1e-10)
-  testthat::expect_lt(mean(abs(crossprod(Z, new$V))), 1e-10)
-  testthat::expect_lt(mean(abs(crossprod(new$U, new$U) - diag(d))), 1e-10)
-  testthat::expect_lt(mean(abs(Yold - Ynew)), 1e-10)
+  # Check for orthogonality between the design matrices and the
+  for (h in 1:length(new)) {
+    # Check for orthogonality wrt the design matrices
+    testthat::expect_lt(mean(abs(crossprod(X, new[[h]]$A))), 1e-10)
+    testthat::expect_lt(mean(abs(crossprod(X, new[[h]]$U))), 1e-10)
+    testthat::expect_lt(mean(abs(crossprod(Z, new[[h]]$V))), 1e-10)
+
+    # Check for reconstruction of the linear predictor
+    Ynew = with(new[[h]], tcrossprod(cbind(X, A, U), cbind(B, Z, V)))
+    testthat::expect_lt(mean(abs(Y - Ynew)), 1e-10)
+  }
+
+  # Check for the latent space identifiability contraints
+  testthat::expect_lt(mean(abs(crossprod(new$QR$U, new$QR$U) - diag(d))), 1e-10)
+  testthat::expect_lt(mean(abs(crossprod(new$SVD$U, new$SVD$U) - diag(d))), 1e-10)
+  testthat::expect_lt(mean(abs(cov(new$ZCA$U) - diag(d))), 1e-10)
 })
+
 
 testthat::test_that("GMF data simulation", {
   n = 100; m = 10; d = 5
